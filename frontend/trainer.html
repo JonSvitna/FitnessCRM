@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trainer Dashboard - FitnessCRM</title>
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="bg-white shadow-md sticky top-0 z-50 border-b border-neutral-200">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-primary-600 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold text-neutral-900">Fitness<span class="text-orange-600">CRM</span> <span class="text-sm text-neutral-600">Trainer</span></h1>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <span class="text-neutral-700">Welcome, Trainer</span>
+          <a href="/home.html" class="btn-outline">Logout</a>
+        </div>
+      </div>
+      
+      <div class="flex space-x-2 mt-4">
+        <button id="nav-dashboard" class="nav-link nav-link-active">Dashboard</button>
+        <button id="nav-clients" class="nav-link">My Clients</button>
+        <button id="nav-workouts" class="nav-link">Workouts</button>
+        <button id="nav-calendar" class="nav-link">Calendar</button>
+        <button id="nav-messages" class="nav-link">Messages</button>
+        <button id="nav-challenges" class="nav-link">Challenges</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container mx-auto px-6 py-8">
+    <!-- Dashboard Section -->
+    <section id="dashboard-section" class="section active">
+      <h2 class="section-title-gradient mb-6">Trainer Dashboard</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="stat-card">
+          <div class="text-4xl font-bold mb-2" id="total-clients">0</div>
+          <div class="text-white opacity-90">Total Clients</div>
+        </div>
+        <div class="stat-card">
+          <div class="text-4xl font-bold mb-2" id="active-clients">0</div>
+          <div class="text-white opacity-90">Active Clients</div>
+        </div>
+        <div class="stat-card">
+          <div class="text-4xl font-bold mb-2" id="sessions-this-week">0</div>
+          <div class="text-white opacity-90">Sessions This Week</div>
+        </div>
+        <div class="stat-card">
+          <div class="text-4xl font-bold mb-2" id="new-messages">0</div>
+          <div class="text-white opacity-90">New Messages</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card">
+          <h3 class="text-2xl font-bold text-neutral-900 mb-4">Today's Schedule</h3>
+          <div id="today-schedule" class="space-y-3">
+            <p class="text-neutral-600">No sessions scheduled for today</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-2xl font-bold text-neutral-900 mb-4">Recent Activity</h3>
+          <div id="recent-activity" class="space-y-3">
+            <p class="text-neutral-600">No recent activity</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- My Clients Section -->
+    <section id="clients-section" class="section hidden">
+      <h2 class="section-title-gradient mb-6">My Clients</h2>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1">
+          <div class="card">
+            <h3 class="text-xl font-bold text-neutral-900 mb-4">Assign New Client</h3>
+            <form id="assign-client-form" class="space-y-4">
+              <div>
+                <label class="form-label">Select Client</label>
+                <select name="client_id" required class="input-field">
+                  <option value="">Choose a client...</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Notes</label>
+                <textarea name="notes" class="input-field" rows="3" placeholder="Initial assessment notes..."></textarea>
+              </div>
+              <button type="submit" class="btn-primary w-full">Assign Client</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2">
+          <div class="card">
+            <h3 class="text-xl font-bold text-neutral-900 mb-4">Client List</h3>
+            <div id="clients-list" class="space-y-3">
+              <p class="text-neutral-600">No clients assigned yet</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Workouts Section -->
+    <section id="workouts-section" class="section hidden">
+      <h2 class="section-title-gradient mb-6">Workout Management</h2>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1">
+          <div class="card">
+            <h3 class="text-xl font-bold text-neutral-900 mb-4">Create Workout Plan</h3>
+            <form id="workout-form" class="space-y-4">
+              <div>
+                <label class="form-label">Plan Name *</label>
+                <input type="text" name="name" required class="input-field" placeholder="e.g., Beginner Strength">
+              </div>
+              <div>
+                <label class="form-label">Description</label>
+                <textarea name="description" class="input-field" rows="3" placeholder="Plan overview..."></textarea>
+              </div>
+              <div>
+                <label class="form-label">Difficulty Level</label>
+                <select name="difficulty_level" class="input-field">
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Duration (weeks)</label>
+                <input type="number" name="duration_weeks" class="input-field" placeholder="8">
+              </div>
+              <button type="submit" class="btn-primary w-full">Create Plan</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2">
+          <div class="card">
+            <h3 class="text-xl font-bold text-neutral-900 mb-4">Workout Plans</h3>
+            <div id="workouts-list" class="space-y-3">
+              <p class="text-neutral-600">No workout plans created yet</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Calendar Section -->
+    <section id="calendar-section" class="section hidden">
+      <h2 class="section-title-gradient mb-6">Calendar & Appointments</h2>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1">
+          <div class="card">
+            <h3 class="text-xl font-bold text-neutral-900 mb-4">Schedule Session</h3>
+            <form id="session-form" class="space-y-4">
+              <div>
+                <label class="form-label">Client *</label>
+                <select name="client_id" required class="input-field">
+                  <option value="">Choose a client...</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Date & Time *</label>
+                <input type="datetime-local" name="session_date" required class="input-field">
+              </div>
+              <div>
+                <label class="form-label">Duration (minutes)</label>
+                <input type="number" name="duration" class="input-field" value="60">
+              </div>
+              <div>
+                <label class="form-label">Session Type</label>
+                <select name="session_type" class="input-field">
+                  <option value="personal">Personal Training</option>
+                  <option value="group">Group Training</option>
+                  <option value="online">Online Session</option>
+                  <option value="assessment">Assessment</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Notes</label>
+                <textarea name="notes" class="input-field" rows="2" placeholder="Session notes..."></textarea>
+              </div>
+              <button type="submit" class="btn-primary w-full">Schedule Session</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2">
+          <div class="card">
+            <h3 class="text-xl font-bold text-neutral-900 mb-4">Upcoming Sessions</h3>
+            <div id="sessions-list" class="space-y-3">
+              <p class="text-neutral-600">No sessions scheduled</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Messages Section -->
+    <section id="messages-section" class="section hidden">
+      <h2 class="section-title-gradient mb-6">Messages</h2>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1">
+          <div class="card">
+            <h3 class="text-xl font-bold text-neutral-900 mb-4">Compose Message</h3>
+            <form id="message-form" class="space-y-4">
+              <div>
+                <label class="form-label">To (Client) *</label>
+                <select name="client_id" required class="input-field">
+                  <option value="">Choose a client...</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Subject *</label>
+                <input type="text" name="subject" required class="input-field" placeholder="Message subject">
+              </div>
+              <div>
+                <label class="form-label">Message *</label>
+                <textarea name="message" required class="input-field" rows="6" placeholder="Your message..."></textarea>
+              </div>
+              <div class="flex items-center gap-3">
+                <input type="checkbox" id="send_email" name="send_email" class="w-4 h-4">
+                <label for="send_email" class="text-sm text-neutral-700">Send as email</label>
+              </div>
+              <button type="submit" class="btn-primary w-full">Send Message</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2">
+          <div class="card">
+            <h3 class="text-xl font-bold text-neutral-900 mb-4">Recent Messages</h3>
+            <div id="messages-list" class="space-y-3">
+              <p class="text-neutral-600">No messages yet</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Challenges Section -->
+    <section id="challenges-section" class="section hidden">
+      <h2 class="section-title-gradient mb-6">Client Challenges</h2>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1">
+          <div class="card">
+            <h3 class="text-xl font-bold text-neutral-900 mb-4">Create Challenge</h3>
+            <form id="challenge-form" class="space-y-4">
+              <div>
+                <label class="form-label">Challenge Name *</label>
+                <input type="text" name="name" required class="input-field" placeholder="e.g., 30-Day Plank">
+              </div>
+              <div>
+                <label class="form-label">Description</label>
+                <textarea name="description" class="input-field" rows="3" placeholder="Challenge details..."></textarea>
+              </div>
+              <div>
+                <label class="form-label">Start Date</label>
+                <input type="date" name="start_date" class="input-field">
+              </div>
+              <div>
+                <label class="form-label">End Date</label>
+                <input type="date" name="end_date" class="input-field">
+              </div>
+              <div>
+                <label class="form-label">Goal Metric</label>
+                <input type="text" name="goal_metric" class="input-field" placeholder="e.g., Hold for 2 minutes">
+              </div>
+              <button type="submit" class="btn-primary w-full">Create Challenge</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2">
+          <div class="card">
+            <h3 class="text-xl font-bold text-neutral-900 mb-4">Active Challenges</h3>
+            <div id="challenges-list" class="space-y-3">
+              <p class="text-neutral-600">No challenges created yet</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-4 right-4 hidden">
+    <div class="bg-white rounded-lg shadow-2xl px-6 py-4 border-l-4 border-orange-500">
+      <p id="toast-message" class="text-neutral-900"></p>
+    </div>
+  </div>
+
+  <script type="module" src="/src/trainer.js"></script>
+</body>
+</html>
