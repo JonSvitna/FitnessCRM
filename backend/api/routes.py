@@ -264,4 +264,18 @@ def delete_assignment(assignment_id):
 @api_bp.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
-    return jsonify({'status': 'healthy', 'message': 'API is running'}), 200
+    health_status = {
+        'status': 'healthy',
+        'message': 'API is running'
+    }
+    
+    # Check database connectivity
+    try:
+        db.session.execute(db.text('SELECT 1'))
+        health_status['database'] = 'connected'
+    except Exception as e:
+        health_status['database'] = 'disconnected'
+        health_status['database_error'] = str(e)
+        logger.warning(f"Database health check failed: {str(e)}")
+    
+    return jsonify(health_status), 200
