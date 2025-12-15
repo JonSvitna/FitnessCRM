@@ -57,10 +57,13 @@ def create_app(config_name=None):
         db.session.rollback()
         return jsonify({'error': 'Internal server error'}), 500
     
-    # Create tables
+    # Create tables (non-blocking for health checks)
     with app.app_context():
-        db.create_all()
-        logger.info("Database tables created/verified")
+        try:
+            db.create_all()
+            logger.info("Database tables created/verified")
+        except Exception as e:
+            logger.warning(f"Database initialization failed: {str(e)}. App will start but database operations will fail.")
     
     return app
 
