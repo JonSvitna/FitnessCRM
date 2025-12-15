@@ -1,24 +1,40 @@
 # FitnessCRM 🏋️
 
-A modern, full-stack Customer Relationship Management (CRM) system for fitness trainers and clients. Built with a clean dark orange color scheme, featuring a static frontend deployed on Vercel and a Flask API backend on Railway with PostgreSQL database.
+A modern, full-stack Customer Relationship Management (CRM) system for fitness trainers and gyms. Inspired by industry leaders like TrueCoach and Trainerize, featuring a professional orange-red-white color scheme, comprehensive marketing pages, and a powerful management dashboard. Frontend deployed on Vercel, Flask API backend on Railway with PostgreSQL database.
 
 ## 🎯 Features
 
-- **Trainer Management**: Add, view, update, and delete trainer profiles with specializations and certifications
-- **Client Management**: Comprehensive client profiles with fitness goals and medical conditions tracking
-- **CRM Dashboard**: Real-time statistics and activity tracking
-- **Assignment System**: Link clients to trainers with notes and management capabilities
-- **Modern UI**: Dark theme with orange accents, built with TailwindCSS
+### Marketing & Public Pages
+- **Professional Landing Page**: Modern hero section with compelling CTAs
+- **About Page**: Company story and values
+- **Pricing Plans**: Three-tier pricing (Starter, Professional, Enterprise)
+- **FAQ Section**: Common questions and answers
+- **Contact Form**: Easy communication with potential customers
+- **SEO Optimized**: Meta tags, keywords, and semantic HTML for search engines
+- **Mobile Responsive**: Beautiful experience on all devices
+
+### CRM Dashboard & Management
+- **Trainer Management**: Add, view, update, and delete trainer profiles with specializations, certifications, and rates
+- **Client Management**: Comprehensive client profiles with goals, medical conditions, emergency contacts, and membership tracking
+- **Session Tracking**: Schedule and manage training sessions with status tracking
+- **Progress Records**: Track client measurements, weight, body fat percentage, and progress photos
+- **Payment Processing**: Financial tracking with payment history and status
+- **Workout Plans**: Create and manage workout templates with exercise libraries
+- **Assignment System**: Link clients to trainers with detailed notes
+- **Real-time Dashboard**: Live statistics and activity feed
+- **Modern UI**: Professional orange-to-red gradients with white accents
 - **RESTful API**: Full CRUD operations for all resources
-- **PostgreSQL Database**: Robust relational database for data persistence
+- **PostgreSQL Database**: Robust relational database with comprehensive schema
 
 ## 🏗️ Architecture
 
 ### Frontend
-- **Framework**: Vite
-- **Styling**: TailwindCSS with custom dark orange theme
+- **Framework**: Vite (Multi-page application)
+- **Styling**: TailwindCSS with professional orange-red gradient theme
+- **Typography**: Inter + Poppins (Google Fonts)
 - **Language**: HTML5, CSS3, JavaScript (ES6+)
 - **API Client**: Axios
+- **Pages**: Home/Marketing + Dashboard/App
 - **Deployment**: Vercel
 
 ### Backend
@@ -137,33 +153,61 @@ python init_db.py seed
 
 ### Trainers Table
 - id (Primary Key)
-- name
-- email (Unique)
-- phone
-- specialization
-- certification
-- experience (years)
-- created_at
-- updated_at
+- name, email (Unique), phone
+- specialization, certification, experience (years)
+- bio (Text), hourly_rate, active (Boolean)
+- created_at, updated_at
+- **Relationships**: assignments, sessions, workout_plans
 
 ### Clients Table
 - id (Primary Key)
-- name
-- email (Unique)
-- phone
-- age
-- goals (Text)
-- medical_conditions (Text)
-- created_at
-- updated_at
+- name, email (Unique), phone, age
+- goals (Text), medical_conditions (Text)
+- emergency_contact, emergency_phone
+- status (active/inactive/pending)
+- membership_type (monthly/quarterly/annual)
+- start_date, created_at, updated_at
+- **Relationships**: assignments, sessions, progress_records, payments
 
 ### Assignments Table
 - id (Primary Key)
-- trainer_id (Foreign Key)
-- client_id (Foreign Key)
-- notes (Text)
+- trainer_id (FK → trainers), client_id (FK → clients)
+- notes (Text), status (active/completed/cancelled)
+- created_at, updated_at
+
+### Sessions Table
+- id (Primary Key)
+- trainer_id (FK → trainers), client_id (FK → clients)
+- session_date, duration (minutes)
+- session_type (personal/group/online)
+- notes (Text), status (scheduled/completed/cancelled/no-show)
+- created_at, updated_at
+
+### Progress Records Table
+- id (Primary Key)
+- client_id (FK → clients)
+- record_date, weight, body_fat_percentage
+- measurements (JSON), photos (JSON)
+- notes (Text), created_at
+
+### Payments Table
+- id (Primary Key)
+- client_id (FK → clients)
+- amount, payment_date
+- payment_method (credit_card/cash/check)
+- payment_type (membership/session/product)
+- status (pending/completed/refunded/failed)
+- transaction_id, notes (Text)
 - created_at
-- updated_at
+
+### Workout Plans Table
+- id (Primary Key)
+- trainer_id (FK → trainers)
+- name, description (Text)
+- difficulty_level (beginner/intermediate/advanced)
+- duration_weeks, exercises (JSON)
+- public (Boolean)
+- created_at, updated_at
 
 ## 🔌 API Endpoints
 
