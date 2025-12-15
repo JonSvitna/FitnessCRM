@@ -35,4 +35,20 @@ export const crmAPI = {
   getAssignments: () => api.get('/api/crm/assignments'),
 };
 
+// Settings API
+export const settingsAPI = {
+  get: () => api.get('/api/settings'),
+  create: (data) => api.post('/api/settings', data),
+  update: (data) => api.put('/api/settings', data),
+  testSendGrid: () => api.post('/api/settings/test-sendgrid'),
+  testTwilio: () => api.post('/api/settings/test-twilio'),
+};
+
+// Activity API
+export const activityAPI = {
+  getRecent: (limit = 50) => api.get(`/api/activity/recent?limit=${limit}`),
+  getAll: (params) => api.get('/api/activity', { params }),
+  getStats: () => api.get('/api/activity/stats'),
+};
+
 export default api;

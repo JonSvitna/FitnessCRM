@@ -222,3 +222,93 @@ class WorkoutPlan(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
+
+class Settings(db.Model):
+    """Application settings and configuration"""
+    __tablename__ = 'settings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    # Business profile
+    business_name = db.Column(db.String(200))
+    owner_name = db.Column(db.String(100))
+    contact_email = db.Column(db.String(120))
+    contact_phone = db.Column(db.String(20))
+    address = db.Column(db.Text)
+    website = db.Column(db.String(200))
+    logo_url = db.Column(db.String(500))
+    
+    # SendGrid API Configuration
+    sendgrid_api_key = db.Column(db.String(500))
+    sendgrid_from_email = db.Column(db.String(120))
+    sendgrid_from_name = db.Column(db.String(100))
+    sendgrid_enabled = db.Column(db.Boolean, default=False)
+    
+    # Twilio API Configuration
+    twilio_account_sid = db.Column(db.String(500))
+    twilio_auth_token = db.Column(db.String(500))
+    twilio_phone_number = db.Column(db.String(20))
+    twilio_enabled = db.Column(db.Boolean, default=False)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def to_dict(self, include_sensitive=False):
+        """Convert to dictionary, optionally masking sensitive data"""
+        data = {
+            'id': self.id,
+            'business_name': self.business_name,
+            'owner_name': self.owner_name,
+            'contact_email': self.contact_email,
+            'contact_phone': self.contact_phone,
+            'address': self.address,
+            'website': self.website,
+            'logo_url': self.logo_url,
+            'sendgrid_from_email': self.sendgrid_from_email,
+            'sendgrid_from_name': self.sendgrid_from_name,
+            'sendgrid_enabled': self.sendgrid_enabled,
+            'twilio_phone_number': self.twilio_phone_number,
+            'twilio_enabled': self.twilio_enabled,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+        
+        # Include sensitive data only if explicitly requested
+        if include_sensitive:
+            data['sendgrid_api_key'] = self.sendgrid_api_key
+            data['twilio_account_sid'] = self.twilio_account_sid
+            data['twilio_auth_token'] = self.twilio_auth_token
+        else:
+            # Mask sensitive data
+            data['sendgrid_api_key'] = '***' if self.sendgrid_api_key else None
+            data['twilio_account_sid'] = '***' if self.twilio_account_sid else None
+            data['twilio_auth_token'] = '***' if self.twilio_auth_token else None
+        
+        return data
+
+class ActivityLog(db.Model):
+    """Activity logging for audit trail"""
+    __tablename__ = 'activity_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    action = db.Column(db.String(100), nullable=False)  # create, update, delete, view
+    entity_type = db.Column(db.String(50), nullable=False)  # trainer, client, assignment, etc.
+    entity_id = db.Column(db.Integer)
+    user_identifier = db.Column(db.String(200))  # email or ID of user who performed action
+    details = db.Column(db.JSON)  # Additional details about the action
+    ip_address = db.Column(db.String(50))
+    user_agent = db.Column(db.String(500))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'action': self.action,
+            'entity_type': self.entity_type,
+            'entity_id': self.entity_id,
+            'user_identifier': self.user_identifier,
+            'details': self.details,
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }

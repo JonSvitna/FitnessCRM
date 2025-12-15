@@ -1,11 +1,12 @@
 import './styles/main.css';
-import { trainerAPI, clientAPI, crmAPI } from './api.js';
+import { trainerAPI, clientAPI, crmAPI, settingsAPI, activityAPI } from './api.js';
 
 // State management
 let state = {
   trainers: [],
   clients: [],
   assignments: [],
+  settings: null,
 };
 
 // Utility functions
@@ -59,6 +60,11 @@ document.getElementById('nav-clients').addEventListener('click', () => {
 document.getElementById('nav-management').addEventListener('click', () => {
   showSection('management-section');
   loadManagement();
+});
+
+document.getElementById('nav-settings').addEventListener('click', () => {
+  showSection('settings-section');
+  loadSettings();
 });
 
 // Trainer form handler
@@ -295,6 +301,152 @@ function renderAssignments() {
     `;
   }).join('');
 }
+
+// Settings functions
+async function loadSettings() {
+  try {
+    const response = await settingsAPI.get();
+    state.settings = response.data;
+    populateSettingsForms();
+    loadActivityLog();
+  } catch (error) {
+    console.error('Error loading settings:', error);
+    // If no settings exist, that's okay - forms will be empty
+    loadActivityLog();
+  }
+}
+
+function populateSettingsForms() {
+  if (!state.settings) return;
+  
+  // Business profile form
+  const businessForm = document.getElementById('business-profile-form');
+  if (businessForm && state.settings) {
+    businessForm.elements['business_name'].value = state.settings.business_name || '';
+    businessForm.elements['owner_name'].value = state.settings.owner_name || '';
+    businessForm.elements['contact_email'].value = state.settings.contact_email || '';
+    businessForm.elements['contact_phone'].value = state.settings.contact_phone || '';
+    businessForm.elements['address'].value = state.settings.address || '';
+    businessForm.elements['website'].value = state.settings.website || '';
+  }
+  
+  // SendGrid form
+  const sendgridForm = document.getElementById('sendgrid-form');
+  if (sendgridForm && state.settings) {
+    sendgridForm.elements['sendgrid_from_email'].value = state.settings.sendgrid_from_email || '';
+    sendgridForm.elements['sendgrid_from_name'].value = state.settings.sendgrid_from_name || '';
+    sendgridForm.elements['sendgrid_enabled'].checked = state.settings.sendgrid_enabled || false;
+  }
+  
+  // Twilio form
+  const twilioForm = document.getElementById('twilio-form');
+  if (twilioForm && state.settings) {
+    twilioForm.elements['twilio_phone_number'].value = state.settings.twilio_phone_number || '';
+    twilioForm.elements['twilio_enabled'].checked = state.settings.twilio_enabled || false;
+  }
+}
+
+async function loadActivityLog() {
+  try {
+    const response = await activityAPI.getRecent(20);
+    const activities = response.data.activities;
+    
+    const container = document.getElementById('activity-log');
+    if (activities.length === 0) {
+      container.innerHTML = '<p class="text-gray-400">No activity yet</p>';
+      return;
+    }
+    
+    container.innerHTML = activities.map(activity => `
+      <div class="flex items-start justify-between p-2 bg-white hover:bg-neutral-100 rounded border-l-4 ${
+        activity.action === 'create' ? 'border-green-500' :
+        activity.action === 'update' ? 'border-blue-500' :
+        activity.action === 'delete' ? 'border-red-500' :
+        'border-gray-500'
+      }">
+        <div class="flex-1">
+          <p class="text-sm font-medium text-neutral-900">
+            ${activity.action.toUpperCase()} ${activity.entity_type}
+            ${activity.entity_id ? `#${activity.entity_id}` : ''}
+          </p>
+          ${activity.user_identifier ? `<p class="text-xs text-neutral-600">${activity.user_identifier}</p>` : ''}
+          <p class="text-xs text-neutral-500">${new Date(activity.created_at).toLocaleString()}</p>
+        </div>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error('Error loading activity log:', error);
+    document.getElementById('activity-log').innerHTML = '<p class="text-gray-400">Error loading activity log</p>';
+  }
+}
+
+// Settings form handlers
+document.getElementById('business-profile-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const data = Object.fromEntries(formData.entries());
+  
+  try {
+    await settingsAPI.update(data);
+    showToast('Business profile updated successfully!');
+    loadSettings();
+  } catch (error) {
+    console.error('Error updating business profile:', error);
+    showToast('Error updating business profile. Please try again.');
+  }
+});
+
+document.getElementById('sendgrid-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const data = Object.fromEntries(formData.entries());
+  data.sendgrid_enabled = e.target.elements['sendgrid_enabled'].checked;
+  
+  try {
+    await settingsAPI.update(data);
+    showToast('SendGrid settings updated successfully!');
+    loadSettings();
+  } catch (error) {
+    console.error('Error updating SendGrid settings:', error);
+    showToast('Error updating SendGrid settings. Please try again.');
+  }
+});
+
+document.getElementById('twilio-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const data = Object.fromEntries(formData.entries());
+  data.twilio_enabled = e.target.elements['twilio_enabled'].checked;
+  
+  try {
+    await settingsAPI.update(data);
+    showToast('Twilio settings updated successfully!');
+    loadSettings();
+  } catch (error) {
+    console.error('Error updating Twilio settings:', error);
+    showToast('Error updating Twilio settings. Please try again.');
+  }
+});
+
+document.getElementById('test-sendgrid-btn').addEventListener('click', async () => {
+  try {
+    await settingsAPI.testSendGrid();
+    showToast('SendGrid connection successful!');
+  } catch (error) {
+    console.error('Error testing SendGrid:', error);
+    showToast('SendGrid connection failed. Check your settings.');
+  }
+});
+
+document.getElementById('test-twilio-btn').addEventListener('click', async () => {
+  try {
+    await settingsAPI.testTwilio();
+    showToast('Twilio connection successful!');
+  } catch (error) {
+    console.error('Error testing Twilio:', error);
+    showToast('Twilio connection failed. Check your settings.');
+  }
+});
 
 // Delete functions (global scope for inline onclick handlers)
 window.deleteTrainer = async function(id) {

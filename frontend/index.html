@@ -22,6 +22,7 @@
           <button id="nav-trainers" class="nav-link">Trainers</button>
           <button id="nav-clients" class="nav-link">Clients</button>
           <button id="nav-management" class="nav-link">Management</button>
+          <button id="nav-settings" class="nav-link">Settings</button>
         </div>
       </div>
     </div>
@@ -206,6 +207,117 @@
           <h3 class="text-xl font-semibold text-primary-500 mb-4">Current Assignments</h3>
           <div id="assignments-list" class="space-y-3">
             <p class="text-gray-400">No assignments yet</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings Section -->
+    <section id="settings-section" class="section hidden">
+      <h2 class="section-title">Settings</h2>
+      
+      <div class="grid grid-cols-1 gap-6">
+        <!-- Business Profile -->
+        <div class="card">
+          <h3 class="text-xl font-semibold text-primary-500 mb-4">Business Profile</h3>
+          <form id="business-profile-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Business Name</label>
+                <input type="text" name="business_name" class="input-field" placeholder="My Fitness Studio">
+              </div>
+              <div>
+                <label class="form-label">Owner Name</label>
+                <input type="text" name="owner_name" class="input-field" placeholder="John Doe">
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Contact Email</label>
+                <input type="email" name="contact_email" class="input-field" placeholder="contact@studio.com">
+              </div>
+              <div>
+                <label class="form-label">Contact Phone</label>
+                <input type="tel" name="contact_phone" class="input-field" placeholder="+1 (555) 123-4567">
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Address</label>
+              <textarea name="address" class="input-field" rows="2" placeholder="123 Main St, City, State 12345"></textarea>
+            </div>
+            <div>
+              <label class="form-label">Website</label>
+              <input type="url" name="website" class="input-field" placeholder="https://mystudio.com">
+            </div>
+            <button type="submit" class="btn-primary">Save Profile</button>
+          </form>
+        </div>
+
+        <!-- SendGrid Configuration -->
+        <div class="card">
+          <h3 class="text-xl font-semibold text-primary-500 mb-4">Email Settings (SendGrid)</h3>
+          <form id="sendgrid-form" class="space-y-4">
+            <div>
+              <label class="form-label">SendGrid API Key</label>
+              <input type="password" name="sendgrid_api_key" class="input-field" placeholder="SG.***************************">
+              <p class="text-sm text-gray-400 mt-1">Get your API key from <a href="https://sendgrid.com" target="_blank" class="text-primary-500 hover:underline">SendGrid Dashboard</a></p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">From Email</label>
+                <input type="email" name="sendgrid_from_email" class="input-field" placeholder="noreply@mystudio.com">
+              </div>
+              <div>
+                <label class="form-label">From Name</label>
+                <input type="text" name="sendgrid_from_name" class="input-field" placeholder="My Fitness Studio">
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="checkbox" id="sendgrid_enabled" name="sendgrid_enabled" class="w-4 h-4 text-primary-600 rounded">
+              <label for="sendgrid_enabled" class="text-sm font-medium text-gray-700">Enable SendGrid Integration</label>
+            </div>
+            <div class="flex gap-3">
+              <button type="submit" class="btn-primary">Save Email Settings</button>
+              <button type="button" id="test-sendgrid-btn" class="btn-secondary">Test Connection</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Twilio Configuration -->
+        <div class="card">
+          <h3 class="text-xl font-semibold text-primary-500 mb-4">SMS Settings (Twilio)</h3>
+          <form id="twilio-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Account SID</label>
+                <input type="password" name="twilio_account_sid" class="input-field" placeholder="AC***************************">
+              </div>
+              <div>
+                <label class="form-label">Auth Token</label>
+                <input type="password" name="twilio_auth_token" class="input-field" placeholder="********************************">
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Twilio Phone Number</label>
+              <input type="tel" name="twilio_phone_number" class="input-field" placeholder="+1 (555) 123-4567">
+              <p class="text-sm text-gray-400 mt-1">Get credentials from <a href="https://twilio.com" target="_blank" class="text-primary-500 hover:underline">Twilio Console</a></p>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="checkbox" id="twilio_enabled" name="twilio_enabled" class="w-4 h-4 text-primary-600 rounded">
+              <label for="twilio_enabled" class="text-sm font-medium text-gray-700">Enable Twilio Integration</label>
+            </div>
+            <div class="flex gap-3">
+              <button type="submit" class="btn-primary">Save SMS Settings</button>
+              <button type="button" id="test-twilio-btn" class="btn-secondary">Test Connection</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="card">
+          <h3 class="text-xl font-semibold text-primary-500 mb-4">Recent Activity</h3>
+          <div id="activity-log" class="space-y-2 max-h-96 overflow-y-auto">
+            <p class="text-gray-400">Loading activity log...</p>
           </div>
         </div>
       </div>

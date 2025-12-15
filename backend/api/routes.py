@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from models.database import db, Trainer, Client, Assignment
 from sqlalchemy.exc import IntegrityError
+from utils.logger import log_activity, logger
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -36,12 +37,19 @@ def create_trainer():
         )
         db.session.add(trainer)
         db.session.commit()
+        
+        log_activity('create', 'trainer', trainer.id, user_identifier=trainer.email,
+                    details={'name': trainer.name})
+        logger.info(f"Trainer created: {trainer.name} (ID: {trainer.id})")
+        
         return jsonify(trainer.to_dict()), 201
     except IntegrityError:
         db.session.rollback()
+        logger.warning(f"Duplicate trainer email attempted: {data.get('email')}")
         return jsonify({'error': 'Trainer with this email already exists'}), 409
     except Exception as e:
         db.session.rollback()
+        logger.error(f"Error creating trainer: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/trainers/<int:trainer_id>', methods=['PUT'])
