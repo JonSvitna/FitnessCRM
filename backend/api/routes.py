@@ -277,5 +277,8 @@ def health_check():
         health_status['database'] = 'disconnected'
         health_status['database_error'] = str(e)
         logger.warning(f"Database health check failed: {str(e)}")
+    finally:
+        # Ensure session is cleaned up
+        db.session.remove()
     
     return jsonify(health_status), 200
