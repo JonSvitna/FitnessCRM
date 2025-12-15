@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Portal - FitnessCRM</title>
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="bg-white shadow-md sticky top-0 z-50 border-b border-neutral-200">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-primary-600 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold text-neutral-900">Fitness<span class="text-orange-600">CRM</span> <span class="text-sm text-neutral-600">Client</span></h1>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <span class="text-neutral-700">Welcome, Client</span>
+          <a href="/home.html" class="btn-outline">Logout</a>
+        </div>
+      </div>
+      
+      <div class="flex space-x-2 mt-4">
+        <button id="nav-dashboard" class="nav-link nav-link-active">Dashboard</button>
+        <button id="nav-profile" class="nav-link">My Profile</button>
+        <button id="nav-workouts" class="nav-link">Workouts</button>
+        <button id="nav-calendar" class="nav-link">Calendar</button>
+        <button id="nav-meals" class="nav-link">Meals</button>
+        <button id="nav-progress" class="nav-link">Progress</button>
+        <button id="nav-messages" class="nav-link">Messages</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container mx-auto px-6 py-8">
+    <!-- Dashboard Section -->
+    <section id="dashboard-section" class="section active">
+      <h2 class="section-title-gradient mb-6">My Dashboard</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="stat-card">
+          <div class="text-4xl font-bold mb-2" id="workouts-completed">0</div>
+          <div class="text-white opacity-90">Workouts Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="text-4xl font-bold mb-2" id="sessions-attended">0</div>
+          <div class="text-white opacity-90">Sessions Attended</div>
+        </div>
+        <div class="stat-card">
+          <div class="text-4xl font-bold mb-2" id="days-active">0</div>
+          <div class="text-white opacity-90">Days Active</div>
+        </div>
+        <div class="stat-card">
+          <div class="text-4xl font-bold mb-2" id="new-messages">0</div>
+          <div class="text-white opacity-90">New Messages</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card">
+          <h3 class="text-2xl font-bold text-neutral-900 mb-4">My Trainer</h3>
+          <div id="trainer-info" class="space-y-3">
+            <p class="text-neutral-600">No trainer assigned</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-2xl font-bold text-neutral-900 mb-4">Upcoming Sessions</h3>
+          <div id="upcoming-sessions" class="space-y-3">
+            <p class="text-neutral-600">No upcoming sessions</p>
+          </div>
+        </div>
+
+        <div class="card lg:col-span-2">
+          <h3 class="text-2xl font-bold text-neutral-900 mb-4">Today's Workout</h3>
+          <div id="today-workout" class="space-y-3">
+            <p class="text-neutral-600">No workout assigned for today</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Profile Section -->
+    <section id="profile-section" class="section hidden">
+      <h2 class="section-title-gradient mb-6">My Profile</h2>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card">
+          <h3 class="text-xl font-bold text-neutral-900 mb-4">Personal Information</h3>
+          <form id="profile-form" class="space-y-4">
+            <div>
+              <label class="form-label">Name</label>
+              <input type="text" name="name" class="input-field" placeholder="Your name">
+            </div>
+            <div>
+              <label class="form-label">Email</label>
+              <input type="email" name="email" class="input-field" placeholder="your.email@example.com">
+            </div>
+            <div>
+              <label class="form-label">Phone</label>
+              <input type="tel" name="phone" class="input-field" placeholder="+1 (555) 123-4567">
+            </div>
+            <div>
+              <label class="form-label">Age</label>
+              <input type="number" name="age" class="input-field" placeholder="25">
+            </div>
+            <button type="submit" class="btn-primary">Update Profile</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-bold text-neutral-900 mb-4">Fitness Information</h3>
+          <form id="fitness-form" class="space-y-4">
+            <div>
+              <label class="form-label">Goals</label>
+              <textarea name="goals" class="input-field" rows="3" placeholder="My fitness goals..."></textarea>
+            </div>
+            <div>
+              <label class="form-label">Medical Conditions</label>
+              <textarea name="medical_conditions" class="input-field" rows="3" placeholder="Any medical conditions..."></textarea>
+            </div>
+            <div>
+              <label class="form-label">Emergency Contact</label>
+              <input type="text" name="emergency_contact" class="input-field" placeholder="Name">
+            </div>
+            <div>
+              <label class="form-label">Emergency Phone</label>
+              <input type="tel" name="emergency_phone" class="input-field" placeholder="+1 (555) 123-4567">
+            </div>
+            <button type="submit" class="btn-primary">Update Information</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Workouts Section -->
+    <section id="workouts-section" class="section hidden">
+      <h2 class="section-title-gradient mb-6">My Workouts</h2>
+      
+      <div class="grid grid-cols-1 gap-6">
+        <div class="card">
+          <h3 class="text-xl font-bold text-neutral-900 mb-4">Assigned Workout Plans</h3>
+          <div id="workout-plans-list" class="space-y-4">
+            <p class="text-neutral-600">No workout plans assigned yet</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-bold text-neutral-900 mb-4">Workout History</h3>
+          <div id="workout-history" class="space-y-3">
+            <p class="text-neutral-600">No workout history</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Calendar Section -->
+    <section id="calendar-section" class="section hidden">
+      <h2 class="section-title-gradient mb-6">My Calendar</h2>
+      
+      <div class="grid grid-cols-1 gap-6">
+        <div class="card">
+          <h3 class="text-xl font-bold text-neutral-900 mb-4">Upcoming Sessions</h3>
+          <div id="calendar-sessions" class="space-y-3">
+            <p class="text-neutral-600">No sessions scheduled</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-bold text-neutral-900 mb-4">Request Session</h3>
+          <form id="session-request-form" class="space-y-4">
+            <div>
+              <label class="form-label">Preferred Date</label>
+              <input type="date" name="preferred_date" class="input-field">
+            </div>
+            <div>
+              <label class="form-label">Preferred Time</label>
+              <input type="time" name="preferred_time" class="input-field">
+            </div>
+            <div>
+              <label class="form-label">Session Type</label>
+              <select name="session_type" class="input-field">
+                <option value="personal">Personal Training</option>
+                <option value="group">Group Training</option>
+                <option value="online">Online Session</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Notes</label>
+              <textarea name="notes" class="input-field" rows="3" placeholder="Any special requests..."></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Request Session</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Meals Section -->
+    <section id="meals-section" class="section hidden">
+      <h2 class="section-title-gradient mb-6">Meal Plans</h2>
+      
+      <div class="grid grid-cols-1 gap-6">
+        <div class="card">
+          <h3 class="text-xl font-bold text-neutral-900 mb-4">Current Meal Plan</h3>
+          <div id="meal-plan" class="space-y-3">
+            <p class="text-neutral-600">No meal plan assigned yet</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-bold text-neutral-900 mb-4">Today's Meals</h3>
+          <div class="space-y-4">
+            <div class="p-4 bg-neutral-50 rounded-lg">
+              <h4 class="font-semibold text-neutral-900 mb-2">Breakfast</h4>
+              <p class="text-neutral-600 text-sm">No meal logged</p>
+            </div>
+            <div class="p-4 bg-neutral-50 rounded-lg">
+              <h4 class="font-semibold text-neutral-900 mb-2">Lunch</h4>
+              <p class="text-neutral-600 text-sm">No meal logged</p>
+            </div>
+            <div class="p-4 bg-neutral-50 rounded-lg">
+              <h4 class="font-semibold text-neutral-900 mb-2">Dinner</h4>
+              <p class="text-neutral-600 text-sm">No meal logged</p>
+            </div>
+            <div class="p-4 bg-neutral-50 rounded-lg">
+              <h4 class="font-semibold text-neutral-900 mb-2">Snacks</h4>
+              <p class="text-neutral-600 text-sm">No snacks logged</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Progress Section -->
+    <section id="progress-section" class="section hidden">
+      <h2 class="section-title-gradient mb-6">My Progress</h2>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card">
+          <h3 class="text-xl font-bold text-neutral-900 mb-4">Log Progress</h3>
+          <form id="progress-form" class="space-y-4">
+            <div>
+              <label class="form-label">Weight (lbs)</label>
+              <input type="number" step="0.1" name="weight" class="input-field" placeholder="150.5">
+            </div>
+            <div>
+              <label class="form-label">Body Fat %</label>
+              <input type="number" step="0.1" name="body_fat_percentage" class="input-field" placeholder="20.5">
+            </div>
+            <div>
+              <label class="form-label">Notes</label>
+              <textarea name="notes" class="input-field" rows="3" placeholder="How are you feeling?"></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Log Progress</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-bold text-neutral-900 mb-4">Progress History</h3>
+          <div id="progress-history" class="space-y-3">
+            <p class="text-neutral-600">No progress records yet</p>
+          </div>
+        </div>
+
+        <div class="card lg:col-span-2">
+          <h3 class="text-xl font-bold text-neutral-900 mb-4">Current Measurements</h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="p-4 bg-neutral-50 rounded-lg text-center">
+              <div class="text-2xl font-bold text-orange-600" id="current-weight">--</div>
+              <div class="text-sm text-neutral-600">Weight (lbs)</div>
+            </div>
+            <div class="p-4 bg-neutral-50 rounded-lg text-center">
+              <div class="text-2xl font-bold text-orange-600" id="current-body-fat">--</div>
+              <div class="text-sm text-neutral-600">Body Fat %</div>
+            </div>
+            <div class="p-4 bg-neutral-50 rounded-lg text-center">
+              <div class="text-2xl font-bold text-orange-600" id="total-workouts">0</div>
+              <div class="text-sm text-neutral-600">Total Workouts</div>
+            </div>
+            <div class="p-4 bg-neutral-50 rounded-lg text-center">
+              <div class="text-2xl font-bold text-orange-600" id="streak-days">0</div>
+              <div class="text-sm text-neutral-600">Day Streak</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Messages Section -->
+    <section id="messages-section" class="section hidden">
+      <h2 class="section-title-gradient mb-6">Messages</h2>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1">
+          <div class="card">
+            <h3 class="text-xl font-bold text-neutral-900 mb-4">Message My Trainer</h3>
+            <form id="message-form" class="space-y-4">
+              <div>
+                <label class="form-label">Subject</label>
+                <input type="text" name="subject" required class="input-field" placeholder="Message subject">
+              </div>
+              <div>
+                <label class="form-label">Message</label>
+                <textarea name="message" required class="input-field" rows="6" placeholder="Your message..."></textarea>
+              </div>
+              <button type="submit" class="btn-primary w-full">Send Message</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2">
+          <div class="card">
+            <h3 class="text-xl font-bold text-neutral-900 mb-4">Conversation with Trainer</h3>
+            <div id="messages-list" class="space-y-3 max-h-96 overflow-y-auto">
+              <p class="text-neutral-600">No messages yet</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-4 right-4 hidden">
+    <div class="bg-white rounded-lg shadow-2xl px-6 py-4 border-l-4 border-orange-500">
+      <p id="toast-message" class="text-neutral-900"></p>
+    </div>
+  </div>
+
+  <script type="module" src="/src/client.js"></script>
+</body>
+</html>

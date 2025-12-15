@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitness CRM - Trainer & Client Management</title>
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="bg-dark-secondary border-b border-dark-tertiary sticky top-0 z-50">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+          <h1 class="text-2xl font-bold text-primary-600">Fitness<span class="text-white">CRM</span></h1>
+        </div>
+        <div class="flex space-x-2">
+          <button id="nav-dashboard" class="nav-link nav-link-active">Dashboard</button>
+          <button id="nav-trainers" class="nav-link">Trainers</button>
+          <button id="nav-clients" class="nav-link">Clients</button>
+          <button id="nav-management" class="nav-link">Management</button>
+          <button id="nav-settings" class="nav-link">Settings</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-6 py-8">
+    <!-- Dashboard Section -->
+    <section id="dashboard-section" class="section active">
+      <h2 class="section-title">Dashboard</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="card">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-400 text-sm">Total Trainers</p>
+              <p id="total-trainers" class="text-3xl font-bold text-primary-500">0</p>
+            </div>
+            <svg class="w-12 h-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="card">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-400 text-sm">Total Clients</p>
+              <p id="total-clients" class="text-3xl font-bold text-primary-500">0</p>
+            </div>
+            <svg class="w-12 h-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="card">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-400 text-sm">Active Assignments</p>
+              <p id="total-assignments" class="text-3xl font-bold text-primary-500">0</p>
+            </div>
+            <svg class="w-12 h-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h3 class="text-xl font-semibold text-primary-500 mb-4">Recent Activity</h3>
+        <div id="recent-activity" class="space-y-3">
+          <p class="text-gray-400">No recent activity</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trainers Section -->
+    <section id="trainers-section" class="section hidden">
+      <h2 class="section-title">Trainer Management</h2>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Add Trainer Form -->
+        <div class="card">
+          <h3 class="text-xl font-semibold text-primary-500 mb-4">Add New Trainer</h3>
+          <form id="trainer-form" class="space-y-4">
+            <div>
+              <label class="form-label">Full Name *</label>
+              <input type="text" name="name" required class="input-field" placeholder="John Doe">
+            </div>
+            <div>
+              <label class="form-label">Email *</label>
+              <input type="email" name="email" required class="input-field" placeholder="john@example.com">
+            </div>
+            <div>
+              <label class="form-label">Phone</label>
+              <input type="tel" name="phone" class="input-field" placeholder="+1 (555) 123-4567">
+            </div>
+            <div>
+              <label class="form-label">Specialization</label>
+              <input type="text" name="specialization" class="input-field" placeholder="Strength Training, Cardio, etc.">
+            </div>
+            <div>
+              <label class="form-label">Certification</label>
+              <input type="text" name="certification" class="input-field" placeholder="NASM, ACE, ISSA, etc.">
+            </div>
+            <div>
+              <label class="form-label">Experience (years)</label>
+              <input type="number" name="experience" min="0" class="input-field" placeholder="5">
+            </div>
+            <button type="submit" class="btn-primary w-full">Add Trainer</button>
+          </form>
+        </div>
+
+        <!-- Trainers List -->
+        <div class="card">
+          <h3 class="text-xl font-semibold text-primary-500 mb-4">Current Trainers</h3>
+          <div id="trainers-list" class="space-y-3 max-h-96 overflow-y-auto">
+            <p class="text-gray-400">No trainers added yet</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Clients Section -->
+    <section id="clients-section" class="section hidden">
+      <h2 class="section-title">Client Management</h2>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Add Client Form -->
+        <div class="card">
+          <h3 class="text-xl font-semibold text-primary-500 mb-4">Add New Client</h3>
+          <form id="client-form" class="space-y-4">
+            <div>
+              <label class="form-label">Full Name *</label>
+              <input type="text" name="name" required class="input-field" placeholder="Jane Smith">
+            </div>
+            <div>
+              <label class="form-label">Email *</label>
+              <input type="email" name="email" required class="input-field" placeholder="jane@example.com">
+            </div>
+            <div>
+              <label class="form-label">Phone</label>
+              <input type="tel" name="phone" class="input-field" placeholder="+1 (555) 123-4567">
+            </div>
+            <div>
+              <label class="form-label">Age</label>
+              <input type="number" name="age" min="1" max="150" class="input-field" placeholder="30">
+            </div>
+            <div>
+              <label class="form-label">Fitness Goals</label>
+              <textarea name="goals" class="input-field" rows="3" placeholder="Weight loss, muscle gain, endurance, etc."></textarea>
+            </div>
+            <div>
+              <label class="form-label">Medical Conditions</label>
+              <textarea name="medical_conditions" class="input-field" rows="2" placeholder="Any health concerns or limitations"></textarea>
+            </div>
+            <button type="submit" class="btn-primary w-full">Add Client</button>
+          </form>
+        </div>
+
+        <!-- Clients List -->
+        <div class="card">
+          <h3 class="text-xl font-semibold text-primary-500 mb-4">Current Clients</h3>
+          <div id="clients-list" class="space-y-3 max-h-96 overflow-y-auto">
+            <p class="text-gray-400">No clients added yet</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Management Section -->
+    <section id="management-section" class="section hidden">
+      <h2 class="section-title">CRM Management</h2>
+      
+      <div class="grid grid-cols-1 gap-6">
+        <!-- Assign Client to Trainer -->
+        <div class="card">
+          <h3 class="text-xl font-semibold text-primary-500 mb-4">Assign Client to Trainer</h3>
+          <form id="assignment-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Select Trainer *</label>
+                <select name="trainer_id" required class="input-field" id="assignment-trainer-select">
+                  <option value="">Choose a trainer...</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Select Client *</label>
+                <select name="client_id" required class="input-field" id="assignment-client-select">
+                  <option value="">Choose a client...</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Notes</label>
+              <textarea name="notes" class="input-field" rows="3" placeholder="Additional information about this assignment"></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Create Assignment</button>
+          </form>
+        </div>
+
+        <!-- Current Assignments -->
+        <div class="card">
+          <h3 class="text-xl font-semibold text-primary-500 mb-4">Current Assignments</h3>
+          <div id="assignments-list" class="space-y-3">
+            <p class="text-gray-400">No assignments yet</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings Section -->
+    <section id="settings-section" class="section hidden">
+      <h2 class="section-title">Settings</h2>
+      
+      <div class="grid grid-cols-1 gap-6">
+        <!-- Business Profile -->
+        <div class="card">
+          <h3 class="text-xl font-semibold text-primary-500 mb-4">Business Profile</h3>
+          <form id="business-profile-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Business Name</label>
+                <input type="text" name="business_name" class="input-field" placeholder="My Fitness Studio">
+              </div>
+              <div>
+                <label class="form-label">Owner Name</label>
+                <input type="text" name="owner_name" class="input-field" placeholder="John Doe">
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Contact Email</label>
+                <input type="email" name="contact_email" class="input-field" placeholder="contact@studio.com">
+              </div>
+              <div>
+                <label class="form-label">Contact Phone</label>
+                <input type="tel" name="contact_phone" class="input-field" placeholder="+1 (555) 123-4567">
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Address</label>
+              <textarea name="address" class="input-field" rows="2" placeholder="123 Main St, City, State 12345"></textarea>
+            </div>
+            <div>
+              <label class="form-label">Website</label>
+              <input type="url" name="website" class="input-field" placeholder="https://mystudio.com">
+            </div>
+            <button type="submit" class="btn-primary">Save Profile</button>
+          </form>
+        </div>
+
+        <!-- SendGrid Configuration -->
+        <div class="card">
+          <h3 class="text-xl font-semibold text-primary-500 mb-4">Email Settings (SendGrid)</h3>
+          <form id="sendgrid-form" class="space-y-4">
+            <div>
+              <label class="form-label">SendGrid API Key</label>
+              <input type="password" name="sendgrid_api_key" class="input-field" placeholder="SG.***************************">
+              <p class="text-sm text-gray-400 mt-1">Get your API key from <a href="https://sendgrid.com" target="_blank" class="text-primary-500 hover:underline">SendGrid Dashboard</a></p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">From Email</label>
+                <input type="email" name="sendgrid_from_email" class="input-field" placeholder="noreply@mystudio.com">
+              </div>
+              <div>
+                <label class="form-label">From Name</label>
+                <input type="text" name="sendgrid_from_name" class="input-field" placeholder="My Fitness Studio">
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="checkbox" id="sendgrid_enabled" name="sendgrid_enabled" class="w-4 h-4 text-primary-600 rounded">
+              <label for="sendgrid_enabled" class="text-sm font-medium text-gray-700">Enable SendGrid Integration</label>
+            </div>
+            <div class="flex gap-3">
+              <button type="submit" class="btn-primary">Save Email Settings</button>
+              <button type="button" id="test-sendgrid-btn" class="btn-secondary">Test Connection</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Twilio Configuration -->
+        <div class="card">
+          <h3 class="text-xl font-semibold text-primary-500 mb-4">SMS Settings (Twilio)</h3>
+          <form id="twilio-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Account SID</label>
+                <input type="password" name="twilio_account_sid" class="input-field" placeholder="AC***************************">
+              </div>
+              <div>
+                <label class="form-label">Auth Token</label>
+                <input type="password" name="twilio_auth_token" class="input-field" placeholder="********************************">
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Twilio Phone Number</label>
+              <input type="tel" name="twilio_phone_number" class="input-field" placeholder="+1 (555) 123-4567">
+              <p class="text-sm text-gray-400 mt-1">Get credentials from <a href="https://twilio.com" target="_blank" class="text-primary-500 hover:underline">Twilio Console</a></p>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="checkbox" id="twilio_enabled" name="twilio_enabled" class="w-4 h-4 text-primary-600 rounded">
+              <label for="twilio_enabled" class="text-sm font-medium text-gray-700">Enable Twilio Integration</label>
+            </div>
+            <div class="flex gap-3">
+              <button type="submit" class="btn-primary">Save SMS Settings</button>
+              <button type="button" id="test-twilio-btn" class="btn-secondary">Test Connection</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="card">
+          <h3 class="text-xl font-semibold text-primary-500 mb-4">Recent Activity</h3>
+          <div id="activity-log" class="space-y-2 max-h-96 overflow-y-auto">
+            <p class="text-gray-400">Loading activity log...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-4 right-4 hidden">
+    <div class="card px-6 py-4 shadow-2xl">
+      <p id="toast-message" class="text-white"></p>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
