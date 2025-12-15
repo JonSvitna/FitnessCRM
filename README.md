@@ -64,13 +64,38 @@ FitnessCRM/
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Option 1: Docker Setup (Recommended)
+
+The fastest way to get started is with Docker:
+
+```bash
+# Start all services (database, backend, frontend)
+docker-compose up
+
+# Initialize database with sample data (in another terminal)
+docker-compose exec backend python init_db.py seed
+```
+
+Access the application at `http://localhost:3000`
+
+### Option 2: Automated Setup Script
+
+```bash
+# Run the setup script
+./setup.sh
+
+# Follow the instructions to complete setup
+```
+
+### Option 3: Manual Setup
+
+#### Prerequisites
 
 - Node.js 18+ and npm
 - Python 3.11+
 - PostgreSQL 15+
 
-### Frontend Setup
+#### Frontend Setup
 
 ```bash
 cd frontend
@@ -82,7 +107,7 @@ npm run dev
 
 The frontend will be available at `http://localhost:3000`
 
-### Backend Setup
+#### Backend Setup
 
 ```bash
 cd backend
@@ -95,6 +120,18 @@ python app.py
 ```
 
 The API will be available at `http://localhost:5000`
+
+#### Database Setup
+
+```bash
+# Create database
+createdb fitnesscrm
+
+# Initialize with sample data
+cd backend
+source venv/bin/activate
+python init_db.py seed
+```
 
 ## 🗄️ Database Schema
 
