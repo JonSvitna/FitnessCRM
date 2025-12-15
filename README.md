@@ -13,7 +13,27 @@ A modern, full-stack Customer Relationship Management (CRM) system for fitness t
 - **SEO Optimized**: Meta tags, keywords, and semantic HTML for search engines
 - **Mobile Responsive**: Beautiful experience on all devices
 
-### CRM Dashboard & Management
+### Role-Based Portals
+
+#### Trainer Portal 🏋️
+- **Client Management**: View assigned clients, assign new clients, track client progress
+- **Workout Creation**: Create workout plans with difficulty levels and duration
+- **Session Scheduling**: Schedule training sessions with clients
+- **Calendar Management**: View and manage appointments
+- **Messaging**: Send messages and emails to clients
+- **Challenges**: Create client challenges with goals and metrics
+- **Dashboard**: Real-time stats for clients, sessions, and activity
+
+#### Client Portal 💪
+- **Profile Management**: Update personal and fitness information
+- **Workout Access**: View assigned workouts and workout history
+- **Progress Tracking**: Log weight, body fat, measurements, and notes
+- **Meal Planning**: View meal plans and log daily meals
+- **Session Calendar**: View schedule and request training sessions
+- **Trainer Communication**: Message trainer directly
+- **Dashboard**: Personal stats, trainer info, and upcoming sessions
+
+### CRM Dashboard & Management (Admin)
 - **Trainer Management**: Add, view, update, and delete trainer profiles with specializations, certifications, and rates
 - **Client Management**: Comprehensive client profiles with goals, medical conditions, emergency contacts, and membership tracking
 - **Session Tracking**: Schedule and manage training sessions with status tracking
@@ -22,6 +42,8 @@ A modern, full-stack Customer Relationship Management (CRM) system for fitness t
 - **Workout Plans**: Create and manage workout templates with exercise libraries
 - **Assignment System**: Link clients to trainers with detailed notes
 - **Real-time Dashboard**: Live statistics and activity feed
+- **Settings Management**: Configure SendGrid email and Twilio SMS
+- **Activity Logging**: Comprehensive audit trail of all actions
 - **Modern UI**: Professional orange-to-red gradients with white accents
 - **RESTful API**: Full CRUD operations for all resources
 - **PostgreSQL Database**: Robust relational database with comprehensive schema
@@ -34,7 +56,11 @@ A modern, full-stack Customer Relationship Management (CRM) system for fitness t
 - **Typography**: Inter + Poppins (Google Fonts)
 - **Language**: HTML5, CSS3, JavaScript (ES6+)
 - **API Client**: Axios
-- **Pages**: Home/Marketing + Dashboard/App
+- **Pages**: 
+  - Home/Marketing (`/home.html`)
+  - Admin Dashboard (`/index.html`)
+  - Trainer Portal (`/trainer.html`) - NEW! 🎉
+  - Client Portal (`/client.html`) - NEW! 🎉
 - **Deployment**: Vercel
 
 ### Backend
