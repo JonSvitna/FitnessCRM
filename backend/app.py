@@ -62,12 +62,17 @@ def create_app(config_name=None):
         return jsonify({'error': 'Internal server error'}), 500
     
     # Create tables (non-blocking for health checks)
-    with app.app_context():
-        try:
-            db.create_all()
-            logger.info("Database tables created/verified")
-        except Exception as e:
-            logger.warning(f"Database initialization failed: {str(e)}. App will start but database operations will fail.")
+    # Skip during boot to allow Railway health checks to succeed
+    # Tables will be created on first database access
+    if os.getenv('SKIP_DB_INIT') != 'true':
+        with app.app_context():
+            try:
+                db.create_all()
+                logger.info("Database tables created/verified")
+            except Exception as e:
+                logger.warning(f"Database initialization failed: {str(e)}. App will start but database operations will fail.")
+    else:
+        logger.info("Skipping database initialization (SKIP_DB_INIT=true)")
     
     return app
 
