@@ -10,12 +10,21 @@
 
 [build]
 builder = "nixpacks"
-buildCommand = "cd backend && pip install -r requirements.txt"
+watchPatterns = ["backend/**"]
 
 [deploy]
 startCommand = "cd backend && gunicorn app:app --bind 0.0.0.0:$PORT"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
+
+[build.nixpacksPlan]
+providers = ["python"]
+
+[build.nixpacksPlan.phases.setup]
+nixPkgs = ["python311", "postgresql"]
+
+[build.nixpacksPlan.phases.install]
+cmds = ["cd backend && pip install -r requirements.txt"]
 
 # Alternative: Set "Root Directory" to "backend" in Railway UI
 # If you set Root Directory to "backend", Railway will automatically use
