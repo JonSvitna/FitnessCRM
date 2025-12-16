@@ -157,3 +157,118 @@ def send_client_assignment_notification(client_email, client_name, trainer_name)
     """
     
     return send_email(client_email, subject, body, html)
+
+def send_session_reminder(client_email, client_name, trainer_name, session_date, duration, location, session_type):
+    """Send session reminder email to client"""
+    from datetime import datetime
+    
+    # Format the session date and time nicely
+    session_dt = datetime.fromisoformat(session_date.replace('Z', '+00:00'))
+    formatted_date = session_dt.strftime('%A, %B %d, %Y')
+    formatted_time = session_dt.strftime('%I:%M %p')
+    
+    subject = f'Session Reminder: {formatted_date} at {formatted_time}'
+    body = f"""
+    Hi {client_name},
+
+    This is a friendly reminder about your upcoming training session:
+
+    Trainer: {trainer_name}
+    Date: {formatted_date}
+    Time: {formatted_time}
+    Duration: {duration} minutes
+    Type: {session_type}
+    Location: {location or 'TBD'}
+
+    We look forward to seeing you there!
+
+    If you need to reschedule or have any questions, please contact your trainer.
+
+    Best regards,
+    The FitnessCRM Team
+    """
+    
+    html = f"""
+    <html>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #ea580c;">Session Reminder</h2>
+          <p>Hi {client_name},</p>
+          <p>This is a friendly reminder about your upcoming training session:</p>
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>Trainer:</strong> {trainer_name}</p>
+            <p style="margin: 5px 0;"><strong>Date:</strong> {formatted_date}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> {formatted_time}</p>
+            <p style="margin: 5px 0;"><strong>Duration:</strong> {duration} minutes</p>
+            <p style="margin: 5px 0;"><strong>Type:</strong> {session_type}</p>
+            <p style="margin: 5px 0;"><strong>Location:</strong> {location or 'TBD'}</p>
+          </div>
+          <p>We look forward to seeing you there!</p>
+          <p>If you need to reschedule or have any questions, please contact your trainer.</p>
+          <p style="margin-top: 30px;">
+            Best regards,<br>
+            <strong>The FitnessCRM Team</strong>
+          </p>
+        </div>
+      </body>
+    </html>
+    """
+    
+    return send_email(client_email, subject, body, html)
+
+def send_session_confirmation(client_email, client_name, trainer_name, session_date, duration, location, session_type):
+    """Send session confirmation email when session is created"""
+    from datetime import datetime
+    
+    session_dt = datetime.fromisoformat(session_date.replace('Z', '+00:00'))
+    formatted_date = session_dt.strftime('%A, %B %d, %Y')
+    formatted_time = session_dt.strftime('%I:%M %p')
+    
+    subject = f'Session Confirmed: {formatted_date} at {formatted_time}'
+    body = f"""
+    Hi {client_name},
+
+    Your training session has been scheduled:
+
+    Trainer: {trainer_name}
+    Date: {formatted_date}
+    Time: {formatted_time}
+    Duration: {duration} minutes
+    Type: {session_type}
+    Location: {location or 'TBD'}
+
+    You'll receive a reminder 24 hours before your session.
+
+    If you need to reschedule, please contact your trainer as soon as possible.
+
+    Best regards,
+    The FitnessCRM Team
+    """
+    
+    html = f"""
+    <html>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #ea580c;">Session Confirmed!</h2>
+          <p>Hi {client_name},</p>
+          <p>Your training session has been scheduled:</p>
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>Trainer:</strong> {trainer_name}</p>
+            <p style="margin: 5px 0;"><strong>Date:</strong> {formatted_date}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> {formatted_time}</p>
+            <p style="margin: 5px 0;"><strong>Duration:</strong> {duration} minutes</p>
+            <p style="margin: 5px 0;"><strong>Type:</strong> {session_type}</p>
+            <p style="margin: 5px 0;"><strong>Location:</strong> {location or 'TBD'}</p>
+          </div>
+          <p>✅ You'll receive a reminder 24 hours before your session.</p>
+          <p>If you need to reschedule, please contact your trainer as soon as possible.</p>
+          <p style="margin-top: 30px;">
+            Best regards,<br>
+            <strong>The FitnessCRM Team</strong>
+          </p>
+        </div>
+      </body>
+    </html>
+    """
+    
+    return send_email(client_email, subject, body, html)

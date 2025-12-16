@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from models.database import db, Session, RecurringSession, Trainer, Client
 from datetime import datetime, timedelta, time
+from utils.email import send_session_confirmation
 
 session_bp = Blueprint('sessions', __name__)
 
@@ -108,6 +109,24 @@ def create_session():
         
         db.session.add(session)
         db.session.commit()
+        
+        # Send confirmation email
+        try:
+            trainer = Trainer.query.get(session.trainer_id)
+            client = Client.query.get(session.client_id)
+            if client and client.email and trainer:
+                send_session_confirmation(
+                    client.email,
+                    client.name,
+                    trainer.name,
+                    session.session_date.isoformat(),
+                    session.duration,
+                    session.location,
+                    session.session_type or 'Training Session'
+                )
+        except Exception as email_error:
+            # Log but don't fail the request if email fails
+            print(f"Error sending confirmation email: {email_error}")
         
         return jsonify(session.to_dict()), 201
     except Exception as e:
