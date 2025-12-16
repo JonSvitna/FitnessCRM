@@ -6,6 +6,7 @@ from api.routes import api_bp
 from api.settings_routes import settings_bp
 from api.activity_routes import activity_bp
 from api.session_routes import session_bp
+from api.measurement_routes import measurement_bp
 from utils.logger import logger, LoggerMiddleware
 from utils.email import init_mail
 import os
@@ -43,6 +44,7 @@ def create_app(config_name=None):
     app.register_blueprint(settings_bp)
     app.register_blueprint(activity_bp)
     app.register_blueprint(session_bp)
+    app.register_blueprint(measurement_bp)
     
     # Root endpoint
     @app.route('/')

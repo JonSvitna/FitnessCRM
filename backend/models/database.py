@@ -362,3 +362,71 @@ class ActivityLog(db.Model):
             'user_agent': self.user_agent,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
+
+class Measurement(db.Model):
+    """Client measurement tracking model"""
+    __tablename__ = 'measurements'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
+    measurement_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Body measurements
+    weight = db.Column(db.Float)  # in kg or lbs
+    weight_unit = db.Column(db.String(10), default='kg')  # kg or lbs
+    body_fat_percentage = db.Column(db.Float)  # percentage
+    muscle_mass = db.Column(db.Float)  # in kg or lbs
+    bmi = db.Column(db.Float)  # Body Mass Index
+    
+    # Circumference measurements (in cm or inches)
+    chest = db.Column(db.Float)
+    waist = db.Column(db.Float)
+    hips = db.Column(db.Float)
+    thigh_left = db.Column(db.Float)
+    thigh_right = db.Column(db.Float)
+    arm_left = db.Column(db.Float)
+    arm_right = db.Column(db.Float)
+    calf_left = db.Column(db.Float)
+    calf_right = db.Column(db.Float)
+    measurement_unit = db.Column(db.String(10), default='cm')  # cm or inches
+    
+    # Additional metrics
+    resting_heart_rate = db.Column(db.Integer)  # bpm
+    blood_pressure_systolic = db.Column(db.Integer)  # mmHg
+    blood_pressure_diastolic = db.Column(db.Integer)  # mmHg
+    
+    # Notes and context
+    notes = db.Column(db.Text)
+    recorded_by = db.Column(db.String(200))  # trainer name or 'self'
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'client_id': self.client_id,
+            'measurement_date': self.measurement_date.isoformat() if self.measurement_date else None,
+            'weight': self.weight,
+            'weight_unit': self.weight_unit,
+            'body_fat_percentage': self.body_fat_percentage,
+            'muscle_mass': self.muscle_mass,
+            'bmi': self.bmi,
+            'chest': self.chest,
+            'waist': self.waist,
+            'hips': self.hips,
+            'thigh_left': self.thigh_left,
+            'thigh_right': self.thigh_right,
+            'arm_left': self.arm_left,
+            'arm_right': self.arm_right,
+            'calf_left': self.calf_left,
+            'calf_right': self.calf_right,
+            'measurement_unit': self.measurement_unit,
+            'resting_heart_rate': self.resting_heart_rate,
+            'blood_pressure_systolic': self.blood_pressure_systolic,
+            'blood_pressure_diastolic': self.blood_pressure_diastolic,
+            'notes': self.notes,
+            'recorded_by': self.recorded_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
