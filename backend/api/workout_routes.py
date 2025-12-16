@@ -327,6 +327,34 @@ def get_categories():
     return jsonify({'categories': categories})
 
 # Exercise endpoints
+@workout_bp.route('/exercises', methods=['POST'])
+def create_exercise():
+    """Create a new exercise"""
+    try:
+        data = request.get_json()
+        
+        exercise = Exercise(
+            name=data['name'],
+            category=data.get('category', 'strength'),
+            muscle_group=data.get('muscle_group'),
+            equipment=data.get('equipment'),
+            difficulty=data.get('difficulty', 'beginner'),
+            description=data.get('description'),
+            instructions=data.get('instructions'),
+            tips=data.get('tips'),
+            image_url=data.get('image_url'),
+            video_url=data.get('video_url'),
+            is_custom=data.get('is_custom', True),
+            created_by=data.get('trainer_id')
+        )
+        
+        db.session.add(exercise)
+        db.session.commit()
+        return jsonify(exercise.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 @workout_bp.route('/exercises', methods=['GET'])
 def get_exercises():
     """Get all exercises with optional filters"""
@@ -378,6 +406,62 @@ def get_exercises():
             'current_page': page
         })
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@workout_bp.route('/exercises/<int:exercise_id>', methods=['GET'])
+def get_exercise(exercise_id):
+    """Get a single exercise by ID"""
+    try:
+        exercise = Exercise.query.get_or_404(exercise_id)
+        return jsonify(exercise.to_dict())
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+@workout_bp.route('/exercises/<int:exercise_id>', methods=['PUT'])
+def update_exercise(exercise_id):
+    """Update an exercise"""
+    try:
+        exercise = Exercise.query.get_or_404(exercise_id)
+        data = request.get_json()
+        
+        # Update fields
+        if 'name' in data:
+            exercise.name = data['name']
+        if 'category' in data:
+            exercise.category = data['category']
+        if 'muscle_group' in data:
+            exercise.muscle_group = data['muscle_group']
+        if 'equipment' in data:
+            exercise.equipment = data['equipment']
+        if 'difficulty' in data:
+            exercise.difficulty = data['difficulty']
+        if 'description' in data:
+            exercise.description = data['description']
+        if 'instructions' in data:
+            exercise.instructions = data['instructions']
+        if 'tips' in data:
+            exercise.tips = data['tips']
+        if 'image_url' in data:
+            exercise.image_url = data['image_url']
+        if 'video_url' in data:
+            exercise.video_url = data['video_url']
+        
+        db.session.commit()
+        return jsonify(exercise.to_dict())
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@workout_bp.route('/exercises/<int:exercise_id>', methods=['DELETE'])
+def delete_exercise(exercise_id):
+    """Delete an exercise"""
+    try:
+        exercise = Exercise.query.get_or_404(exercise_id)
+        db.session.delete(exercise)
+        db.session.commit()
+        return jsonify({'message': 'Exercise deleted successfully'})
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 @workout_bp.route('/exercises/categories', methods=['GET'])
