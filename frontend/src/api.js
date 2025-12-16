@@ -58,6 +58,19 @@ export const sessionAPI = {
   getById: (id) => api.get(`/sessions/${id}`),
   update: (id, data) => api.put(`/sessions/${id}`, data),
   delete: (id) => api.delete(`/sessions/${id}`),
+  exportIcal: (params = {}) => {
+    // Build query string
+    const queryParams = new URLSearchParams(params).toString();
+    const url = `${API_BASE_URL}/sessions/export/ical${queryParams ? '?' + queryParams : ''}`;
+    
+    // Trigger download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'fitnesscrm-sessions.ics';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 };
 
 // Recurring Session API

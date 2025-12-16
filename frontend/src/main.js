@@ -1020,6 +1020,25 @@ function setupCalendarControls() {
     openSessionModal();
   });
   
+  // Export calendar button
+  document.getElementById('export-calendar-btn').addEventListener('click', () => {
+    const year = calendarState.currentDate.getFullYear();
+    const month = calendarState.currentDate.getMonth();
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month + 1, 0, 23, 59, 59);
+    
+    const params = {
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString()
+    };
+    
+    if (calendarState.filterTrainer) params.trainer_id = calendarState.filterTrainer;
+    if (calendarState.filterClient) params.client_id = calendarState.filterClient;
+    
+    sessionAPI.exportIcal(params);
+    showToast('Downloading calendar file...');
+  });
+  
   // Modal controls
   document.getElementById('close-session-modal').addEventListener('click', closeSessionModal);
   document.getElementById('cancel-session-btn').addEventListener('click', closeSessionModal);
