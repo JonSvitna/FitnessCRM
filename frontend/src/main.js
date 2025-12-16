@@ -2764,28 +2764,46 @@ document.getElementById('workout-assign-btn').addEventListener('click', () => {
   }
 });
 
-function openAssignWorkoutModal(templateId) {
+async function openAssignWorkoutModal(templateId) {
   const modal = document.getElementById('assign-workout-modal');
+  const clientSelect = document.getElementById('assign-client-select');
   const templateSelect = document.getElementById('assign-template-select');
   
-  // Pre-select the template
-  templateSelect.value = templateId;
+  // Populate clients
+  if (state.clients.length === 0) {
+    const response = await clientAPI.getAll();
+    state.clients = response.clients || [];
+  }
   
-  // Load clients
-  loadClientsForAssignment();
+  clientSelect.innerHTML = '<option value="">Select client...</option>';
+  state.clients.forEach(client => {
+    const option = document.createElement('option');
+    option.value = client.id;
+    option.textContent = `${client.first_name} ${client.last_name}`;
+    if (state.selectedAssignmentClient && client.id === parseInt(state.selectedAssignmentClient)) {
+      option.selected = true;
+    }
+    clientSelect.appendChild(option);
+  });
+  
+  // Populate templates
+  if (state.workoutTemplates.length === 0) {
+    await loadWorkoutTemplates();
+  }
+  
+  templateSelect.innerHTML = '<option value="">Select template...</option>';
+  state.workoutTemplates.forEach(template => {
+    const option = document.createElement('option');
+    option.value = template.id;
+    option.textContent = template.name;
+    // Pre-select the template if provided
+    if (templateId && template.id === templateId) {
+      option.selected = true;
+    }
+    templateSelect.appendChild(option);
+  });
   
   modal.classList.remove('hidden');
-}
-
-async function loadClientsForAssignment() {
-  try {
-    const response = await clientAPI.getAll();
-    const select = document.getElementById('assign-client-select');
-    select.innerHTML = '<option value="">Select client...</option>' + 
-      response.clients.map(client => `<option value="${client.id}">${client.name}</option>`).join('');
-  } catch (error) {
-    console.error('Error loading clients:', error);
-  }
 }
 
 // Template filters
@@ -3029,39 +3047,6 @@ document.getElementById('close-assign-modal').addEventListener('click', () => {
 document.getElementById('cancel-assign-btn').addEventListener('click', () => {
   closeAssignWorkoutModal();
 });
-
-async function openAssignWorkoutModal() {
-  const modal = document.getElementById('assign-workout-modal');
-  const clientSelect = document.getElementById('assign-client-select');
-  const templateSelect = document.getElementById('assign-template-select');
-  
-  // Populate clients
-  clientSelect.innerHTML = '<option value="">Select client...</option>';
-  state.clients.forEach(client => {
-    const option = document.createElement('option');
-    option.value = client.id;
-    option.textContent = `${client.first_name} ${client.last_name}`;
-    if (state.selectedAssignmentClient && client.id === parseInt(state.selectedAssignmentClient)) {
-      option.selected = true;
-    }
-    clientSelect.appendChild(option);
-  });
-  
-  // Populate templates
-  if (state.workoutTemplates.length === 0) {
-    await loadWorkoutTemplates();
-  }
-  
-  templateSelect.innerHTML = '<option value="">Select template...</option>';
-  state.workoutTemplates.forEach(template => {
-    const option = document.createElement('option');
-    option.value = template.id;
-    option.textContent = template.name;
-    templateSelect.appendChild(option);
-  });
-  
-  modal.classList.remove('hidden');
-}
 
 function closeAssignWorkoutModal() {
   document.getElementById('assign-workout-modal').classList.add('hidden');
