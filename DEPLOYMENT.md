@@ -4,6 +4,7 @@ This guide covers deploying the Fitness CRM application with frontend on Vercel 
 
 ## Table of Contents
 - [Prerequisites](#prerequisites)
+- [Railway Configuration Files](#railway-configuration-files)
 - [Frontend Deployment (Vercel)](#frontend-deployment-vercel)
 - [Backend Deployment (Railway)](#backend-deployment-railway)
 - [Database Setup (Railway PostgreSQL)](#database-setup-railway-postgresql)
@@ -17,6 +18,40 @@ This guide covers deploying the Fitness CRM application with frontend on Vercel 
 - Vercel account (free tier available)
 - Railway account (free tier available with $5 credit)
 - Your code pushed to a GitHub repository
+
+## Railway Configuration Files
+
+This repository includes Railway configuration files to simplify deployment:
+
+### `railway.toml` (Repository Root)
+Located at the root of the repository, this file configures the backend service deployment:
+- Specifies Nixpacks as the builder
+- Points to the backend directory for build and deployment
+- Defines the start command and restart policy
+
+### `backend/nixpacks.toml`
+Located in the backend directory, this file configures the Python environment:
+- Specifies Python 3.11 and PostgreSQL packages
+- Defines installation commands for dependencies
+- Sets the gunicorn start command
+
+**How Railway Uses These Files**:
+1. When you deploy from the repository root, Railway reads `railway.toml`
+2. The configuration automatically points to the backend directory
+3. Nixpacks uses `backend/nixpacks.toml` to set up the Python environment
+4. **No manual Root Directory configuration needed** with `railway.toml`
+
+**Alternative Manual Configuration**:
+If you prefer to set the Root Directory manually or if automatic configuration doesn't work:
+- Find the "Root Directory" field in Railway's service settings
+- This is a **text input field**, not a dropdown menu
+- Type `backend` and press Enter
+- Railway will then use `backend/Procfile` and `backend/nixpacks.toml`
+
+**Common Question**: "Why don't I see backend/frontend as dropdown options?"
+- Railway's Root Directory field accepts any text path
+- It doesn't pre-populate with directory names
+- You must manually type the directory name (e.g., `backend`)
 
 ## Frontend Deployment (Vercel)
 
@@ -67,9 +102,36 @@ Vercel automatically deploys:
 
 ### Step 2: Configure Service
 
-1. **Root Directory**: Set to `backend` (required for Railway to find Procfile and requirements.txt)
-2. **Start Command**: `gunicorn app:app` (defined in Procfile, uses the app instance from app.py)
+You have TWO options for configuring the backend service:
+
+#### Option A: Automatic Configuration (Recommended)
+
+The repository includes a `railway.toml` file at the root that automatically configures the backend deployment. **No manual configuration needed!**
+
+- Railway will automatically detect and use `railway.toml`
+- Builds and runs from the `backend/` directory automatically
+- Start command is pre-configured
+
+Simply proceed to Step 3 after creating the project.
+
+#### Option B: Manual Root Directory Configuration
+
+If Option A doesn't work or you prefer manual configuration:
+
+1. **Root Directory**: 
+   - In Railway's service settings, find the "Root Directory" field
+   - **IMPORTANT**: This is a text input field, not a dropdown menu
+   - Type: `backend` (exactly as shown)
+   - Press Enter or click away to save
+   
+   **Why you don't see dropdown options**: Railway's Root Directory field accepts any path as text. The directories "backend" and "frontend" aren't shown as pre-populated options - you must type the directory name yourself.
+
+2. **Start Command**: `gunicorn app:app`
+   - Auto-detected from `Procfile` in the backend directory
+   - Can be left empty to use the default
+
 3. **Builder**: Nixpacks (auto-detected)
+   - Uses `backend/nixpacks.toml` for build configuration
 
 ### Step 3: Add PostgreSQL Database
 

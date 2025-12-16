@@ -1,0 +1,55 @@
+# Railway Build Ignore
+# These files/directories won't be included in the Railway build
+
+# Frontend directory (deployed separately on Vercel)
+frontend/
+
+# Documentation
+*.md
+!backend/README.md
+CHANGELOG.md
+CONTRIBUTING.md
+FEATURES.md
+IMPLEMENTATION_SUMMARY.md
+PORTALS_GUIDE.md
+PROJECT_SUMMARY.md
+QUICKSTART.md
+ROADMAP.md
+
+# Git
+.git/
+.github/
+.gitignore
+
+# Docker (not needed on Railway)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Development
+.env.example
+setup.sh
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
