@@ -1,0 +1,23 @@
+# Railway Configuration for FitnessCRM Backend
+# This configuration allows deploying the backend without manually setting Root Directory
+# 
+# Note: Commands include "cd backend" because this file is at the repository root.
+# Railway executes commands from the root, so we navigate into backend/ first.
+#
+# This is NOT redundant with backend/nixpacks.toml - they serve different purposes:
+# - This file (railway.toml): Used when deploying from repository root (automatic config)
+# - backend/nixpacks.toml: Used when Root Directory is manually set to "backend"
+
+[build]
+builder = "nixpacks"
+buildCommand = "cd backend && pip install -r requirements.txt"
+
+[deploy]
+startCommand = "cd backend && gunicorn app:app"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# Alternative: Set "Root Directory" to "backend" in Railway UI
+# If you set Root Directory to "backend", Railway will automatically use
+# the Procfile and nixpacks.toml in that directory instead of this config.
+# Those files don't need "cd backend" since they're already in that directory.

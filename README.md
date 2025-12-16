@@ -288,13 +288,20 @@ python init_db.py seed
 ### Backend Deployment (Railway)
 
 1. Create a new project on Railway
-2. Add PostgreSQL database service
-3. Connect your GitHub repository
-4. Set environment variables:
+2. Connect your GitHub repository
+3. **Configuration is automatic** via `railway.toml` in repository root
+   - Alternatively, manually set "Root Directory" to `backend` in Railway UI
+   - **Note**: "Root Directory" is a text input field where you type `backend`, not a dropdown
+4. Add PostgreSQL database service
+5. Set environment variables:
    - `DATABASE_URL`: (Auto-configured by Railway)
    - `SECRET_KEY`: Your secret key
    - `FLASK_ENV`: production
-5. Deploy
+6. Deploy
+
+**Guides**:
+- 📘 [RAILWAY_SETUP.md](RAILWAY_SETUP.md) - Quick guide for Railway Root Directory configuration
+- 📗 [DEPLOYMENT.md](DEPLOYMENT.md) - Complete deployment instructions for both platforms
 
 ### Database Setup (Railway PostgreSQL)
 
