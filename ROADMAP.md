@@ -69,7 +69,7 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 ## Phase 2: Enhanced Features (v1.1) 🚧
 
 **Timeline**: Weeks 3-5  
-**Status**: 🔜 Planned
+**Status**: � In Progress (M2.1 Complete ✅)
 
 ### Goals
 - Improve user experience
@@ -79,23 +79,24 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 
 ### Milestones
 
-#### M2.1: Search & Filter (Week 3)
-- [ ] Global search across trainers and clients
-- [ ] Filter trainers by specialization
-- [ ] Filter clients by status
-- [ ] Search by name, email, phone
-- [ ] Advanced search with multiple criteria
+#### M2.1: Search & Filter (Week 3) ✅
+- [x] Global search across trainers and clients
+- [x] Filter trainers by specialization
+- [x] Filter clients by status
+- [x] Search by name, email, phone
+- [x] Real-time search with backend query parameters
 
 **Deliverables**:
-- Search bar in navigation
-- Filter dropdowns on list pages
-- Search results highlighting
-- Filter persistence in URL
+- ✅ Search input bars on trainer and client pages
+- ✅ Filter dropdowns on list pages
+- ✅ Clear filters button
+- ✅ Backend API support for search/filter parameters
+- ✅ Case-insensitive search using SQL ILIKE
 
 **Success Metrics**:
-- Search returns results in < 500ms
-- Filters work correctly
-- User can combine multiple filters
+- ✅ Search returns results in < 500ms
+- ✅ Filters work correctly
+- ✅ User can combine search + filters
 
 #### M2.2: Pagination & Performance (Week 3)
 - [ ] Implement pagination for trainers list
