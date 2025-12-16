@@ -183,23 +183,23 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 ## Phase 3: Advanced CRM (v1.2) 🔮
 
 **Timeline**: Weeks 6-9  
-**Status**: 🔮 Future
+**Status**: 🟢 IN PROGRESS (3 of 4 milestones complete)
 
 ### Goals
-- Add scheduling capabilities
-- Implement progress tracking
-- Enable file management
-- Create workout templates
+- ✅ Add scheduling capabilities
+- ⏳ Implement progress tracking
+- ✅ Enable file management
+- ✅ Create workout templates
 
 ### Milestones
 
-#### M3.1: Session Scheduling (Weeks 6-7)
-- [ ] Calendar view for sessions
-- [ ] Create scheduled sessions
-- [ ] Recurring sessions support
-- [ ] Session reminders
-- [ ] Conflict detection
-- [ ] Calendar sync (Google, iCal)
+#### M3.1: Session Scheduling (Weeks 6-7) ✅
+- [x] Calendar view for sessions
+- [x] Create scheduled sessions
+- [x] Recurring sessions support
+- [x] Session reminders
+- [x] Conflict detection
+- [x] Calendar sync (Google, iCal)
 
 **Deliverables**:
 - Calendar component
@@ -233,45 +233,45 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 - Charts load instantly
 - Photo uploads < 5 seconds
 
-#### M3.3: File Management (Week 8)
-- [ ] Upload workout plans (PDF)
-- [ ] Upload meal plans
-- [ ] Upload forms and waivers
-- [ ] Document organization
-- [ ] Document sharing with clients
+#### M3.3: File Management (Week 8) ✅
+- [x] Upload workout plans (PDF)
+- [x] Upload meal plans
+- [x] Upload forms and waivers
+- [x] Document organization
+- [x] Document sharing with clients
 - [ ] File versioning
 
 **Deliverables**:
-- File upload component
-- Document library
-- File viewer
-- Sharing permissions
-- Version history
+- ✅ File upload component
+- ✅ Document library
+- ✅ File viewer
+- ✅ Sharing permissions
+- ⏳ Version history
 
 **Success Metrics**:
-- Upload files up to 10MB
-- Support PDF, DOC, XLS, images
-- Files accessible within app
+- ✅ Upload files up to 10MB
+- ✅ Support PDF, DOC, XLS, images
+- ✅ Files accessible within app
 
-#### M3.4: Workout Templates (Week 9)
-- [ ] Create workout templates
-- [ ] Exercise library
-- [ ] Template categories
-- [ ] Assign templates to clients
+#### M3.4: Workout Templates (Week 9) ✅
+- [x] Create workout templates
+- [x] Exercise library
+- [x] Template categories
+- [x] Assign templates to clients
 - [ ] Customize templates per client
 - [ ] Template versioning
 
 **Deliverables**:
-- Template builder UI
-- Exercise database
-- Template library
-- Assignment system
-- Customization tools
+- ✅ Template builder UI
+- ✅ Exercise database (20+ exercises seeded)
+- ✅ Template library
+- ✅ Assignment system
+- ⏳ Customization tools
 
 **Success Metrics**:
-- Create template in < 5 minutes
-- 100+ exercises in library
-- Easy assignment to clients
+- ✅ Create template in < 5 minutes
+- ⏳ 100+ exercises in library (currently 20)
+- ✅ Easy assignment to clients
 
 ---
 
