@@ -325,3 +325,154 @@ def get_categories():
         {'value': 'recovery', 'label': 'Recovery/Mobility'}
     ]
     return jsonify({'categories': categories})
+
+# Exercise endpoints
+@workout_bp.route('/exercises', methods=['GET'])
+def get_exercises():
+    """Get all exercises with optional filters"""
+    try:
+        query = Exercise.query
+        
+        # Filter by category
+        category = request.args.get('category')
+        if category:
+            query = query.filter_by(category=category)
+        
+        # Filter by muscle group
+        muscle_group = request.args.get('muscle_group')
+        if muscle_group:
+            query = query.filter_by(muscle_group=muscle_group)
+        
+        # Filter by equipment
+        equipment = request.args.get('equipment')
+        if equipment:
+            query = query.filter_by(equipment=equipment)
+        
+        # Filter by difficulty
+        difficulty = request.args.get('difficulty')
+        if difficulty:
+            query = query.filter_by(difficulty=difficulty)
+        
+        # Search by name
+        search = request.args.get('search')
+        if search:
+            query = query.filter(Exercise.name.ilike(f'%{search}%'))
+        
+        # Filter custom/public exercises
+        show_custom = request.args.get('show_custom', 'true').lower() == 'true'
+        if not show_custom:
+            query = query.filter_by(is_custom=False)
+        
+        # Pagination
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 100, type=int)
+        
+        exercises = query.order_by(Exercise.name).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        return jsonify({
+            'exercises': [e.to_dict() for e in exercises.items],
+            'total': exercises.total,
+            'pages': exercises.pages,
+            'current_page': page
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@workout_bp.route('/exercises/categories', methods=['GET'])
+def get_exercise_categories():
+    """Get exercise categories"""
+    categories = [
+        {'value': 'strength', 'label': 'Strength'},
+        {'value': 'cardio', 'label': 'Cardio'},
+        {'value': 'flexibility', 'label': 'Flexibility'},
+        {'value': 'core', 'label': 'Core'},
+        {'value': 'plyometric', 'label': 'Plyometric'},
+        {'value': 'balance', 'label': 'Balance'}
+    ]
+    return jsonify({'categories': categories})
+
+@workout_bp.route('/exercises/muscle-groups', methods=['GET'])
+def get_muscle_groups():
+    """Get muscle groups"""
+    muscle_groups = [
+        {'value': 'chest', 'label': 'Chest'},
+        {'value': 'back', 'label': 'Back'},
+        {'value': 'shoulders', 'label': 'Shoulders'},
+        {'value': 'arms', 'label': 'Arms'},
+        {'value': 'legs', 'label': 'Legs'},
+        {'value': 'core', 'label': 'Core'},
+        {'value': 'cardio', 'label': 'Cardio'},
+        {'value': 'flexibility', 'label': 'Flexibility'},
+        {'value': 'full-body', 'label': 'Full Body'}
+    ]
+    return jsonify({'muscle_groups': muscle_groups})
+
+@workout_bp.route('/exercises/equipment', methods=['GET'])
+def get_equipment():
+    """Get equipment types"""
+    equipment = [
+        {'value': 'barbell', 'label': 'Barbell'},
+        {'value': 'dumbbells', 'label': 'Dumbbells'},
+        {'value': 'machine', 'label': 'Machine'},
+        {'value': 'bodyweight', 'label': 'Bodyweight'},
+        {'value': 'cables', 'label': 'Cables'},
+        {'value': 'resistance-bands', 'label': 'Resistance Bands'},
+        {'value': 'kettlebell', 'label': 'Kettlebell'},
+        {'value': 'medicine-ball', 'label': 'Medicine Ball'},
+        {'value': 'jump-rope', 'label': 'Jump Rope'},
+        {'value': 'none', 'label': 'None'}
+    ]
+    return jsonify({'equipment': equipment})
+
+@workout_bp.route('/exercises/seed', methods=['POST'])
+def seed_exercises():
+    """Seed sample exercises (development only)"""
+    try:
+        # Check if exercises already exist
+        if Exercise.query.count() > 0:
+            return jsonify({'message': 'Exercises already seeded', 'count': Exercise.query.count()}), 200
+        
+        # Get trainer ID from request or use first available
+        data = request.get_json() or {}
+        trainer_id = data.get('trainer_id')
+        
+        if not trainer_id:
+            from models.database import Trainer
+            trainer = Trainer.query.first()
+            trainer_id = trainer.id if trainer else None
+        
+        exercises = [
+            Exercise(name='Barbell Bench Press', category='strength', muscle_group='chest', equipment='barbell', difficulty='intermediate', description='Classic chest exercise', is_custom=False, created_by=trainer_id),
+            Exercise(name='Dumbbell Flyes', category='strength', muscle_group='chest', equipment='dumbbells', difficulty='beginner', description='Isolation exercise for chest', is_custom=False, created_by=trainer_id),
+            Exercise(name='Push-ups', category='strength', muscle_group='chest', equipment='bodyweight', difficulty='beginner', description='Bodyweight chest exercise', is_custom=False, created_by=trainer_id),
+            Exercise(name='Pull-ups', category='strength', muscle_group='back', equipment='bodyweight', difficulty='intermediate', description='Upper back and lat exercise', is_custom=False, created_by=trainer_id),
+            Exercise(name='Barbell Rows', category='strength', muscle_group='back', equipment='barbell', difficulty='intermediate', description='Compound back exercise', is_custom=False, created_by=trainer_id),
+            Exercise(name='Lat Pulldowns', category='strength', muscle_group='back', equipment='machine', difficulty='beginner', description='Cable back exercise', is_custom=False, created_by=trainer_id),
+            Exercise(name='Barbell Squats', category='strength', muscle_group='legs', equipment='barbell', difficulty='intermediate', description='King of leg exercises', is_custom=False, created_by=trainer_id),
+            Exercise(name='Leg Press', category='strength', muscle_group='legs', equipment='machine', difficulty='beginner', description='Machine-based leg exercise', is_custom=False, created_by=trainer_id),
+            Exercise(name='Romanian Deadlifts', category='strength', muscle_group='legs', equipment='barbell', difficulty='intermediate', description='Hamstring and glute exercise', is_custom=False, created_by=trainer_id),
+            Exercise(name='Walking Lunges', category='strength', muscle_group='legs', equipment='dumbbells', difficulty='beginner', description='Unilateral leg exercise', is_custom=False, created_by=trainer_id),
+            Exercise(name='Overhead Press', category='strength', muscle_group='shoulders', equipment='barbell', difficulty='intermediate', description='Shoulder press movement', is_custom=False, created_by=trainer_id),
+            Exercise(name='Lateral Raises', category='strength', muscle_group='shoulders', equipment='dumbbells', difficulty='beginner', description='Shoulder isolation exercise', is_custom=False, created_by=trainer_id),
+            Exercise(name='Barbell Curls', category='strength', muscle_group='arms', equipment='barbell', difficulty='beginner', description='Classic bicep exercise', is_custom=False, created_by=trainer_id),
+            Exercise(name='Tricep Dips', category='strength', muscle_group='arms', equipment='bodyweight', difficulty='intermediate', description='Bodyweight tricep exercise', is_custom=False, created_by=trainer_id),
+            Exercise(name='Plank', category='core', muscle_group='core', equipment='bodyweight', difficulty='beginner', description='Isometric core exercise', is_custom=False, created_by=trainer_id),
+            Exercise(name='Russian Twists', category='core', muscle_group='core', equipment='bodyweight', difficulty='beginner', description='Rotational core exercise', is_custom=False, created_by=trainer_id),
+            Exercise(name='Running', category='cardio', muscle_group='cardio', equipment='none', difficulty='beginner', description='Cardiovascular endurance', is_custom=False, created_by=trainer_id),
+            Exercise(name='Jump Rope', category='cardio', muscle_group='cardio', equipment='jump-rope', difficulty='beginner', description='High-intensity cardio', is_custom=False, created_by=trainer_id),
+            Exercise(name='Burpees', category='cardio', muscle_group='cardio', equipment='bodyweight', difficulty='intermediate', description='Full-body cardio exercise', is_custom=False, created_by=trainer_id),
+            Exercise(name='Downward Dog', category='flexibility', muscle_group='flexibility', equipment='none', difficulty='beginner', description='Yoga pose for flexibility', is_custom=False, created_by=trainer_id),
+        ]
+        
+        db.session.bulk_save_objects(exercises)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Exercises seeded successfully',
+            'count': len(exercises)
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500

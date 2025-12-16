@@ -119,37 +119,37 @@ export const fileAPI = {
 
 // Exercise API
 export const exerciseAPI = {
-  create: (data) => api.post('/exercises', data),
-  getAll: (params = {}) => api.get('/exercises', { params }),
-  getById: (id) => api.get(`/exercises/${id}`),
-  update: (id, data) => api.put(`/exercises/${id}`, data),
-  delete: (id) => api.delete(`/exercises/${id}`),
-  getCategories: () => api.get('/exercises/categories'),
-  getMuscleGroups: () => api.get('/exercises/muscle-groups'),
-  getEquipment: () => api.get('/exercises/equipment'),
-  seed: () => api.post('/exercises/seed'),
+  create: (data) => api.post('/api/workouts/exercises', data),
+  getAll: (params = {}) => api.get('/api/workouts/exercises', { params }),
+  getById: (id) => api.get(`/api/workouts/exercises/${id}`),
+  update: (id, data) => api.put(`/api/workouts/exercises/${id}`, data),
+  delete: (id) => api.delete(`/api/workouts/exercises/${id}`),
+  getCategories: () => api.get('/api/workouts/exercises/categories'),
+  getMuscleGroups: () => api.get('/api/workouts/exercises/muscle-groups'),
+  getEquipment: () => api.get('/api/workouts/exercises/equipment'),
+  seed: () => api.post('/api/workouts/exercises/seed'),
 };
 
 // Workout API
 export const workoutAPI = {
   // Templates
-  createTemplate: (data) => api.post('/workouts/templates', data),
-  getAllTemplates: (params = {}) => api.get('/workouts/templates', { params }),
-  getTemplate: (id) => api.get(`/workouts/templates/${id}`),
-  updateTemplate: (id, data) => api.put(`/workouts/templates/${id}`, data),
-  deleteTemplate: (id) => api.delete(`/workouts/templates/${id}`),
+  createTemplate: (data) => api.post('/api/workouts/templates', data),
+  getAllTemplates: (params = {}) => api.get('/api/workouts/templates', { params }),
+  getTemplate: (id) => api.get(`/api/workouts/templates/${id}`),
+  updateTemplate: (id, data) => api.put(`/api/workouts/templates/${id}`, data),
+  deleteTemplate: (id) => api.delete(`/api/workouts/templates/${id}`),
   
   // Assignments
-  assignWorkout: (data) => api.post('/workouts/assign', data),
-  getClientAssignments: (clientId, params = {}) => api.get(`/workouts/assignments/${clientId}`, { params }),
-  updateAssignment: (id, data) => api.put(`/workouts/assignments/${id}`, data),
+  assignWorkout: (data) => api.post('/api/workouts/assign', data),
+  getClientAssignments: (clientId, params = {}) => api.get(`/api/workouts/assignments/${clientId}`, { params }),
+  updateAssignment: (id, data) => api.put(`/api/workouts/assignments/${id}`, data),
   
   // Logging
-  logWorkout: (data) => api.post('/workouts/log', data),
-  getClientLogs: (clientId, params = {}) => api.get(`/workouts/logs/${clientId}`, { params }),
+  logWorkout: (data) => api.post('/api/workouts/log', data),
+  getClientLogs: (clientId, params = {}) => api.get(`/api/workouts/logs/${clientId}`, { params }),
   
   // Categories
-  getCategories: () => api.get('/workouts/categories'),
+  getCategories: () => api.get('/api/workouts/categories'),
 };
 
 export default api;
