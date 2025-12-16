@@ -93,7 +93,7 @@
   }
 
   .sidebar-item {
-    @apply flex items-center px-6 py-3 text-neutral-700 hover:bg-orange-50 hover:text-orange-600 transition-all duration-200 cursor-pointer group relative;
+    @apply flex items-center px-6 py-3 text-neutral-700 hover:bg-orange-50 hover:text-orange-600 transition-all duration-200 cursor-pointer relative;
   }
 
   .sidebar-item-active {
