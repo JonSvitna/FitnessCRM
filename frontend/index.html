@@ -57,6 +57,13 @@
         <span class="sidebar-label">Assignments</span>
       </div>
 
+      <div id="nav-calendar" class="sidebar-item">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+        <span class="sidebar-label">Calendar</span>
+      </div>
+
       <div id="nav-activity" class="sidebar-item">
         <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -387,6 +394,91 @@
       </div>
     </section>
 
+    <!-- Calendar Section -->
+    <section id="calendar-section" class="section hidden">
+      <h2 class="section-title">Session Calendar</h2>
+      
+      <!-- Calendar Controls -->
+      <div class="card mb-6">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <button id="prev-month" class="p-2 hover:bg-orange-50 rounded-lg transition-colors">
+              <svg class="w-6 h-6 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </button>
+            <h3 id="calendar-month-year" class="text-2xl font-bold text-neutral-900"></h3>
+            <button id="next-month" class="p-2 hover:bg-orange-50 rounded-lg transition-colors">
+              <svg class="w-6 h-6 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+            <button id="today-btn" class="btn-outline py-2 px-4">Today</button>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="create-session-btn" class="btn-primary py-2 px-4">
+              <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              New Session
+            </button>
+          </div>
+        </div>
+        
+        <!-- Filter Options -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div>
+            <label class="form-label">Filter by Trainer</label>
+            <select id="calendar-trainer-filter" class="input-field">
+              <option value="">All Trainers</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Filter by Client</label>
+            <select id="calendar-client-filter" class="input-field">
+              <option value="">All Clients</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Filter by Status</label>
+            <select id="calendar-status-filter" class="input-field">
+              <option value="">All Status</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="no-show">No Show</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar Grid -->
+      <div class="card">
+        <div class="calendar-grid">
+          <div class="grid grid-cols-7 gap-2 mb-2">
+            <div class="text-center font-semibold text-sm text-gray-600 py-2">Sun</div>
+            <div class="text-center font-semibold text-sm text-gray-600 py-2">Mon</div>
+            <div class="text-center font-semibold text-sm text-gray-600 py-2">Tue</div>
+            <div class="text-center font-semibold text-sm text-gray-600 py-2">Wed</div>
+            <div class="text-center font-semibold text-sm text-gray-600 py-2">Thu</div>
+            <div class="text-center font-semibold text-sm text-gray-600 py-2">Fri</div>
+            <div class="text-center font-semibold text-sm text-gray-600 py-2">Sat</div>
+          </div>
+          <div id="calendar-days" class="grid grid-cols-7 gap-2">
+            <!-- Calendar days will be inserted here by JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Upcoming Sessions List -->
+      <div class="card mt-6">
+        <h3 class="text-xl font-semibold text-primary-500 mb-4">Upcoming Sessions</h3>
+        <div id="upcoming-sessions-list" class="space-y-3">
+          <p class="text-gray-400">No upcoming sessions</p>
+        </div>
+      </div>
+    </section>
+
     <!-- Activity Log Section -->
     <section id="activity-section" class="section hidden">
       <h2 class="section-title">Activity Log</h2>
@@ -554,6 +646,94 @@
   </main>
 
     </main>
+  </div>
+
+  <!-- Session Modal -->
+  <div id="session-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex items-center justify-between">
+          <h3 id="session-modal-title" class="text-2xl font-bold text-neutral-900">New Session</h3>
+          <button id="close-session-modal" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <form id="session-form" class="p-6 space-y-4">
+        <input type="hidden" id="session-id" name="id">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Trainer *</label>
+            <select id="session-trainer" name="trainer_id" required class="input-field">
+              <option value="">Select trainer...</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Client *</label>
+            <select id="session-client" name="client_id" required class="input-field">
+              <option value="">Select client...</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Date *</label>
+            <input type="date" id="session-date" name="date" required class="input-field">
+          </div>
+          <div>
+            <label class="form-label">Time *</label>
+            <input type="time" id="session-time" name="time" required class="input-field">
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Duration (minutes) *</label>
+            <input type="number" id="session-duration" name="duration" value="60" min="15" step="15" required class="input-field">
+          </div>
+          <div>
+            <label class="form-label">Session Type</label>
+            <select id="session-type" name="session_type" class="input-field">
+              <option value="personal">Personal Training</option>
+              <option value="group">Group Session</option>
+              <option value="online">Online Session</option>
+              <option value="assessment">Assessment</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Location</label>
+            <input type="text" id="session-location" name="location" placeholder="Gym, Online, etc." class="input-field">
+          </div>
+          <div>
+            <label class="form-label">Status</label>
+            <select id="session-status" name="status" class="input-field">
+              <option value="scheduled">Scheduled</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="no-show">No Show</option>
+            </select>
+          </div>
+        </div>
+        
+        <div>
+          <label class="form-label">Notes</label>
+          <textarea id="session-notes" name="notes" rows="3" class="input-field" placeholder="Session notes..."></textarea>
+        </div>
+        
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="cancel-session-btn" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Save Session</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- Toast Notification -->

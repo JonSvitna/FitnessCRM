@@ -1,11 +1,12 @@
 import './styles/main.css';
-import { trainerAPI, clientAPI, crmAPI, settingsAPI, activityAPI } from './api.js';
+import { trainerAPI, clientAPI, crmAPI, settingsAPI, activityAPI, sessionAPI } from './api.js';
 
 // State management
 let state = {
   trainers: [],
   clients: [],
   assignments: [],
+  sessions: [],
   settings: null,
   trainersPagination: { page: 1, per_page: 25, total: 0, pages: 0 },
   clientsPagination: { page: 1, per_page: 25, total: 0, pages: 0 },
@@ -149,6 +150,11 @@ document.getElementById('nav-clients').addEventListener('click', () => {
 document.getElementById('nav-management').addEventListener('click', () => {
   showSection('management-section', 'Assignments');
   loadManagement();
+});
+
+document.getElementById('nav-calendar').addEventListener('click', () => {
+  showSection('calendar-section', 'Calendar');
+  loadCalendar();
 });
 
 document.getElementById('nav-activity').addEventListener('click', () => {
@@ -929,6 +935,362 @@ window.deleteClient = async function(id) {
   } catch (error) {
     console.error('Error deleting client:', error);
     showToast('Error deleting client');
+  }
+};
+
+// Calendar state
+let calendarState = {
+  currentDate: new Date(),
+  selectedDate: null,
+  filterTrainer: null,
+  filterClient: null,
+  filterStatus: null
+};
+
+// Calendar functions
+async function loadCalendar() {
+  // Load trainers and clients for filters
+  await Promise.all([loadTrainers({ per_page: 1000 }), loadClients({ per_page: 1000 })]);
+  
+  // Populate filter dropdowns
+  populateCalendarFilters();
+  
+  // Render calendar
+  renderCalendar();
+  
+  // Load sessions for current month
+  await loadSessions();
+  
+  // Setup calendar controls
+  setupCalendarControls();
+}
+
+function populateCalendarFilters() {
+  const trainerFilter = document.getElementById('calendar-trainer-filter');
+  const clientFilter = document.getElementById('calendar-client-filter');
+  
+  const trainers = Array.isArray(state.trainers) ? state.trainers : (state.trainers.items || []);
+  const clients = Array.isArray(state.clients) ? state.clients : (state.clients.items || []);
+  
+  trainerFilter.innerHTML = '<option value="">All Trainers</option>' +
+    trainers.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+  
+  clientFilter.innerHTML = '<option value="">All Clients</option>' +
+    clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+function setupCalendarControls() {
+  // Month navigation
+  document.getElementById('prev-month').addEventListener('click', () => {
+    calendarState.currentDate.setMonth(calendarState.currentDate.getMonth() - 1);
+    renderCalendar();
+    loadSessions();
+  });
+  
+  document.getElementById('next-month').addEventListener('click', () => {
+    calendarState.currentDate.setMonth(calendarState.currentDate.getMonth() + 1);
+    renderCalendar();
+    loadSessions();
+  });
+  
+  document.getElementById('today-btn').addEventListener('click', () => {
+    calendarState.currentDate = new Date();
+    renderCalendar();
+    loadSessions();
+  });
+  
+  // Filters
+  document.getElementById('calendar-trainer-filter').addEventListener('change', (e) => {
+    calendarState.filterTrainer = e.target.value || null;
+    loadSessions();
+  });
+  
+  document.getElementById('calendar-client-filter').addEventListener('change', (e) => {
+    calendarState.filterClient = e.target.value || null;
+    loadSessions();
+  });
+  
+  document.getElementById('calendar-status-filter').addEventListener('change', (e) => {
+    calendarState.filterStatus = e.target.value || null;
+    loadSessions();
+  });
+  
+  // Create session button
+  document.getElementById('create-session-btn').addEventListener('click', () => {
+    openSessionModal();
+  });
+  
+  // Modal controls
+  document.getElementById('close-session-modal').addEventListener('click', closeSessionModal);
+  document.getElementById('cancel-session-btn').addEventListener('click', closeSessionModal);
+  
+  // Session form
+  document.getElementById('session-form').addEventListener('submit', handleSessionSubmit);
+}
+
+function renderCalendar() {
+  const year = calendarState.currentDate.getFullYear();
+  const month = calendarState.currentDate.getMonth();
+  
+  // Update month/year display
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  document.getElementById('calendar-month-year').textContent = `${monthNames[month]} ${year}`;
+  
+  // Get first day of month and number of days
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const daysInMonth = lastDay.getDate();
+  const startingDayOfWeek = firstDay.getDay();
+  
+  // Get previous month's last days
+  const prevMonth = new Date(year, month, 0);
+  const daysInPrevMonth = prevMonth.getDate();
+  
+  const calendarDays = document.getElementById('calendar-days');
+  calendarDays.innerHTML = '';
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // Add previous month's days
+  for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+    const day = daysInPrevMonth - i;
+    const dayEl = createCalendarDay(day, true, new Date(year, month - 1, day));
+    calendarDays.appendChild(dayEl);
+  }
+  
+  // Add current month's days
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
+    date.setHours(0, 0, 0, 0);
+    const isToday = date.getTime() === today.getTime();
+    const dayEl = createCalendarDay(day, false, date, isToday);
+    calendarDays.appendChild(dayEl);
+  }
+  
+  // Add next month's days to fill the grid
+  const totalCells = calendarDays.children.length;
+  const remainingCells = 42 - totalCells; // 6 rows x 7 days
+  for (let day = 1; day <= remainingCells; day++) {
+    const dayEl = createCalendarDay(day, true, new Date(year, month + 1, day));
+    calendarDays.appendChild(dayEl);
+  }
+}
+
+function createCalendarDay(day, otherMonth, date, isToday = false) {
+  const dayEl = document.createElement('div');
+  dayEl.className = `calendar-day ${otherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`;
+  dayEl.dataset.date = date.toISOString().split('T')[0];
+  
+  const dayNumber = document.createElement('div');
+  dayNumber.className = 'calendar-day-number';
+  dayNumber.textContent = day;
+  dayEl.appendChild(dayNumber);
+  
+  const sessionsContainer = document.createElement('div');
+  sessionsContainer.className = 'sessions-container';
+  sessionsContainer.id = `sessions-${date.toISOString().split('T')[0]}`;
+  dayEl.appendChild(sessionsContainer);
+  
+  // Click handler to create session on that day
+  dayEl.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('calendar-session')) {
+      calendarState.selectedDate = date;
+      openSessionModal(date);
+    }
+  });
+  
+  return dayEl;
+}
+
+async function loadSessions() {
+  try {
+    const year = calendarState.currentDate.getFullYear();
+    const month = calendarState.currentDate.getMonth();
+    
+    // Get first and last day of month
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month + 1, 0, 23, 59, 59);
+    
+    const params = {
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString()
+    };
+    
+    if (calendarState.filterTrainer) params.trainer_id = calendarState.filterTrainer;
+    if (calendarState.filterClient) params.client_id = calendarState.filterClient;
+    if (calendarState.filterStatus) params.status = calendarState.filterStatus;
+    
+    const response = await sessionAPI.getAll(params);
+    state.sessions = response.data;
+    
+    // Clear all session displays
+    document.querySelectorAll('.sessions-container').forEach(c => c.innerHTML = '');
+    
+    // Display sessions on calendar
+    state.sessions.forEach(session => {
+      const sessionDate = new Date(session.session_date);
+      const dateStr = sessionDate.toISOString().split('T')[0];
+      const container = document.getElementById(`sessions-${dateStr}`);
+      
+      if (container) {
+        const sessionEl = document.createElement('div');
+        sessionEl.className = `calendar-session ${session.status}`;
+        sessionEl.textContent = `${sessionDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} ${session.client_name || 'Client'}`;
+        sessionEl.title = `${session.trainer_name} - ${session.client_name}`;
+        sessionEl.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openSessionModal(null, session);
+        });
+        container.appendChild(sessionEl);
+      }
+    });
+    
+    // Update upcoming sessions list
+    renderUpcomingSessions();
+  } catch (error) {
+    console.error('Error loading sessions:', error);
+    showToast('Error loading sessions');
+  }
+}
+
+function renderUpcomingSessions() {
+  const container = document.getElementById('upcoming-sessions-list');
+  const now = new Date();
+  
+  const upcomingSessions = state.sessions
+    .filter(s => new Date(s.session_date) >= now && s.status === 'scheduled')
+    .sort((a, b) => new Date(a.session_date) - new Date(b.session_date))
+    .slice(0, 10);
+  
+  if (upcomingSessions.length === 0) {
+    container.innerHTML = '<p class="text-gray-400">No upcoming sessions</p>';
+    return;
+  }
+  
+  container.innerHTML = upcomingSessions.map(session => {
+    const sessionDate = new Date(session.session_date);
+    return `
+      <div class="session-list-item ${session.status} rounded-lg cursor-pointer hover:shadow-md transition-shadow" onclick="window.editSession(${session.id})">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="font-semibold text-neutral-900">${session.client_name} - ${session.trainer_name}</p>
+            <p class="text-sm text-gray-600">${sessionDate.toLocaleDateString()} at ${sessionDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+            <p class="text-xs text-gray-500">${session.duration} min • ${session.session_type || 'Training'}</p>
+          </div>
+          <span class="text-xs px-2 py-1 rounded ${session.status === 'scheduled' ? 'bg-blue-100 text-blue-800' : ''}">
+            ${session.status}
+          </span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openSessionModal(date = null, session = null) {
+  const modal = document.getElementById('session-modal');
+  const form = document.getElementById('session-form');
+  const title = document.getElementById('session-modal-title');
+  
+  // Populate trainer and client dropdowns
+  const trainers = Array.isArray(state.trainers) ? state.trainers : (state.trainers.items || []);
+  const clients = Array.isArray(state.clients) ? state.clients : (state.clients.items || []);
+  
+  document.getElementById('session-trainer').innerHTML = '<option value="">Select trainer...</option>' +
+    trainers.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+  
+  document.getElementById('session-client').innerHTML = '<option value="">Select client...</option>' +
+    clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  
+  if (session) {
+    // Edit mode
+    title.textContent = 'Edit Session';
+    document.getElementById('session-id').value = session.id;
+    
+    const sessionDate = new Date(session.session_date);
+    document.getElementById('session-trainer').value = session.trainer_id;
+    document.getElementById('session-client').value = session.client_id;
+    document.getElementById('session-date').value = sessionDate.toISOString().split('T')[0];
+    document.getElementById('session-time').value = sessionDate.toTimeString().slice(0, 5);
+    document.getElementById('session-duration').value = session.duration;
+    document.getElementById('session-type').value = session.session_type || 'personal';
+    document.getElementById('session-location').value = session.location || '';
+    document.getElementById('session-status').value = session.status;
+    document.getElementById('session-notes').value = session.notes || '';
+  } else {
+    // Create mode
+    title.textContent = 'New Session';
+    form.reset();
+    document.getElementById('session-id').value = '';
+    
+    if (date) {
+      document.getElementById('session-date').value = date.toISOString().split('T')[0];
+      document.getElementById('session-time').value = '09:00';
+    }
+  }
+  
+  modal.classList.remove('hidden');
+}
+
+function closeSessionModal() {
+  document.getElementById('session-modal').classList.add('hidden');
+  document.getElementById('session-form').reset();
+}
+
+async function handleSessionSubmit(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(e.target);
+  const sessionId = document.getElementById('session-id').value;
+  
+  // Combine date and time
+  const date = formData.get('date');
+  const time = formData.get('time');
+  const sessionDate = new Date(`${date}T${time}`);
+  
+  const data = {
+    trainer_id: parseInt(formData.get('trainer_id')),
+    client_id: parseInt(formData.get('client_id')),
+    session_date: sessionDate.toISOString(),
+    duration: parseInt(formData.get('duration')),
+    session_type: formData.get('session_type'),
+    location: formData.get('location'),
+    status: formData.get('status'),
+    notes: formData.get('notes')
+  };
+  
+  try {
+    if (sessionId) {
+      // Update existing session
+      await sessionAPI.update(sessionId, data);
+      showToast('Session updated successfully');
+    } else {
+      // Create new session
+      await sessionAPI.create(data);
+      showToast('Session created successfully');
+    }
+    
+    closeSessionModal();
+    loadSessions();
+  } catch (error) {
+    console.error('Error saving session:', error);
+    if (error.response && error.response.status === 409) {
+      showToast('Session conflicts with existing booking');
+    } else {
+      showToast('Error saving session');
+    }
+  }
+}
+
+// Make editSession available globally
+window.editSession = async function(id) {
+  try {
+    const response = await sessionAPI.getById(id);
+    openSessionModal(null, response.data);
+  } catch (error) {
+    console.error('Error loading session:', error);
+    showToast('Error loading session');
   }
 };
 

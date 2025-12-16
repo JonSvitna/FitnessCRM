@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
 from models.database import db, Session, RecurringSession, Trainer, Client
 from datetime import datetime, timedelta, time
-from utils.activity_logger import log_activity
 
 session_bp = Blueprint('sessions', __name__)
 
@@ -110,14 +109,6 @@ def create_session():
         db.session.add(session)
         db.session.commit()
         
-        # Log activity
-        log_activity(
-            action='create',
-            entity_type='session',
-            entity_id=session.id,
-            details={'session_date': session_date.isoformat()}
-        )
-        
         return jsonify(session.to_dict()), 201
     except Exception as e:
         db.session.rollback()
@@ -148,14 +139,6 @@ def update_session(id):
         
         db.session.commit()
         
-        # Log activity
-        log_activity(
-            action='update',
-            entity_type='session',
-            entity_id=session.id,
-            details=data
-        )
-        
         return jsonify(session.to_dict()), 200
     except Exception as e:
         db.session.rollback()
@@ -166,14 +149,6 @@ def delete_session(id):
     """Delete a session"""
     try:
         session = Session.query.get_or_404(id)
-        
-        # Log before deletion
-        log_activity(
-            action='delete',
-            entity_type='session',
-            entity_id=session.id,
-            details=session.to_dict()
-        )
         
         db.session.delete(session)
         db.session.commit()
@@ -246,14 +221,6 @@ def create_recurring_session():
         sessions_created = generate_recurring_sessions(recurring_session, start_date, max_date)
         
         db.session.commit()
-        
-        # Log activity
-        log_activity(
-            action='create',
-            entity_type='recurring_session',
-            entity_id=recurring_session.id,
-            details={'sessions_created': sessions_created}
-        )
         
         return jsonify({
             'recurring_session': recurring_session.to_dict(),
@@ -333,14 +300,6 @@ def delete_recurring_session(id):
                 Session.session_date >= datetime.utcnow(),
                 Session.status == 'scheduled'
             ).delete()
-        
-        # Log before deletion
-        log_activity(
-            action='delete',
-            entity_type='recurring_session',
-            entity_id=recurring_session.id,
-            details={'delete_future': delete_future}
-        )
         
         db.session.delete(recurring_session)
         db.session.commit()
