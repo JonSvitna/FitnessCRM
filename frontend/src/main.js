@@ -575,40 +575,6 @@ function populateSettingsForms() {
   }
 }
 
-async function loadActivityLog() {
-  try {
-    const response = await activityAPI.getRecent(20);
-    const activities = response.data.activities;
-    
-    const container = document.getElementById('activity-log');
-    if (activities.length === 0) {
-      container.innerHTML = '<p class="text-gray-400">No activity yet</p>';
-      return;
-    }
-    
-    container.innerHTML = activities.map(activity => `
-      <div class="flex items-start justify-between p-2 bg-white hover:bg-neutral-100 rounded border-l-4 ${
-        activity.action === 'create' ? 'border-green-500' :
-        activity.action === 'update' ? 'border-blue-500' :
-        activity.action === 'delete' ? 'border-red-500' :
-        'border-gray-500'
-      }">
-        <div class="flex-1">
-          <p class="text-sm font-medium text-neutral-900">
-            ${activity.action.toUpperCase()} ${activity.entity_type}
-            ${activity.entity_id ? `#${activity.entity_id}` : ''}
-          </p>
-          ${activity.user_identifier ? `<p class="text-xs text-neutral-600">${activity.user_identifier}</p>` : ''}
-          <p class="text-xs text-neutral-500">${new Date(activity.created_at).toLocaleString()}</p>
-        </div>
-      </div>
-    `).join('');
-  } catch (error) {
-    console.error('Error loading activity log:', error);
-    document.getElementById('activity-log').innerHTML = '<p class="text-gray-400">Error loading activity log</p>';
-  }
-}
-
 // Settings form handlers
 document.getElementById('business-profile-form').addEventListener('submit', async (e) => {
   e.preventDefault();
