@@ -150,22 +150,22 @@
 
   /* Dark Mode Sidebar (for admin dashboard) */
   .sidebar-dark {
-    @apply bg-dark-secondary border-dark-tertiary;
+    @apply bg-neutral-900 border-neutral-800;
   }
 
   .sidebar-dark .sidebar-header {
-    @apply border-dark-tertiary;
+    @apply border-neutral-800;
   }
 
   .sidebar-dark .sidebar-item {
-    @apply text-gray-300 hover:bg-dark-tertiary hover:text-primary-400;
+    @apply text-gray-300 hover:bg-neutral-800 hover:text-primary-400;
   }
 
   .sidebar-dark .sidebar-item-active {
-    @apply bg-gradient-to-r from-dark-tertiary to-dark-tertiary text-primary-400 border-primary-500;
+    @apply bg-gradient-to-r from-neutral-800 to-neutral-800 text-primary-400 border-primary-500;
   }
 
   .sidebar-dark .sidebar-footer {
-    @apply border-dark-tertiary;
+    @apply border-neutral-800;
   }
 }
