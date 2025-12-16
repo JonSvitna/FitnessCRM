@@ -51,4 +51,20 @@ export const activityAPI = {
   getStats: () => api.get('/api/activity/stats'),
 };
 
+// Session API
+export const sessionAPI = {
+  create: (data) => api.post('/sessions', data),
+  getAll: (params = {}) => api.get('/sessions', { params }),
+  getById: (id) => api.get(`/sessions/${id}`),
+  update: (id, data) => api.put(`/sessions/${id}`, data),
+  delete: (id) => api.delete(`/sessions/${id}`),
+};
+
+// Recurring Session API
+export const recurringSessionAPI = {
+  create: (data) => api.post('/recurring-sessions', data),
+  getAll: (params = {}) => api.get('/recurring-sessions', { params }),
+  delete: (id, deleteFuture = false) => api.delete(`/recurring-sessions/${id}?delete_future=${deleteFuture}`),
+};
+
 export default api;

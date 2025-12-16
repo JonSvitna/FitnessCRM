@@ -113,10 +113,13 @@ class Session(db.Model):
     trainer_id = db.Column(db.Integer, db.ForeignKey('trainers.id'), nullable=False)
     client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
     session_date = db.Column(db.DateTime, nullable=False)
-    duration = db.Column(db.Integer)  # in minutes
+    end_time = db.Column(db.DateTime)  # Calculated from session_date + duration
+    duration = db.Column(db.Integer, default=60)  # in minutes
     session_type = db.Column(db.String(100))  # personal, group, online, etc.
+    location = db.Column(db.String(200))  # Gym, Online, Client's Home, etc.
     notes = db.Column(db.Text)
     status = db.Column(db.String(50), default='scheduled')  # scheduled, completed, cancelled, no-show
+    recurring_session_id = db.Column(db.Integer, db.ForeignKey('recurring_sessions.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -126,10 +129,57 @@ class Session(db.Model):
             'trainer_id': self.trainer_id,
             'client_id': self.client_id,
             'session_date': self.session_date.isoformat() if self.session_date else None,
+            'end_time': self.end_time.isoformat() if self.end_time else None,
             'duration': self.duration,
             'session_type': self.session_type,
+            'location': self.location,
             'notes': self.notes,
             'status': self.status,
+            'recurring_session_id': self.recurring_session_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+class RecurringSession(db.Model):
+    """Recurring session template"""
+    __tablename__ = 'recurring_sessions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    trainer_id = db.Column(db.Integer, db.ForeignKey('trainers.id'), nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
+    start_date = db.Column(db.DateTime, nullable=False)
+    end_date = db.Column(db.DateTime)  # Optional end date
+    start_time = db.Column(db.Time, nullable=False)  # Time of day
+    duration = db.Column(db.Integer, default=60)  # in minutes
+    session_type = db.Column(db.String(100))
+    location = db.Column(db.String(200))
+    recurrence_pattern = db.Column(db.String(50), nullable=False)  # daily, weekly, biweekly, monthly
+    recurrence_days = db.Column(db.JSON)  # Days of week [0-6] for weekly patterns
+    notes = db.Column(db.Text)
+    active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    sessions = db.relationship('Session', backref='recurring_template', lazy=True, foreign_keys=[Session.recurring_session_id])
+    trainer = db.relationship('Trainer', backref='recurring_sessions')
+    client = db.relationship('Client', backref='recurring_sessions')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'trainer_id': self.trainer_id,
+            'client_id': self.client_id,
+            'start_date': self.start_date.isoformat() if self.start_date else None,
+            'end_date': self.end_date.isoformat() if self.end_date else None,
+            'start_time': self.start_time.isoformat() if self.start_time else None,
+            'duration': self.duration,
+            'session_type': self.session_type,
+            'location': self.location,
+            'recurrence_pattern': self.recurrence_pattern,
+            'recurrence_days': self.recurrence_days,
+            'notes': self.notes,
+            'active': self.active,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
