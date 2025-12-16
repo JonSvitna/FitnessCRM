@@ -1,31 +1,21 @@
 # Railway Configuration for FitnessCRM Backend
-# This configuration allows deploying the backend without manually setting Root Directory
 # 
-# Note: Commands include "cd backend" because this file is at the repository root.
-# Railway executes commands from the root, so we navigate into backend/ first.
+# IMPORTANT: Set "Root Directory" to "backend" in Railway settings!
+# Railway Dashboard → Your Service → Settings → Root Directory → Type: backend
 #
-# IMPORTANT: This forces Nixpacks instead of Dockerfile
-# - This file (railway.toml): Used when deploying from repository root (automatic config)
-# - backend/nixpacks.toml: Used when Root Directory is manually set to "backend"
+# This tells Railway to:
+# 1. Look for files in the backend/ directory
+# 2. Use backend/nixpacks.toml for build config
+# 3. Use backend/Procfile as fallback
+# 4. Ignore any Dockerfile
 
 [build]
 builder = "NIXPACKS"
-dockerfilePath = ""
-watchPatterns = ["backend/**"]
 
 [deploy]
-startCommand = "cd backend && gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --log-level info"
+startCommand = "gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --log-level info"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
-
-[build.nixpacksPlan]
-providers = ["python"]
-
-[build.nixpacksPlan.phases.setup]
-nixPkgs = ["python311", "postgresql"]
-
-[build.nixpacksPlan.phases.install]
-cmds = ["cd backend && pip install --no-cache-dir -r requirements.txt"]
 
 # Alternative: Set "Root Directory" to "backend" in Railway UI
 # If you set Root Directory to "backend", Railway will automatically use
