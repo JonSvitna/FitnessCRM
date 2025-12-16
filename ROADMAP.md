@@ -69,7 +69,7 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 ## Phase 2: Enhanced Features (v1.1) 🚧
 
 **Timeline**: Weeks 3-5  
-**Status**: � In Progress (M2.1 Complete ✅)
+**Status**: 🚧 In Progress (M2.1 ✅, M2.2 ✅)
 
 ### Goals
 - Improve user experience
@@ -98,23 +98,25 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 - ✅ Filters work correctly
 - ✅ User can combine search + filters
 
-#### M2.2: Pagination & Performance (Week 3)
-- [ ] Implement pagination for trainers list
-- [ ] Implement pagination for clients list
-- [ ] Implement pagination for assignments
-- [ ] Add page size selector (10, 25, 50, 100)
-- [ ] Optimize database queries
+#### M2.2: Pagination & Performance (Week 3) ✅
+- [x] Implement pagination for trainers list
+- [x] Implement pagination for clients list
+- [x] Add page size selector (10, 25, 50)
+- [x] Optimize database queries with LIMIT/OFFSET
+- [x] Backend pagination with metadata (total, pages, has_next/prev)
 
 **Deliverables**:
-- Pagination controls
-- Page number display
-- Total count display
-- Next/Previous navigation
+- ✅ Pagination controls (Previous/Next buttons)
+- ✅ Page number display and info
+- ✅ Total count display ("Showing X-Y of Z")
+- ✅ Page size selector dropdown
+- ✅ Backward compatible API responses
 
 **Success Metrics**:
-- Pages load in < 1 second
-- Smooth navigation between pages
-- Proper page count calculation
+- ✅ Pages load in < 1 second
+- ✅ Smooth navigation between pages
+- ✅ Proper page count calculation
+- ✅ Max 100 items per page enforced
 
 #### M2.3: Data Export (Week 4)
 - [ ] Export trainers to CSV
