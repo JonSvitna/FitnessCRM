@@ -1,3 +1,7 @@
+# Nixpacks configuration for Python 3.11 backend
+# Used when Root Directory is set to "backend" in Railway
+# Start command comes from Procfile
+
 [phases.setup]
 nixPkgs = ["python311", "postgresql"]
 
