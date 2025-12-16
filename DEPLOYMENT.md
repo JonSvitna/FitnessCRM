@@ -67,8 +67,8 @@ Vercel automatically deploys:
 
 ### Step 2: Configure Service
 
-1. **Root Directory**: Leave empty or set to `/` (Railway will detect backend)
-2. **Start Command**: `gunicorn app:app` (defined in Procfile)
+1. **Root Directory**: Set to `backend` (required for Railway to find Procfile and requirements.txt)
+2. **Start Command**: `gunicorn app:app` (defined in Procfile, uses the app instance from app.py)
 3. **Builder**: Nixpacks (auto-detected)
 
 ### Step 3: Add PostgreSQL Database
