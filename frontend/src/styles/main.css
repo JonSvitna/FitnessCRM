@@ -70,4 +70,102 @@
   .stat-card {
     @apply bg-gradient-to-br from-orange-500 to-primary-600 text-white rounded-2xl p-6 shadow-xl;
   }
+
+  /* Sidebar Navigation */
+  .sidebar {
+    @apply fixed left-0 top-0 h-full bg-white border-r border-neutral-200 transition-all duration-300 z-40 flex flex-col shadow-lg;
+  }
+
+  .sidebar-expanded {
+    @apply w-64;
+  }
+
+  .sidebar-collapsed {
+    @apply w-20;
+  }
+
+  .sidebar-header {
+    @apply flex items-center px-6 py-5 border-b border-neutral-200;
+  }
+
+  .sidebar-nav {
+    @apply flex-1 overflow-y-auto py-6;
+  }
+
+  .sidebar-item {
+    @apply flex items-center px-6 py-3 text-neutral-700 hover:bg-orange-50 hover:text-orange-600 transition-all duration-200 cursor-pointer group relative;
+  }
+
+  .sidebar-item-active {
+    @apply bg-gradient-to-r from-orange-50 to-primary-50 text-orange-600 border-r-4 border-orange-600;
+  }
+
+  .sidebar-icon {
+    @apply w-6 h-6 mr-4 flex-shrink-0;
+  }
+
+  .sidebar-label {
+    @apply font-medium truncate;
+  }
+
+  .sidebar-footer {
+    @apply border-t border-neutral-200 p-4;
+  }
+
+  .main-content {
+    @apply transition-all duration-300;
+  }
+
+  .main-content-expanded {
+    @apply ml-64;
+  }
+
+  .main-content-collapsed {
+    @apply ml-20;
+  }
+
+  .top-bar {
+    @apply sticky top-0 z-30 bg-white border-b border-neutral-200 px-6 py-4 flex items-center justify-between shadow-sm;
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .sidebar {
+      @apply -translate-x-full;
+    }
+
+    .sidebar-mobile-open {
+      @apply translate-x-0;
+    }
+
+    .main-content-expanded,
+    .main-content-collapsed {
+      @apply ml-0;
+    }
+
+    .mobile-overlay {
+      @apply fixed inset-0 bg-black bg-opacity-50 z-30;
+    }
+  }
+
+  /* Dark Mode Sidebar (for admin dashboard) */
+  .sidebar-dark {
+    @apply bg-dark-secondary border-dark-tertiary;
+  }
+
+  .sidebar-dark .sidebar-header {
+    @apply border-dark-tertiary;
+  }
+
+  .sidebar-dark .sidebar-item {
+    @apply text-gray-300 hover:bg-dark-tertiary hover:text-primary-400;
+  }
+
+  .sidebar-dark .sidebar-item-active {
+    @apply bg-gradient-to-r from-dark-tertiary to-dark-tertiary text-primary-400 border-primary-500;
+  }
+
+  .sidebar-dark .sidebar-footer {
+    @apply border-dark-tertiary;
+  }
 }

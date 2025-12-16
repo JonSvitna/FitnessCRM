@@ -11,7 +11,77 @@ let state = {
   meals: [],
   progress: [],
   messages: [],
+  sidebarExpanded: true,
 };
+
+// Sidebar functionality
+function initSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const mainContent = document.getElementById('main-content');
+  const sidebarToggle = document.getElementById('sidebar-toggle');
+  const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+  const mobileOverlay = document.getElementById('mobile-overlay');
+  const collapseIcon = document.getElementById('collapse-icon');
+  const sidebarLogoText = document.getElementById('sidebar-logo-text');
+
+  if (!sidebar || !mainContent) return;
+
+  if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', () => {
+      state.sidebarExpanded = !state.sidebarExpanded;
+      
+      if (state.sidebarExpanded) {
+        sidebar.classList.remove('sidebar-collapsed');
+        sidebar.classList.add('sidebar-expanded');
+        mainContent.classList.remove('main-content-collapsed');
+        mainContent.classList.add('main-content-expanded');
+        if (sidebarLogoText) sidebarLogoText.classList.remove('hidden');
+        document.querySelectorAll('.sidebar-label').forEach(label => label.classList.remove('hidden'));
+      } else {
+        sidebar.classList.remove('sidebar-expanded');
+        sidebar.classList.add('sidebar-collapsed');
+        mainContent.classList.remove('main-content-expanded');
+        mainContent.classList.add('main-content-collapsed');
+        if (sidebarLogoText) sidebarLogoText.classList.add('hidden');
+        document.querySelectorAll('.sidebar-label').forEach(label => label.classList.add('hidden'));
+      }
+
+      if (collapseIcon) {
+        if (state.sidebarExpanded) {
+          collapseIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>';
+        } else {
+          collapseIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>';
+        }
+      }
+    });
+  }
+
+  if (mobileMenuToggle) {
+    mobileMenuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('sidebar-mobile-open');
+      if (mobileOverlay) mobileOverlay.classList.toggle('hidden');
+    });
+  }
+
+  if (mobileOverlay) {
+    mobileOverlay.addEventListener('click', () => {
+      sidebar.classList.remove('sidebar-mobile-open');
+      mobileOverlay.classList.add('hidden');
+    });
+  }
+}
+
+function updatePageTitle(title) {
+  const pageTitle = document.getElementById('page-title');
+  if (pageTitle) pageTitle.textContent = title;
+}
+
+function closeMobileMenu() {
+  const sidebar = document.getElementById('sidebar');
+  const mobileOverlay = document.getElementById('mobile-overlay');
+  if (sidebar) sidebar.classList.remove('sidebar-mobile-open');
+  if (mobileOverlay) mobileOverlay.classList.add('hidden');
+}
 
 // Utility functions
 function showToast(message, duration = 3000) {
@@ -24,7 +94,7 @@ function showToast(message, duration = 3000) {
   }, duration);
 }
 
-function showSection(sectionId) {
+function showSection(sectionId, title) {
   const sections = document.querySelectorAll('.section');
   sections.forEach(section => {
     section.classList.add('hidden');
@@ -36,48 +106,48 @@ function showSection(sectionId) {
     targetSection.classList.add('active');
   }
 
-  // Update nav links
-  const navButtons = document.querySelectorAll('.nav-link');
-  navButtons.forEach(btn => btn.classList.remove('nav-link-active'));
+  const sidebarItems = document.querySelectorAll('.sidebar-item');
+  sidebarItems.forEach(item => item.classList.remove('sidebar-item-active'));
   const activeNav = document.getElementById(`nav-${sectionId.replace('-section', '')}`);
-  if (activeNav) {
-    activeNav.classList.add('nav-link-active');
-  }
+  if (activeNav) activeNav.classList.add('sidebar-item-active');
+  
+  if (title) updatePageTitle(title);
+  closeMobileMenu();
 }
 
 // Navigation handlers
 document.getElementById('nav-dashboard').addEventListener('click', () => {
-  showSection('dashboard-section');
+  showSection('dashboard-section', 'Dashboard');
   loadDashboard();
 });
 
 document.getElementById('nav-profile').addEventListener('click', () => {
-  showSection('profile-section');
+  showSection('profile-section', 'My Profile');
   loadProfile();
 });
 
 document.getElementById('nav-workouts').addEventListener('click', () => {
-  showSection('workouts-section');
+  showSection('workouts-section', 'Workouts');
   loadWorkouts();
 });
 
 document.getElementById('nav-calendar').addEventListener('click', () => {
-  showSection('calendar-section');
+  showSection('calendar-section', 'Calendar');
   loadCalendar();
 });
 
 document.getElementById('nav-meals').addEventListener('click', () => {
-  showSection('meals-section');
+  showSection('meals-section', 'Nutrition');
   loadMeals();
 });
 
 document.getElementById('nav-progress').addEventListener('click', () => {
-  showSection('progress-section');
+  showSection('progress-section', 'Progress');
   loadProgress();
 });
 
 document.getElementById('nav-messages').addEventListener('click', () => {
-  showSection('messages-section');
+  showSection('messages-section', 'Messages');
   loadMessages();
 });
 
@@ -261,5 +331,6 @@ document.getElementById('message-form').addEventListener('submit', async (e) => 
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+  initSidebar();
   loadDashboard();
 });
