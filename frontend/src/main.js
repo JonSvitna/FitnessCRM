@@ -7,6 +7,8 @@ let state = {
   clients: [],
   assignments: [],
   settings: null,
+  trainersPagination: { page: 1, per_page: 25, total: 0, pages: 0 },
+  clientsPagination: { page: 1, per_page: 25, total: 0, pages: 0 },
 };
 
 // Utility functions
@@ -165,13 +167,58 @@ async function loadDashboard() {
 // Load trainers with optional search and filter
 async function loadTrainers(searchParams = {}) {
   try {
-    const response = await trainerAPI.getAll(searchParams);
-    state.trainers = response.data;
+    const params = {
+      ...searchParams,
+      page: state.trainersPagination.page,
+      per_page: state.trainersPagination.per_page
+    };
+    const response = await trainerAPI.getAll(params);
+    
+    // Handle both old format (array) and new format (paginated object)
+    if (Array.isArray(response.data)) {
+      state.trainers = response.data;
+      state.trainersPagination.total = response.data.length;
+    } else {
+      state.trainers = response.data.items || [];
+      state.trainersPagination = {
+        ...state.trainersPagination,
+        total: response.data.total,
+        pages: response.data.pages,
+        page: response.data.page
+      };
+    }
+    
     renderTrainers();
+    updateTrainersPaginationUI();
   } catch (error) {
     console.error('Error loading trainers:', error);
     document.getElementById('trainers-list').innerHTML = '<p class="text-gray-400">Error loading trainers</p>';
   }
+}
+
+function updateTrainersPaginationUI() {
+  const paginationDiv = document.getElementById('trainers-pagination');
+  const { page, per_page, total, pages } = state.trainersPagination;
+  
+  if (total === 0) {
+    paginationDiv?.classList.add('hidden');
+    return;
+  }
+  
+  paginationDiv?.classList.remove('hidden');
+  
+  const start = (page - 1) * per_page + 1;
+  const end = Math.min(page * per_page, total);
+  
+  document.getElementById('trainers-showing').textContent = `${start}-${end}`;
+  document.getElementById('trainers-total').textContent = total;
+  document.getElementById('trainers-page-info').textContent = `Page ${page} of ${pages}`;
+  
+  const prevBtn = document.getElementById('trainers-prev');
+  const nextBtn = document.getElementById('trainers-next');
+  
+  if (prevBtn) prevBtn.disabled = page <= 1;
+  if (nextBtn) nextBtn.disabled = page >= pages;
 }
 
 // Trainer search and filter handlers
@@ -190,7 +237,35 @@ document.getElementById('trainer-specialization-filter')?.addEventListener('chan
 document.getElementById('trainer-clear-filters')?.addEventListener('click', () => {
   document.getElementById('trainer-search').value = '';
   document.getElementById('trainer-specialization-filter').value = '';
+  state.trainersPagination.page = 1;
   loadTrainers();
+});
+
+// Trainer pagination handlers
+document.getElementById('trainers-per-page')?.addEventListener('change', (e) => {
+  state.trainersPagination.per_page = parseInt(e.target.value);
+  state.trainersPagination.page = 1;
+  const search = document.getElementById('trainer-search').value;
+  const specialization = document.getElementById('trainer-specialization-filter').value;
+  loadTrainers({ search, specialization });
+});
+
+document.getElementById('trainers-prev')?.addEventListener('click', () => {
+  if (state.trainersPagination.page > 1) {
+    state.trainersPagination.page--;
+    const search = document.getElementById('trainer-search').value;
+    const specialization = document.getElementById('trainer-specialization-filter').value;
+    loadTrainers({ search, specialization });
+  }
+});
+
+document.getElementById('trainers-next')?.addEventListener('click', () => {
+  if (state.trainersPagination.page < state.trainersPagination.pages) {
+    state.trainersPagination.page++;
+    const search = document.getElementById('trainer-search').value;
+    const specialization = document.getElementById('trainer-specialization-filter').value;
+    loadTrainers({ search, specialization });
+  }
 });
 
 function renderTrainers() {
@@ -224,13 +299,58 @@ function renderTrainers() {
 // Load clients with optional search and filter
 async function loadClients(searchParams = {}) {
   try {
-    const response = await clientAPI.getAll(searchParams);
-    state.clients = response.data;
+    const params = {
+      ...searchParams,
+      page: state.clientsPagination.page,
+      per_page: state.clientsPagination.per_page
+    };
+    const response = await clientAPI.getAll(params);
+    
+    // Handle both old format (array) and new format (paginated object)
+    if (Array.isArray(response.data)) {
+      state.clients = response.data;
+      state.clientsPagination.total = response.data.length;
+    } else {
+      state.clients = response.data.items || [];
+      state.clientsPagination = {
+        ...state.clientsPagination,
+        total: response.data.total,
+        pages: response.data.pages,
+        page: response.data.page
+      };
+    }
+    
     renderClients();
+    updateClientsPaginationUI();
   } catch (error) {
     console.error('Error loading clients:', error);
     document.getElementById('clients-list').innerHTML = '<p class="text-gray-400">Error loading clients</p>';
   }
+}
+
+function updateClientsPaginationUI() {
+  const paginationDiv = document.getElementById('clients-pagination');
+  const { page, per_page, total, pages } = state.clientsPagination;
+  
+  if (total === 0) {
+    paginationDiv?.classList.add('hidden');
+    return;
+  }
+  
+  paginationDiv?.classList.remove('hidden');
+  
+  const start = (page - 1) * per_page + 1;
+  const end = Math.min(page * per_page, total);
+  
+  document.getElementById('clients-showing').textContent = `${start}-${end}`;
+  document.getElementById('clients-total').textContent = total;
+  document.getElementById('clients-page-info').textContent = `Page ${page} of ${pages}`;
+  
+  const prevBtn = document.getElementById('clients-prev');
+  const nextBtn = document.getElementById('clients-next');
+  
+  if (prevBtn) prevBtn.disabled = page <= 1;
+  if (nextBtn) nextBtn.disabled = page >= pages;
 }
 
 // Client search and filter handlers
@@ -249,7 +369,35 @@ document.getElementById('client-status-filter')?.addEventListener('change', (e) 
 document.getElementById('client-clear-filters')?.addEventListener('click', () => {
   document.getElementById('client-search').value = '';
   document.getElementById('client-status-filter').value = '';
+  state.clientsPagination.page = 1;
   loadClients();
+});
+
+// Client pagination handlers
+document.getElementById('clients-per-page')?.addEventListener('change', (e) => {
+  state.clientsPagination.per_page = parseInt(e.target.value);
+  state.clientsPagination.page = 1;
+  const search = document.getElementById('client-search').value;
+  const status = document.getElementById('client-status-filter').value;
+  loadClients({ search, status });
+});
+
+document.getElementById('clients-prev')?.addEventListener('click', () => {
+  if (state.clientsPagination.page > 1) {
+    state.clientsPagination.page--;
+    const search = document.getElementById('client-search').value;
+    const status = document.getElementById('client-status-filter').value;
+    loadClients({ search, status });
+  }
+});
+
+document.getElementById('clients-next')?.addEventListener('click', () => {
+  if (state.clientsPagination.page < state.clientsPagination.pages) {
+    state.clientsPagination.page++;
+    const search = document.getElementById('client-search').value;
+    const status = document.getElementById('client-status-filter').value;
+    loadClients({ search, status });
+  }
 });
 
 function renderClients() {

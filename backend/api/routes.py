@@ -34,8 +34,27 @@ def get_trainers():
         active_bool = active.lower() in ['true', '1', 'yes']
         query = query.filter(Trainer.active == active_bool)
     
-    trainers = query.order_by(Trainer.name).all()
-    return jsonify([trainer.to_dict() for trainer in trainers]), 200
+    # Pagination
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 25, type=int)
+    per_page = min(per_page, 100)  # Max 100 items per page
+    
+    # Get total count before pagination
+    total = query.count()
+    
+    # Apply pagination
+    query = query.order_by(Trainer.name)
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    
+    return jsonify({
+        'items': [trainer.to_dict() for trainer in pagination.items],
+        'total': total,
+        'page': page,
+        'per_page': per_page,
+        'pages': pagination.pages,
+        'has_next': pagination.has_next,
+        'has_prev': pagination.has_prev
+    }), 200
 
 @api_bp.route('/trainers/<int:trainer_id>', methods=['GET'])
 def get_trainer(trainer_id):
@@ -150,8 +169,27 @@ def get_clients():
     if goals:
         query = query.filter(Client.goals.ilike(f'%{goals}%'))
     
-    clients = query.order_by(Client.name).all()
-    return jsonify([client.to_dict() for client in clients]), 200
+    # Pagination
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 25, type=int)
+    per_page = min(per_page, 100)  # Max 100 items per page
+    
+    # Get total count before pagination
+    total = query.count()
+    
+    # Apply pagination
+    query = query.order_by(Client.name)
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    
+    return jsonify({
+        'items': [client.to_dict() for client in pagination.items],
+        'total': total,
+        'page': page,
+        'per_page': per_page,
+        'pages': pagination.pages,
+        'has_next': pagination.has_next,
+        'has_prev': pagination.has_prev
+    }), 200
 
 @api_bp.route('/clients/<int:client_id>', methods=['GET'])
 def get_client(client_id):

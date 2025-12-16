@@ -142,9 +142,28 @@
 
         <!-- Trainers List -->
         <div class="card">
-          <h3 class="text-xl font-semibold text-primary-500 mb-4">Current Trainers</h3>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-semibold text-primary-500">Current Trainers</h3>
+            <div class="flex items-center gap-2">
+              <select id="trainers-per-page" class="input-field py-1 text-sm">
+                <option value="10">10 per page</option>
+                <option value="25" selected>25 per page</option>
+                <option value="50">50 per page</option>
+              </select>
+            </div>
+          </div>
           <div id="trainers-list" class="space-y-3 max-h-96 overflow-y-auto">
             <p class="text-gray-400">No trainers added yet</p>
+          </div>
+          <div id="trainers-pagination" class="mt-4 flex items-center justify-between text-sm hidden">
+            <div class="text-gray-400">
+              Showing <span id="trainers-showing"></span> of <span id="trainers-total"></span>
+            </div>
+            <div class="flex gap-2">
+              <button id="trainers-prev" class="btn-outline py-1 px-3 text-sm" disabled>Previous</button>
+              <span id="trainers-page-info" class="px-3 py-1 text-gray-400">Page 1</span>
+              <button id="trainers-next" class="btn-outline py-1 px-3 text-sm" disabled>Next</button>
+            </div>
           </div>
         </div>
       </div>
@@ -212,9 +231,28 @@
 
         <!-- Clients List -->
         <div class="card">
-          <h3 class="text-xl font-semibold text-primary-500 mb-4">Current Clients</h3>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-semibold text-primary-500">Current Clients</h3>
+            <div class="flex items-center gap-2">
+              <select id="clients-per-page" class="input-field py-1 text-sm">
+                <option value="10">10 per page</option>
+                <option value="25" selected>25 per page</option>
+                <option value="50">50 per page</option>
+              </select>
+            </div>
+          </div>
           <div id="clients-list" class="space-y-3 max-h-96 overflow-y-auto">
             <p class="text-gray-400">No clients added yet</p>
+          </div>
+          <div id="clients-pagination" class="mt-4 flex items-center justify-between text-sm hidden">
+            <div class="text-gray-400">
+              Showing <span id="clients-showing"></span> of <span id="clients-total"></span>
+            </div>
+            <div class="flex gap-2">
+              <button id="clients-prev" class="btn-outline py-1 px-3 text-sm" disabled>Previous</button>
+              <span id="clients-page-info" class="px-3 py-1 text-gray-400">Page 1</span>
+              <button id="clients-next" class="btn-outline py-1 px-3 text-sm" disabled>Next</button>
+            </div>
           </div>
         </div>
       </div>
