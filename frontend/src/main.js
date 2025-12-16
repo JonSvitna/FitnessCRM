@@ -132,25 +132,30 @@ document.getElementById('assignment-form').addEventListener('submit', async (e) 
 async function loadDashboard() {
   try {
     const [trainersResponse, clientsResponse, assignmentsResponse] = await Promise.all([
-      trainerAPI.getAll(),
-      clientAPI.getAll(),
+      trainerAPI.getAll({ per_page: 1000 }),
+      clientAPI.getAll({ per_page: 1000 }),
       crmAPI.getAssignments(),
     ]);
 
-    state.trainers = trainersResponse.data;
-    state.clients = clientsResponse.data;
+    // Handle both paginated and non-paginated responses
+    state.trainers = Array.isArray(trainersResponse.data) ? trainersResponse.data : (trainersResponse.data.items || []);
+    state.clients = Array.isArray(clientsResponse.data) ? clientsResponse.data : (clientsResponse.data.items || []);
     state.assignments = assignmentsResponse.data;
 
-    document.getElementById('total-trainers').textContent = state.trainers.length;
-    document.getElementById('total-clients').textContent = state.clients.length;
+    document.getElementById('total-trainers').textContent = Array.isArray(trainersResponse.data) ? trainersResponse.data.length : (trainersResponse.data.total || 0);
+    document.getElementById('total-clients').textContent = Array.isArray(clientsResponse.data) ? clientsResponse.data.length : (clientsResponse.data.total || 0);
     document.getElementById('total-assignments').textContent = state.assignments.length;
 
     // Load recent activity
     const activityContainer = document.getElementById('recent-activity');
     if (state.assignments.length > 0) {
+      // Handle both array and paginated object responses
+      const trainers = Array.isArray(state.trainers) ? state.trainers : (state.trainers.items || []);
+      const clients = Array.isArray(state.clients) ? state.clients : (state.clients.items || []);
+      
       activityContainer.innerHTML = state.assignments.slice(0, 5).map(assignment => {
-        const trainer = state.trainers.find(t => t.id === assignment.trainer_id);
-        const client = state.clients.find(c => c.id === assignment.client_id);
+        const trainer = trainers.find(t => t.id === assignment.trainer_id);
+        const client = clients.find(c => c.id === assignment.client_id);
         return `
           <div class="flex items-center justify-between p-3 bg-dark-tertiary rounded">
             <div>
@@ -294,12 +299,15 @@ document.getElementById('trainers-next')?.addEventListener('click', () => {
 
 function renderTrainers() {
   const container = document.getElementById('trainers-list');
-  if (state.trainers.length === 0) {
+  // Handle both array and paginated object responses
+  const trainers = Array.isArray(state.trainers) ? state.trainers : (state.trainers.items || []);
+  
+  if (trainers.length === 0) {
     container.innerHTML = '<p class="text-gray-400">No trainers added yet</p>';
     return;
   }
 
-  container.innerHTML = state.trainers.map(trainer => `
+  container.innerHTML = trainers.map(trainer => `
     <div class="p-4 bg-dark-tertiary rounded-lg">
       <div class="flex items-start justify-between">
         <div class="flex-1">
@@ -445,12 +453,15 @@ document.getElementById('clients-next')?.addEventListener('click', () => {
 
 function renderClients() {
   const container = document.getElementById('clients-list');
-  if (state.clients.length === 0) {
+  // Handle both array and paginated object responses
+  const clients = Array.isArray(state.clients) ? state.clients : (state.clients.items || []);
+  
+  if (clients.length === 0) {
     container.innerHTML = '<p class="text-gray-400">No clients added yet</p>';
     return;
   }
 
-  container.innerHTML = state.clients.map(client => `
+  container.innerHTML = clients.map(client => `
     <div class="p-4 bg-dark-tertiary rounded-lg">
       <div class="flex items-start justify-between">
         <div class="flex-1">
@@ -473,7 +484,12 @@ function renderClients() {
 
 // Load management section
 async function loadManagement() {
-  await Promise.all([loadTrainers(), loadClients(), loadAssignments()]);
+  // Load all trainers and clients for management view (no pagination)
+  await Promise.all([
+    loadTrainers({ per_page: 1000 }),
+    loadClients({ per_page: 1000 }),
+    loadAssignments()
+  ]);
   updateAssignmentSelects();
 }
 
@@ -481,11 +497,15 @@ function updateAssignmentSelects() {
   const trainerSelect = document.getElementById('assignment-trainer-select');
   const clientSelect = document.getElementById('assignment-client-select');
 
+  // Handle both array and paginated object responses
+  const trainers = Array.isArray(state.trainers) ? state.trainers : (state.trainers.items || []);
+  const clients = Array.isArray(state.clients) ? state.clients : (state.clients.items || []);
+
   trainerSelect.innerHTML = '<option value="">Choose a trainer...</option>' +
-    state.trainers.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+    trainers.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
 
   clientSelect.innerHTML = '<option value="">Choose a client...</option>' +
-    state.clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 }
 
 async function loadAssignments() {
@@ -506,9 +526,13 @@ function renderAssignments() {
     return;
   }
 
+  // Handle both array and paginated object responses
+  const trainers = Array.isArray(state.trainers) ? state.trainers : (state.trainers.items || []);
+  const clients = Array.isArray(state.clients) ? state.clients : (state.clients.items || []);
+
   container.innerHTML = state.assignments.map(assignment => {
-    const trainer = state.trainers.find(t => t.id === assignment.trainer_id);
-    const client = state.clients.find(c => c.id === assignment.client_id);
+    const trainer = trainers.find(t => t.id === assignment.trainer_id);
+    const client = clients.find(c => c.id === assignment.client_id);
     return `
       <div class="p-4 bg-dark-tertiary rounded-lg">
         <div class="flex items-start justify-between">
