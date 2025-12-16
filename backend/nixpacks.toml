@@ -1,0 +1,17 @@
+# Nixpacks configuration for Python 3.11 backend
+# Used when Root Directory is set to "backend" in Railway
+#
+# Note: This is NOT redundant with Procfile:
+# - Nixpacks reads this file to set up the build environment
+# - Procfile is a Railway/Heroku standard that can be used as an alternative
+# - [start] section is REQUIRED by Nixpacks to define the start command
+# - Railway will use this config when Root Directory is set to "backend"
+
+[phases.setup]
+nixPkgs = ["python311", "postgresql"]
+
+[phases.install]
+cmds = ["pip install --no-cache-dir -r requirements.txt"]
+
+[start]
+cmd = "gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --log-level info --access-logfile - --error-logfile -"
