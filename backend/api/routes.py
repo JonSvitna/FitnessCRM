@@ -200,6 +200,8 @@ def get_client(client_id):
 @api_bp.route('/clients', methods=['POST'])
 def create_client():
     """Create a new client"""
+    from utils.email import send_welcome_email
+    
     data = request.get_json()
     
     if not data or not data.get('name') or not data.get('email'):
@@ -216,6 +218,14 @@ def create_client():
         )
         db.session.add(client)
         db.session.commit()
+        
+        # Send welcome email
+        send_welcome_email(client.name, client.email)
+        
+        log_activity('create', 'client', client.id, user_identifier=client.email,
+                    details={'name': client.name})
+        logger.info(f"Client created: {client.name} (ID: {client.id})")
+        
         return jsonify(client.to_dict()), 201
     except IntegrityError:
         db.session.rollback()
@@ -301,6 +311,8 @@ def get_stats():
 @api_bp.route('/crm/assign', methods=['POST'])
 def assign_client_to_trainer():
     """Assign a client to a trainer"""
+    from utils.email import send_assignment_notification, send_client_assignment_notification
+    
     data = request.get_json()
     
     if not data or not data.get('trainer_id') or not data.get('client_id'):
@@ -323,9 +335,19 @@ def assign_client_to_trainer():
         )
         db.session.add(assignment)
         db.session.commit()
+        
+        # Send email notifications
+        send_assignment_notification(trainer.email, trainer.name, client.name)
+        send_client_assignment_notification(client.email, client.name, trainer.name)
+        
+        log_activity('create', 'assignment', assignment.id,
+                    details={'trainer': trainer.name, 'client': client.name})
+        logger.info(f"Assignment created: {trainer.name} <-> {client.name}")
+        
         return jsonify(assignment.to_dict()), 201
     except Exception as e:
         db.session.rollback()
+        logger.error(f"Error creating assignment: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/crm/assignments', methods=['GET'])

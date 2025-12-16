@@ -64,6 +64,11 @@ document.getElementById('nav-management').addEventListener('click', () => {
   loadManagement();
 });
 
+document.getElementById('nav-activity').addEventListener('click', () => {
+  showSection('activity-section');
+  loadActivityLog();
+});
+
 document.getElementById('nav-settings').addEventListener('click', () => {
   showSection('settings-section');
   loadSettings();
@@ -241,6 +246,25 @@ document.getElementById('trainer-clear-filters')?.addEventListener('click', () =
   loadTrainers();
 });
 
+document.getElementById('trainer-export-csv')?.addEventListener('click', async () => {
+  try {
+    // Get all trainers without pagination
+    const response = await trainerAPI.getAll({ per_page: 1000 });
+    const trainers = response.data.items || response.data;
+    
+    if (!trainers || trainers.length === 0) {
+      showToast('No trainers to export');
+      return;
+    }
+    
+    exportToCSV(trainers, 'trainers');
+    showToast('Trainers exported successfully!');
+  } catch (error) {
+    console.error('Error exporting trainers:', error);
+    showToast('Error exporting trainers');
+  }
+});
+
 // Trainer pagination handlers
 document.getElementById('trainers-per-page')?.addEventListener('change', (e) => {
   state.trainersPagination.per_page = parseInt(e.target.value);
@@ -353,6 +377,25 @@ function updateClientsPaginationUI() {
   if (nextBtn) nextBtn.disabled = page >= pages;
 }
 
+
+document.getElementById('client-export-csv')?.addEventListener('click', async () => {
+  try {
+    // Get all clients without pagination
+    const response = await clientAPI.getAll({ per_page: 1000 });
+    const clients = response.data.items || response.data;
+    
+    if (!clients || clients.length === 0) {
+      showToast('No clients to export');
+      return;
+    }
+    
+    exportToCSV(clients, 'clients');
+    showToast('Clients exported successfully!');
+  } catch (error) {
+    console.error('Error exporting clients:', error);
+    showToast('Error exporting clients');
+  }
+});
 // Client search and filter handlers
 document.getElementById('client-search')?.addEventListener('input', (e) => {
   const search = e.target.value;
@@ -633,6 +676,155 @@ document.getElementById('test-twilio-btn').addEventListener('click', async () =>
     showToast('Twilio connection failed. Check your settings.');
   }
 });
+
+// Activity Log functions
+async function loadActivityLog() {
+  try {
+    const [activitiesResponse, statsResponse] = await Promise.all([
+      activityAPI.getRecent(100),
+      activityAPI.getStats()
+    ]);
+    
+    renderActivityLog(activitiesResponse.data.activities);
+    renderActivityStats(statsResponse.data);
+  } catch (error) {
+    console.error('Error loading activity log:', error);
+    document.getElementById('activity-list').innerHTML = '<p class="text-gray-400">Error loading activities</p>';
+  }
+}
+
+function renderActivityLog(activities) {
+  const container = document.getElementById('activity-list');
+  
+  if (!activities || activities.length === 0) {
+    container.innerHTML = '<p class="text-gray-400">No activities yet</p>';
+    return;
+  }
+  
+  container.innerHTML = activities.map(activity => {
+    const date = new Date(activity.timestamp);
+    const actionColor = {
+      create: 'text-green-400',
+      update: 'text-blue-400',
+      delete: 'text-red-400',
+      view: 'text-gray-400'
+    }[activity.action] || 'text-gray-400';
+    
+    const actionIcon = {
+      create: '✨',
+      update: '✏️',
+      delete: '🗑️',
+      view: '👁️'
+    }[activity.action] || '•';
+    
+    return `
+      <div class="p-3 bg-dark-tertiary rounded-lg hover:bg-opacity-80 transition-colors">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">${actionIcon}</span>
+              <span class="${actionColor} font-semibold capitalize">${activity.action}</span>
+              <span class="text-gray-400">·</span>
+              <span class="text-primary-400 capitalize">${activity.entity_type}</span>
+              ${activity.entity_id ? `<span class="text-gray-500">#${activity.entity_id}</span>` : ''}
+            </div>
+            ${activity.details ? `<p class="text-sm text-gray-400 mt-1">${JSON.stringify(activity.details)}</p>` : ''}
+            ${activity.user_identifier ? `<p class="text-xs text-gray-500 mt-1">by ${activity.user_identifier}</p>` : ''}
+          </div>
+          <span class="text-xs text-gray-500">${date.toLocaleString()}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderActivityStats(stats) {
+  document.getElementById('activity-total').textContent = stats.total_activities || 0;
+  
+  // Calculate today and this week (simplified)
+  document.getElementById('activity-today').textContent = '-';
+  document.getElementById('activity-week').textContent = '-';
+}
+
+// Activity filter handlers
+document.getElementById('activity-type-filter')?.addEventListener('change', async (e) => {
+  const type = e.target.value;
+  const entity = document.getElementById('activity-entity-filter').value;
+  try {
+    const response = await activityAPI.getAll({ action: type, entity_type: entity });
+    renderActivityLog(response.data.activities);
+  } catch (error) {
+    console.error('Error filtering activities:', error);
+  }
+});
+
+document.getElementById('activity-entity-filter')?.addEventListener('change', async (e) => {
+  const entity = e.target.value;
+  const type = document.getElementById('activity-type-filter').value;
+  try {
+    const response = await activityAPI.getAll({ action: type, entity_type: entity });
+    renderActivityLog(response.data.activities);
+  } catch (error) {
+    console.error('Error filtering activities:', error);
+  }
+});
+
+document.getElementById('activity-clear-filters')?.addEventListener('click', () => {
+  document.getElementById('activity-type-filter').value = '';
+  document.getElementById('activity-entity-filter').value = '';
+  loadActivityLog();
+});
+
+document.getElementById('activity-export-csv')?.addEventListener('click', async () => {
+  try {
+    const response = await activityAPI.getRecent(1000);
+    const activities = response.data.activities;
+    
+    if (!activities || activities.length === 0) {
+      showToast('No activities to export');
+      return;
+    }
+    
+    exportToCSV(activities, 'activity-log');
+    showToast('Activity log exported successfully!');
+  } catch (error) {
+    console.error('Error exporting activities:', error);
+    showToast('Error exporting activities');
+  }
+});
+
+// Export to CSV utility function
+function exportToCSV(data, filename) {
+  if (!data || data.length === 0) return;
+  
+  // Get headers from first object
+  const headers = Object.keys(data[0]);
+  
+  // Create CSV content
+  let csv = headers.join(',') + '\n';
+  
+  data.forEach(row => {
+    const values = headers.map(header => {
+      const value = row[header];
+      // Handle special characters and wrap in quotes
+      if (value === null || value === undefined) return '';
+      const stringValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+      return '"' + stringValue.replace(/"/g, '""') + '"';
+    });
+    csv += values.join(',') + '\n';
+  });
+  
+  // Create download link
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', `${filename}-${new Date().toISOString().split('T')[0]}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 
 // Delete functions (global scope for inline onclick handlers)
 window.deleteTrainer = async function(id) {

@@ -6,6 +6,7 @@ from api.routes import api_bp
 from api.settings_routes import settings_bp
 from api.activity_routes import activity_bp
 from utils.logger import logger, LoggerMiddleware
+from utils.email import init_mail
 import os
 
 def create_app(config_name=None):
@@ -18,6 +19,7 @@ def create_app(config_name=None):
     
     # Initialize extensions
     db.init_app(app)
+    init_mail(app)
     
     # CORS Configuration
     # Use regex to match all Vercel deployments (they change per deployment)

@@ -22,6 +22,7 @@
           <button id="nav-trainers" class="nav-link">Trainers</button>
           <button id="nav-clients" class="nav-link">Clients</button>
           <button id="nav-management" class="nav-link">Management</button>
+          <button id="nav-activity" class="nav-link">Activity Log</button>
           <button id="nav-settings" class="nav-link">Settings</button>
         </div>
       </div>
@@ -103,6 +104,7 @@
               <option value="HIIT">HIIT</option>
             </select>
             <button id="trainer-clear-filters" class="btn-outline">Clear</button>
+            <button id="trainer-export-csv" class="btn-primary">Export CSV</button>
           </div>
         </div>
       </div>
@@ -191,6 +193,7 @@
               <option value="inactive">Inactive</option>
               <option value="pending">Pending</option>
             </select>
+            <button id="client-export-csv" class="btn-primary">Export CSV</button>
             <button id="client-clear-filters" class="btn-outline">Clear</button>
           </div>
         </div>
@@ -295,6 +298,60 @@
           <div id="assignments-list" class="space-y-3">
             <p class="text-gray-400">No assignments yet</p>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Activity Log Section -->
+    <section id="activity-section" class="section hidden">
+      <h2 class="section-title">Activity Log</h2>
+      
+      <!-- Filters -->
+      <div class="card mb-6">
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex-1">
+            <select id="activity-type-filter" class="input-field">
+              <option value="">All Actions</option>
+              <option value="create">Create</option>
+              <option value="update">Update</option>
+              <option value="delete">Delete</option>
+              <option value="view">View</option>
+            </select>
+          </div>
+          <div class="flex-1">
+            <select id="activity-entity-filter" class="input-field">
+              <option value="">All Entities</option>
+              <option value="trainer">Trainers</option>
+              <option value="client">Clients</option>
+              <option value="assignment">Assignments</option>
+            </select>
+          </div>
+          <button id="activity-clear-filters" class="btn-outline">Clear</button>
+          <button id="activity-export-csv" class="btn-primary">Export CSV</button>
+        </div>
+      </div>
+
+      <!-- Activity Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="card">
+          <p class="text-gray-400 text-sm mb-2">Total Activities</p>
+          <p id="activity-total" class="text-3xl font-bold text-primary-500">0</p>
+        </div>
+        <div class="card">
+          <p class="text-gray-400 text-sm mb-2">Today</p>
+          <p id="activity-today" class="text-3xl font-bold text-primary-500">0</p>
+        </div>
+        <div class="card">
+          <p class="text-gray-400 text-sm mb-2">This Week</p>
+          <p id="activity-week" class="text-3xl font-bold text-primary-500">0</p>
+        </div>
+      </div>
+
+      <!-- Activity List -->
+      <div class="card">
+        <h3 class="text-xl font-semibold text-primary-500 mb-4">Recent Activities</h3>
+        <div id="activity-list" class="space-y-2 max-h-[600px] overflow-y-auto">
+          <p class="text-gray-400">Loading activities...</p>
         </div>
       </div>
     </section>
