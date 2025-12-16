@@ -230,4 +230,47 @@
   .session-list-item.no-show {
     @apply border-gray-500 bg-gray-50;
   }
+
+  /* Progress Charts */
+  #weight-chart,
+  #body-composition-chart,
+  #circumferences-chart,
+  #vitals-chart {
+    height: 300px !important;
+  }
+
+  /* Workout Tabs */
+  .workout-tab {
+    @apply text-gray-600 border-b-2 border-transparent transition-colors hover:text-primary-600;
+  }
+
+  .workout-tab.active {
+    @apply text-primary-600 border-primary-600;
+  }
+
+  .workout-tab-content {
+    @apply transition-all duration-200;
+  }
+
+  /* Exercise Card */
+  .exercise-card {
+    @apply bg-white rounded-xl border-2 border-neutral-200 p-4 hover:border-primary-500 transition-all cursor-pointer;
+  }
+
+  .exercise-card h3 {
+    @apply text-lg font-semibold text-neutral-900 mb-2;
+  }
+
+  .exercise-card .badge {
+    @apply inline-block px-2 py-1 text-xs rounded-full mr-2 mb-2;
+  }
+
+  /* Template Exercise Item */
+  .template-exercise-item {
+    @apply bg-neutral-50 border border-neutral-200 rounded-lg p-4 flex items-start gap-4;
+  }
+
+  .template-exercise-item .drag-handle {
+    @apply cursor-move text-gray-400 hover:text-gray-600;
+  }
 }

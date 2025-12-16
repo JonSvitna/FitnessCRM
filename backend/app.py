@@ -7,6 +7,9 @@ from api.settings_routes import settings_bp
 from api.activity_routes import activity_bp
 from api.session_routes import session_bp
 from api.measurement_routes import measurement_bp
+from api.file_routes import file_bp
+from api.exercise_routes import exercise_bp
+from api.workout_routes import workout_bp
 from utils.logger import logger, LoggerMiddleware
 from utils.email import init_mail
 import os
@@ -45,6 +48,9 @@ def create_app(config_name=None):
     app.register_blueprint(activity_bp)
     app.register_blueprint(session_bp)
     app.register_blueprint(measurement_bp)
+    app.register_blueprint(file_bp)
+    app.register_blueprint(exercise_bp)
+    app.register_blueprint(workout_bp)
     
     # Root endpoint
     @app.route('/')
@@ -59,6 +65,11 @@ def create_app(config_name=None):
                 'crm': '/api/crm',
                 'settings': '/api/settings',
                 'activity': '/api/activity',
+                'sessions': '/api/sessions',
+                'measurements': '/api/measurements',
+                'files': '/api/files',
+                'exercises': '/api/exercises',
+                'workouts': '/api/workouts',
                 'health': '/api/health'
             }
         }), 200

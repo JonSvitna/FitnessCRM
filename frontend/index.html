@@ -64,9 +64,30 @@
         <span class="sidebar-label">Calendar</span>
       </div>
 
-      <div id="nav-activity" class="sidebar-item">
+      <div id="nav-progress" class="sidebar-item">
         <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        <span class="sidebar-label">Progress</span>
+      </div>
+
+      <div id="nav-files" class="sidebar-item">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+        </svg>
+        <span class="sidebar-label">Files</span>
+      </div>
+
+      <div id="nav-workouts" class="sidebar-item">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+        </svg>
+        <span class="sidebar-label">Workouts</span>
+      </div>
+
+      <div id="nav-activity" class="sidebar-item">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
         <span class="sidebar-label">Activity Log</span>
       </div>
@@ -485,6 +506,299 @@
       </div>
     </section>
 
+    <!-- Progress Tracking Section -->
+    <section id="progress-section" class="section hidden">
+      <h2 class="section-title">Progress Tracking</h2>
+      
+      <!-- Client Selection -->
+      <div class="card mb-6">
+        <div class="flex flex-col md:flex-row gap-4 items-end">
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-300 mb-2">Select Client</label>
+            <select id="progress-client-select" class="input-field">
+              <option value="">Choose a client...</option>
+            </select>
+          </div>
+          <button id="add-measurement-btn" class="btn-primary" disabled>
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Add Measurement
+          </button>
+        </div>
+      </div>
+
+      <!-- Progress Charts -->
+      <div id="progress-charts" class="hidden">
+        <!-- Weight Chart -->
+        <div class="card mb-6">
+          <h3 class="text-lg font-semibold text-white mb-4">Weight Progress</h3>
+          <canvas id="weight-chart"></canvas>
+        </div>
+
+        <!-- Body Composition Chart -->
+        <div class="card mb-6">
+          <h3 class="text-lg font-semibold text-white mb-4">Body Composition</h3>
+          <canvas id="body-composition-chart"></canvas>
+        </div>
+
+        <!-- Circumferences Chart -->
+        <div class="card mb-6">
+          <h3 class="text-lg font-semibold text-white mb-4">Body Measurements</h3>
+          <canvas id="circumferences-chart"></canvas>
+        </div>
+
+        <!-- Vitals Chart -->
+        <div class="card mb-6">
+          <h3 class="text-lg font-semibold text-white mb-4">Vital Signs</h3>
+          <canvas id="vitals-chart"></canvas>
+        </div>
+
+        <!-- Latest Measurements Table -->
+        <div class="card">
+          <h3 class="text-lg font-semibold text-white mb-4">Latest Measurements</h3>
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Weight</th>
+                  <th>Body Fat %</th>
+                  <th>Muscle Mass</th>
+                  <th>BMI</th>
+                  <th>Resting HR</th>
+                  <th>Blood Pressure</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="measurements-table-body">
+                <tr>
+                  <td colspan="8" class="text-center text-gray-400">No measurements recorded</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="progress-empty-state" class="text-center py-12">
+        <svg class="w-16 h-16 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        <p class="text-gray-400">Select a client to view their progress</p>
+      </div>
+    </section>
+
+    <!-- Files Section -->
+    <section id="files-section" class="section hidden">
+      <h2 class="section-title">File Management</h2>
+      
+      <!-- Client Selection & Upload -->
+      <div class="card mb-6">
+        <div class="flex flex-col md:flex-row gap-4 items-end">
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-300 mb-2">Filter by Client</label>
+            <select id="files-client-select" class="input-field">
+              <option value="">All Files</option>
+            </select>
+          </div>
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-300 mb-2">Filter by Category</label>
+            <select id="files-category-filter" class="input-field">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+          <button id="upload-file-btn" class="btn-primary">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            Upload File
+          </button>
+        </div>
+      </div>
+
+      <!-- File Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="card">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-400 text-sm">Total Files</p>
+              <p id="total-files-count" class="text-3xl font-bold text-primary-500">0</p>
+            </div>
+            <svg class="w-12 h-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="card">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-400 text-sm">Storage Used</p>
+              <p id="total-storage-used" class="text-3xl font-bold text-primary-500">0 MB</p>
+            </div>
+            <svg class="w-12 h-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="card">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-400 text-sm">Categories</p>
+              <p id="total-categories" class="text-3xl font-bold text-primary-500">0</p>
+            </div>
+            <svg class="w-12 h-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Files Table -->
+      <div class="card">
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Filename</th>
+                <th>Category</th>
+                <th>Client</th>
+                <th>Size</th>
+                <th>Uploaded</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="files-table-body">
+              <tr>
+                <td colspan="6" class="text-center text-gray-400">Loading files...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="flex justify-between items-center mt-4 pt-4 border-t border-neutral-800">
+          <div class="text-sm text-gray-400">
+            Showing <span id="files-showing-start">0</span> to <span id="files-showing-end">0</span> of <span id="files-total">0</span> files
+          </div>
+          <div class="flex gap-2">
+            <button id="files-prev-page" class="btn-outline py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+            <button id="files-next-page" class="btn-outline py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Workouts Section -->
+    <section id="workouts-section" class="section hidden">
+      <h2 class="section-title">Workout Management</h2>
+      
+      <!-- Tabs -->
+      <div class="card mb-6">
+        <div class="flex border-b border-neutral-200">
+          <button id="tab-exercises" class="workout-tab active px-6 py-3 font-semibold">Exercise Library</button>
+          <button id="tab-templates" class="workout-tab px-6 py-3 font-semibold">Workout Templates</button>
+          <button id="tab-assignments" class="workout-tab px-6 py-3 font-semibold">Client Assignments</button>
+        </div>
+      </div>
+
+      <!-- Exercise Library Tab -->
+      <div id="exercises-tab-content" class="workout-tab-content">
+        <!-- Exercise Filters -->
+        <div class="card mb-6">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <input type="text" id="exercise-search" class="input-field" placeholder="Search exercises...">
+            </div>
+            <div>
+              <select id="exercise-category-filter" class="input-field">
+                <option value="">All Categories</option>
+              </select>
+            </div>
+            <div>
+              <select id="exercise-muscle-filter" class="input-field">
+                <option value="">All Muscle Groups</option>
+              </select>
+            </div>
+            <div>
+              <button id="add-exercise-btn" class="btn-primary w-full">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Add Exercise
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exercise Grid -->
+        <div id="exercises-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="text-center py-12 col-span-full">
+            <p class="text-gray-400">Loading exercises...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workout Templates Tab -->
+      <div id="templates-tab-content" class="workout-tab-content hidden">
+        <!-- Template Actions -->
+        <div class="card mb-6">
+          <div class="flex flex-col md:flex-row gap-4 items-end">
+            <div class="flex-1">
+              <input type="text" id="template-search" class="input-field" placeholder="Search templates...">
+            </div>
+            <div>
+              <select id="template-category-filter" class="input-field">
+                <option value="">All Categories</option>
+              </select>
+            </div>
+            <button id="create-template-btn" class="btn-primary">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Create Template
+            </button>
+          </div>
+        </div>
+
+        <!-- Templates Grid -->
+        <div id="templates-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="text-center py-12 col-span-full">
+            <p class="text-gray-400">No templates yet. Create your first workout template!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Client Assignments Tab -->
+      <div id="assignments-tab-content" class="workout-tab-content hidden">
+        <!-- Client Selection -->
+        <div class="card mb-6">
+          <div class="flex flex-col md:flex-row gap-4 items-end">
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-300 mb-2">Select Client</label>
+              <select id="assignment-client-select" class="input-field">
+                <option value="">Choose a client...</option>
+              </select>
+            </div>
+            <button id="assign-workout-btn" class="btn-primary" disabled>
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Assign Workout
+            </button>
+          </div>
+        </div>
+
+        <!-- Client Assignments List -->
+        <div id="assignments-list" class="space-y-4">
+          <div class="text-center py-12">
+            <p class="text-gray-400">Select a client to view their workout assignments</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Activity Log Section -->
     <section id="activity-section" class="section hidden">
       <h2 class="section-title">Activity Log</h2>
@@ -802,6 +1116,469 @@
         <div class="flex justify-end gap-3 pt-4">
           <button type="button" id="cancel-session-btn" class="btn-secondary">Cancel</button>
           <button type="submit" class="btn-primary">Save Session</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Measurement Modal -->
+  <div id="measurement-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex items-center justify-between">
+          <h3 id="measurement-modal-title" class="text-2xl font-bold text-neutral-900">New Measurement</h3>
+          <button id="close-measurement-modal" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <form id="measurement-form" class="p-6 space-y-6">
+        <input type="hidden" id="measurement-id" name="id">
+        <input type="hidden" id="measurement-client-id" name="client_id">
+        
+        <!-- Weight Section -->
+        <div class="border-b border-neutral-200 pb-4">
+          <h4 class="text-lg font-semibold text-neutral-900 mb-4">Weight & Body Composition</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="form-label">Weight</label>
+              <div class="flex gap-2">
+                <input type="number" id="measurement-weight" name="weight" step="0.1" class="input-field flex-1" placeholder="150.0">
+                <select id="measurement-weight-unit" name="weight_unit" class="input-field w-24">
+                  <option value="lbs">lbs</option>
+                  <option value="kg">kg</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Body Fat %</label>
+              <input type="number" id="measurement-body-fat" name="body_fat_percentage" step="0.1" class="input-field" placeholder="15.5">
+            </div>
+            <div>
+              <label class="form-label">Muscle Mass (lbs/kg)</label>
+              <input type="number" id="measurement-muscle-mass" name="muscle_mass" step="0.1" class="input-field" placeholder="120.0">
+            </div>
+            <div>
+              <label class="form-label">BMI</label>
+              <input type="number" id="measurement-bmi" name="bmi" step="0.1" class="input-field" placeholder="22.5">
+            </div>
+          </div>
+        </div>
+
+        <!-- Circumferences Section -->
+        <div class="border-b border-neutral-200 pb-4">
+          <h4 class="text-lg font-semibold text-neutral-900 mb-4">Body Measurements</h4>
+          <div class="mb-2">
+            <label class="form-label">Unit</label>
+            <select id="measurement-unit" name="measurement_unit" class="input-field w-32">
+              <option value="in">inches</option>
+              <option value="cm">cm</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="form-label">Chest</label>
+              <input type="number" id="measurement-chest" name="chest" step="0.1" class="input-field" placeholder="40.0">
+            </div>
+            <div>
+              <label class="form-label">Waist</label>
+              <input type="number" id="measurement-waist" name="waist" step="0.1" class="input-field" placeholder="32.0">
+            </div>
+            <div>
+              <label class="form-label">Hips</label>
+              <input type="number" id="measurement-hips" name="hips" step="0.1" class="input-field" placeholder="38.0">
+            </div>
+            <div>
+              <label class="form-label">Left Thigh</label>
+              <input type="number" id="measurement-thigh-left" name="thigh_left" step="0.1" class="input-field" placeholder="22.0">
+            </div>
+            <div>
+              <label class="form-label">Right Thigh</label>
+              <input type="number" id="measurement-thigh-right" name="thigh_right" step="0.1" class="input-field" placeholder="22.0">
+            </div>
+            <div>
+              <label class="form-label">Left Arm</label>
+              <input type="number" id="measurement-arm-left" name="arm_left" step="0.1" class="input-field" placeholder="14.0">
+            </div>
+            <div>
+              <label class="form-label">Right Arm</label>
+              <input type="number" id="measurement-arm-right" name="arm_right" step="0.1" class="input-field" placeholder="14.0">
+            </div>
+            <div>
+              <label class="form-label">Left Calf</label>
+              <input type="number" id="measurement-calf-left" name="calf_left" step="0.1" class="input-field" placeholder="15.0">
+            </div>
+            <div>
+              <label class="form-label">Right Calf</label>
+              <input type="number" id="measurement-calf-right" name="calf_right" step="0.1" class="input-field" placeholder="15.0">
+            </div>
+          </div>
+        </div>
+
+        <!-- Vitals Section -->
+        <div class="border-b border-neutral-200 pb-4">
+          <h4 class="text-lg font-semibold text-neutral-900 mb-4">Vital Signs</h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="form-label">Resting Heart Rate (bpm)</label>
+              <input type="number" id="measurement-resting-hr" name="resting_heart_rate" class="input-field" placeholder="65">
+            </div>
+            <div>
+              <label class="form-label">Blood Pressure (Systolic)</label>
+              <input type="number" id="measurement-bp-systolic" name="blood_pressure_systolic" class="input-field" placeholder="120">
+            </div>
+            <div>
+              <label class="form-label">Blood Pressure (Diastolic)</label>
+              <input type="number" id="measurement-bp-diastolic" name="blood_pressure_diastolic" class="input-field" placeholder="80">
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes Section -->
+        <div>
+          <label class="form-label">Notes</label>
+          <textarea id="measurement-notes" name="notes" rows="3" class="input-field" placeholder="Additional notes about this measurement..."></textarea>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="cancel-measurement-btn" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Save Measurement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- File Upload Modal -->
+  <div id="file-upload-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex items-center justify-between">
+          <h3 class="text-2xl font-bold text-neutral-900">Upload File</h3>
+          <button id="close-file-modal" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <form id="file-upload-form" class="p-6 space-y-4">
+        <div>
+          <label class="form-label">File *</label>
+          <div class="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center hover:border-primary-500 transition-colors cursor-pointer" id="file-drop-zone">
+            <input type="file" id="file-input" name="file" class="hidden" required>
+            <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <p class="text-neutral-600 mb-1">Click to upload or drag and drop</p>
+            <p class="text-sm text-gray-500">PDF, DOC, DOCX, Images, Videos (max 50MB)</p>
+          </div>
+          <p id="selected-file-name" class="text-sm text-primary-600 mt-2 hidden"></p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Category *</label>
+            <select id="file-category" name="category" required class="input-field">
+              <option value="">Select category...</option>
+              <option value="workout_plan">Workout Plan</option>
+              <option value="waiver">Waiver/Contract</option>
+              <option value="assessment">Assessment</option>
+              <option value="progress_photo">Progress Photo</option>
+              <option value="document">Document</option>
+              <option value="video">Video</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Assign to Client</label>
+            <select id="file-client" name="client_id" class="input-field">
+              <option value="">No client</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">Description</label>
+          <textarea id="file-description" name="description" rows="3" class="input-field" placeholder="File description..."></textarea>
+        </div>
+
+        <input type="hidden" id="file-uploaded-by" name="uploaded_by" value="1">
+
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="cancel-file-btn" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary" id="upload-file-submit-btn">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            Upload File
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Exercise Modal -->
+  <div id="exercise-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex items-center justify-between">
+          <h3 id="exercise-modal-title" class="text-2xl font-bold text-neutral-900">Add Exercise</h3>
+          <button id="close-exercise-modal" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <form id="exercise-form" class="p-6 space-y-4">
+        <input type="hidden" id="exercise-id" name="id">
+        
+        <div>
+          <label class="form-label">Exercise Name *</label>
+          <input type="text" id="exercise-name" name="name" required class="input-field" placeholder="e.g., Bench Press">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="form-label">Category</label>
+            <select id="exercise-category" name="category" class="input-field">
+              <option value="">Select...</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Muscle Group</label>
+            <select id="exercise-muscle" name="muscle_group" class="input-field">
+              <option value="">Select...</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Difficulty</label>
+            <select id="exercise-difficulty" name="difficulty" class="input-field">
+              <option value="">Select...</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">Equipment</label>
+          <select id="exercise-equipment" name="equipment" class="input-field">
+            <option value="">Select...</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label">Description</label>
+          <textarea id="exercise-description" name="description" rows="2" class="input-field" placeholder="Brief description of the exercise"></textarea>
+        </div>
+
+        <div>
+          <label class="form-label">Instructions</label>
+          <textarea id="exercise-instructions" name="instructions" rows="3" class="input-field" placeholder="Step-by-step instructions"></textarea>
+        </div>
+
+        <div>
+          <label class="form-label">Tips</label>
+          <textarea id="exercise-tips" name="tips" rows="2" class="input-field" placeholder="Form tips and safety notes"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Image URL</label>
+            <input type="url" id="exercise-image" name="image_url" class="input-field" placeholder="https://...">
+          </div>
+          <div>
+            <label class="form-label">Video URL</label>
+            <input type="url" id="exercise-video" name="video_url" class="input-field" placeholder="https://...">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="cancel-exercise-btn" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Save Exercise</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Workout Template Modal -->
+  <div id="template-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex items-center justify-between">
+          <h3 id="template-modal-title" class="text-2xl font-bold text-neutral-900">Create Workout Template</h3>
+          <button id="close-template-modal" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <form id="template-form" class="p-6 space-y-6">
+        <input type="hidden" id="template-id" name="id">
+        
+        <!-- Template Info -->
+        <div class="border-b border-neutral-200 pb-4">
+          <h4 class="text-lg font-semibold text-neutral-900 mb-4">Template Information</h4>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="form-label">Template Name *</label>
+              <input type="text" id="template-name" name="name" required class="input-field" placeholder="e.g., Upper Body Strength">
+            </div>
+
+            <div>
+              <label class="form-label">Description</label>
+              <textarea id="template-description" name="description" rows="2" class="input-field" placeholder="Workout description and goals"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="form-label">Category</label>
+                <select id="template-category" name="category" class="input-field">
+                  <option value="">Select...</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Difficulty</label>
+                <select id="template-difficulty" name="difficulty" class="input-field">
+                  <option value="">Select...</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Duration (minutes)</label>
+                <input type="number" id="template-duration" name="duration_minutes" class="input-field" placeholder="45">
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <input type="checkbox" id="template-public" name="is_public" class="w-4 h-4 text-primary-500 rounded">
+              <label for="template-public" class="text-sm text-neutral-700">Make this template public (visible to other trainers)</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exercises -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="text-lg font-semibold text-neutral-900">Exercises</h4>
+            <button type="button" id="add-exercise-to-template-btn" class="btn-outline py-2 px-4">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Add Exercise
+            </button>
+          </div>
+
+          <div id="template-exercises-list" class="space-y-3">
+            <div class="text-center py-8 border-2 border-dashed border-neutral-300 rounded-lg">
+              <p class="text-gray-500">No exercises added yet. Click "Add Exercise" to get started.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="cancel-template-btn" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Save Template</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Exercise Selector Modal (for adding to template) -->
+  <div id="exercise-selector-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex items-center justify-between">
+          <h3 class="text-2xl font-bold text-neutral-900">Select Exercise</h3>
+          <button id="close-exercise-selector-modal" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div class="p-6">
+        <!-- Search -->
+        <div class="mb-4">
+          <input type="text" id="exercise-selector-search" class="input-field" placeholder="Search exercises...">
+        </div>
+
+        <!-- Exercise List -->
+        <div id="exercise-selector-list" class="space-y-2 max-h-96 overflow-y-auto">
+          <div class="text-center py-12">
+            <p class="text-gray-400">Loading exercises...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assign Workout Modal -->
+  <div id="assign-workout-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex items-center justify-between">
+          <h3 class="text-2xl font-bold text-neutral-900">Assign Workout</h3>
+          <button id="close-assign-modal" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <form id="assign-workout-form" class="p-6 space-y-4">
+        <div>
+          <label class="form-label">Client *</label>
+          <select id="assign-client-select" name="client_id" required class="input-field">
+            <option value="">Select client...</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label">Workout Template *</label>
+          <select id="assign-template-select" name="workout_template_id" required class="input-field">
+            <option value="">Select template...</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Start Date</label>
+            <input type="date" id="assign-start-date" name="start_date" class="input-field">
+          </div>
+          <div>
+            <label class="form-label">End Date</label>
+            <input type="date" id="assign-end-date" name="end_date" class="input-field">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">Frequency per Week</label>
+          <input type="number" id="assign-frequency" name="frequency_per_week" min="1" max="7" class="input-field" placeholder="3">
+        </div>
+
+        <div>
+          <label class="form-label">Notes</label>
+          <textarea id="assign-notes" name="notes" rows="3" class="input-field" placeholder="Assignment notes and instructions"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="cancel-assign-btn" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Assign Workout</button>
         </div>
       </form>
     </div>

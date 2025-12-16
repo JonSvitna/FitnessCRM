@@ -80,4 +80,76 @@ export const recurringSessionAPI = {
   delete: (id, deleteFuture = false) => api.delete(`/recurring-sessions/${id}?delete_future=${deleteFuture}`),
 };
 
+// Measurement API
+export const measurementAPI = {
+  create: (data) => api.post('/measurements', data),
+  getAll: (params = {}) => api.get('/measurements', { params }),
+  getById: (id) => api.get(`/measurements/${id}`),
+  update: (id, data) => api.put(`/measurements/${id}`, data),
+  delete: (id) => api.delete(`/measurements/${id}`),
+  getLatest: (clientId) => api.get(`/measurements/client/${clientId}/latest`),
+  getProgress: (clientId) => api.get(`/measurements/client/${clientId}/progress`),
+};
+
+// File API
+export const fileAPI = {
+  upload: (formData) => {
+    return api.post('/files', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  getAll: (params = {}) => api.get('/files', { params }),
+  getById: (id) => api.get(`/files/${id}`),
+  update: (id, data) => api.put(`/files/${id}`, data),
+  delete: (id) => api.delete(`/files/${id}`),
+  download: (id, filename) => {
+    const url = `${API_BASE_URL}/files/${id}/download`;
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  },
+  getCategories: () => api.get('/files/categories'),
+  getStats: (params = {}) => api.get('/files/stats', { params }),
+};
+
+// Exercise API
+export const exerciseAPI = {
+  create: (data) => api.post('/exercises', data),
+  getAll: (params = {}) => api.get('/exercises', { params }),
+  getById: (id) => api.get(`/exercises/${id}`),
+  update: (id, data) => api.put(`/exercises/${id}`, data),
+  delete: (id) => api.delete(`/exercises/${id}`),
+  getCategories: () => api.get('/exercises/categories'),
+  getMuscleGroups: () => api.get('/exercises/muscle-groups'),
+  getEquipment: () => api.get('/exercises/equipment'),
+  seed: () => api.post('/exercises/seed'),
+};
+
+// Workout API
+export const workoutAPI = {
+  // Templates
+  createTemplate: (data) => api.post('/workouts/templates', data),
+  getAllTemplates: (params = {}) => api.get('/workouts/templates', { params }),
+  getTemplate: (id) => api.get(`/workouts/templates/${id}`),
+  updateTemplate: (id, data) => api.put(`/workouts/templates/${id}`, data),
+  deleteTemplate: (id) => api.delete(`/workouts/templates/${id}`),
+  
+  // Assignments
+  assignWorkout: (data) => api.post('/workouts/assign', data),
+  getClientAssignments: (clientId, params = {}) => api.get(`/workouts/assignments/${clientId}`, { params }),
+  updateAssignment: (id, data) => api.put(`/workouts/assignments/${id}`, data),
+  
+  // Logging
+  logWorkout: (data) => api.post('/workouts/log', data),
+  getClientLogs: (clientId, params = {}) => api.get(`/workouts/logs/${clientId}`, { params }),
+  
+  // Categories
+  getCategories: () => api.get('/workouts/categories'),
+};
+
 export default api;

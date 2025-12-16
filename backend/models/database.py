@@ -430,3 +430,234 @@ class Measurement(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
+
+class File(db.Model):
+    """File storage model for documents, images, and attachments"""
+    __tablename__ = 'files'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), nullable=False)
+    original_filename = db.Column(db.String(255), nullable=False)
+    file_path = db.Column(db.String(500), nullable=False)
+    file_size = db.Column(db.Integer)  # Size in bytes
+    file_type = db.Column(db.String(100))  # MIME type
+    category = db.Column(db.String(50))  # workout_plan, waiver, assessment, progress_photo, document
+    
+    # Associations
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=True)
+    trainer_id = db.Column(db.Integer, db.ForeignKey('trainers.id'), nullable=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('sessions.id'), nullable=True)
+    
+    # Metadata
+    description = db.Column(db.Text)
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('trainers.id'), nullable=False)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    client = db.relationship('Client', foreign_keys=[client_id], backref='files')
+    trainer = db.relationship('Trainer', foreign_keys=[trainer_id], backref='trainer_files')
+    session = db.relationship('Session', foreign_keys=[session_id], backref='files')
+    uploader = db.relationship('Trainer', foreign_keys=[uploaded_by], backref='uploaded_files')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'filename': self.filename,
+            'original_filename': self.original_filename,
+            'file_path': self.file_path,
+            'file_size': self.file_size,
+            'file_type': self.file_type,
+            'category': self.category,
+            'client_id': self.client_id,
+            'trainer_id': self.trainer_id,
+            'session_id': self.session_id,
+            'description': self.description,
+            'uploaded_by': self.uploaded_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+class Exercise(db.Model):
+    """Exercise library model"""
+    __tablename__ = 'exercises'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    category = db.Column(db.String(100))  # strength, cardio, flexibility, balance, sports
+    muscle_group = db.Column(db.String(100))  # chest, back, legs, shoulders, arms, core, full_body
+    equipment = db.Column(db.String(200))  # bodyweight, dumbbells, barbell, machine, bands, etc.
+    difficulty = db.Column(db.String(50))  # beginner, intermediate, advanced
+    
+    # Exercise details
+    description = db.Column(db.Text)
+    instructions = db.Column(db.Text)
+    tips = db.Column(db.Text)
+    
+    # Media
+    image_url = db.Column(db.String(500))
+    video_url = db.Column(db.String(500))
+    
+    # Metadata
+    is_custom = db.Column(db.Boolean, default=False)  # True if created by trainer
+    created_by = db.Column(db.Integer, db.ForeignKey('trainers.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    creator = db.relationship('Trainer', foreign_keys=[created_by], backref='created_exercises')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'category': self.category,
+            'muscle_group': self.muscle_group,
+            'equipment': self.equipment,
+            'difficulty': self.difficulty,
+            'description': self.description,
+            'instructions': self.instructions,
+            'tips': self.tips,
+            'image_url': self.image_url,
+            'video_url': self.video_url,
+            'is_custom': self.is_custom,
+            'created_by': self.created_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+class WorkoutTemplate(db.Model):
+    """Workout template model"""
+    __tablename__ = 'workout_templates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    category = db.Column(db.String(100))  # strength, cardio, hiit, circuit, flexibility
+    difficulty = db.Column(db.String(50))  # beginner, intermediate, advanced
+    duration_minutes = db.Column(db.Integer)  # Estimated duration
+    
+    # Ownership
+    created_by = db.Column(db.Integer, db.ForeignKey('trainers.id'), nullable=False)
+    is_public = db.Column(db.Boolean, default=False)  # Can other trainers see/use it
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    creator = db.relationship('Trainer', foreign_keys=[created_by], backref='workout_templates')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'category': self.category,
+            'difficulty': self.difficulty,
+            'duration_minutes': self.duration_minutes,
+            'created_by': self.created_by,
+            'is_public': self.is_public,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+class WorkoutExercise(db.Model):
+    """Exercises within a workout template"""
+    __tablename__ = 'workout_exercises'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    workout_template_id = db.Column(db.Integer, db.ForeignKey('workout_templates.id'), nullable=False)
+    exercise_id = db.Column(db.Integer, db.ForeignKey('exercises.id'), nullable=False)
+    
+    # Exercise parameters
+    order = db.Column(db.Integer, default=0)  # Order in workout
+    sets = db.Column(db.Integer)
+    reps = db.Column(db.String(50))  # Can be "12" or "8-12" or "AMRAP"
+    duration_seconds = db.Column(db.Integer)  # For timed exercises
+    rest_seconds = db.Column(db.Integer)  # Rest between sets
+    weight = db.Column(db.String(50))  # Can be "bodyweight", "50 lbs", "RPE 8", etc.
+    notes = db.Column(db.Text)
+    
+    workout_template = db.relationship('WorkoutTemplate', backref=db.backref('exercises', lazy='dynamic', cascade='all, delete-orphan'))
+    exercise = db.relationship('Exercise', backref='workout_exercises')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'workout_template_id': self.workout_template_id,
+            'exercise_id': self.exercise_id,
+            'exercise': self.exercise.to_dict() if self.exercise else None,
+            'order': self.order,
+            'sets': self.sets,
+            'reps': self.reps,
+            'duration_seconds': self.duration_seconds,
+            'rest_seconds': self.rest_seconds,
+            'weight': self.weight,
+            'notes': self.notes,
+        }
+
+class ClientWorkout(db.Model):
+    """Assigned workouts to clients"""
+    __tablename__ = 'client_workouts'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
+    workout_template_id = db.Column(db.Integer, db.ForeignKey('workout_templates.id'), nullable=False)
+    assigned_by = db.Column(db.Integer, db.ForeignKey('trainers.id'), nullable=False)
+    
+    # Assignment details
+    assigned_date = db.Column(db.DateTime, default=datetime.utcnow)
+    start_date = db.Column(db.Date)
+    end_date = db.Column(db.Date)
+    frequency_per_week = db.Column(db.Integer)  # Recommended frequency
+    notes = db.Column(db.Text)
+    status = db.Column(db.String(50), default='active')  # active, completed, paused
+    
+    client = db.relationship('Client', backref='workouts')
+    workout_template = db.relationship('WorkoutTemplate', backref='client_assignments')
+    assigner = db.relationship('Trainer', foreign_keys=[assigned_by], backref='assigned_workouts')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'client_id': self.client_id,
+            'workout_template_id': self.workout_template_id,
+            'workout_template': self.workout_template.to_dict() if self.workout_template else None,
+            'assigned_by': self.assigned_by,
+            'assigned_date': self.assigned_date.isoformat() if self.assigned_date else None,
+            'start_date': self.start_date.isoformat() if self.start_date else None,
+            'end_date': self.end_date.isoformat() if self.end_date else None,
+            'frequency_per_week': self.frequency_per_week,
+            'notes': self.notes,
+            'status': self.status,
+        }
+
+class WorkoutLog(db.Model):
+    """Client workout completion logs"""
+    __tablename__ = 'workout_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
+    client_workout_id = db.Column(db.Integer, db.ForeignKey('client_workouts.id'), nullable=True)
+    workout_template_id = db.Column(db.Integer, db.ForeignKey('workout_templates.id'), nullable=True)
+    
+    # Log details
+    completed_date = db.Column(db.DateTime, default=datetime.utcnow)
+    duration_minutes = db.Column(db.Integer)
+    difficulty_rating = db.Column(db.Integer)  # 1-10 scale
+    notes = db.Column(db.Text)
+    
+    client = db.relationship('Client', backref='workout_logs')
+    client_workout = db.relationship('ClientWorkout', backref='logs')
+    workout_template = db.relationship('WorkoutTemplate', backref='logs')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'client_id': self.client_id,
+            'client_workout_id': self.client_workout_id,
+            'workout_template_id': self.workout_template_id,
+            'completed_date': self.completed_date.isoformat() if self.completed_date else None,
+            'duration_minutes': self.duration_minutes,
+            'difficulty_rating': self.difficulty_rating,
+            'notes': self.notes,
+        }
