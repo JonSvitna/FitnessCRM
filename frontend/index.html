@@ -728,6 +728,71 @@
           <textarea id="session-notes" name="notes" rows="3" class="input-field" placeholder="Session notes..."></textarea>
         </div>
         
+        <!-- Recurring Session Options -->
+        <div class="border-t border-neutral-200 pt-4">
+          <div class="flex items-center gap-2 mb-4">
+            <input type="checkbox" id="session-recurring" class="w-4 h-4 text-primary-500 rounded">
+            <label for="session-recurring" class="text-sm font-semibold text-neutral-900">Make this a recurring session</label>
+          </div>
+          
+          <div id="recurring-options" class="space-y-4 hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Recurrence Pattern</label>
+                <select id="recurrence-pattern" name="recurrence_pattern" class="input-field">
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="biweekly">Bi-weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Repeat on (for Weekly/Bi-weekly)</label>
+                <div class="flex gap-2 mt-2">
+                  <label class="flex items-center">
+                    <input type="checkbox" name="recurrence_days" value="0" class="w-4 h-4 text-primary-500 rounded mr-1">
+                    <span class="text-xs">Sun</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" name="recurrence_days" value="1" class="w-4 h-4 text-primary-500 rounded mr-1">
+                    <span class="text-xs">Mon</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" name="recurrence_days" value="2" class="w-4 h-4 text-primary-500 rounded mr-1">
+                    <span class="text-xs">Tue</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" name="recurrence_days" value="3" class="w-4 h-4 text-primary-500 rounded mr-1">
+                    <span class="text-xs">Wed</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" name="recurrence_days" value="4" class="w-4 h-4 text-primary-500 rounded mr-1">
+                    <span class="text-xs">Thu</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" name="recurrence_days" value="5" class="w-4 h-4 text-primary-500 rounded mr-1">
+                    <span class="text-xs">Fri</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" name="recurrence_days" value="6" class="w-4 h-4 text-primary-500 rounded mr-1">
+                    <span class="text-xs">Sat</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">End Date</label>
+                <input type="date" id="recurrence-end-date" name="recurrence_end_date" class="input-field">
+              </div>
+              <div class="flex items-end">
+                <p class="text-sm text-gray-600">Sessions will be created up to 90 days or end date, whichever comes first.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <div class="flex justify-end gap-3 pt-4">
           <button type="button" id="cancel-session-btn" class="btn-secondary">Cancel</button>
           <button type="submit" class="btn-primary">Save Session</button>

@@ -1,5 +1,5 @@
 import './styles/main.css';
-import { trainerAPI, clientAPI, crmAPI, settingsAPI, activityAPI, sessionAPI } from './api.js';
+import { trainerAPI, clientAPI, crmAPI, settingsAPI, activityAPI, sessionAPI, recurringSessionAPI } from './api.js';
 
 // State management
 let state = {
@@ -1026,6 +1026,28 @@ function setupCalendarControls() {
   
   // Session form
   document.getElementById('session-form').addEventListener('submit', handleSessionSubmit);
+  
+  // Recurring session toggle
+  document.getElementById('session-recurring').addEventListener('change', (e) => {
+    const recurringOptions = document.getElementById('recurring-options');
+    if (e.target.checked) {
+      recurringOptions.classList.remove('hidden');
+    } else {
+      recurringOptions.classList.add('hidden');
+    }
+  });
+  
+  // Set default recurrence day based on selected date
+  document.getElementById('session-date').addEventListener('change', (e) => {
+    if (document.getElementById('session-recurring').checked) {
+      const selectedDate = new Date(e.target.value);
+      const dayOfWeek = selectedDate.getDay();
+      // Auto-check the day of week for the selected date
+      document.querySelectorAll('input[name="recurrence_days"]').forEach(checkbox => {
+        checkbox.checked = parseInt(checkbox.value) === dayOfWeek;
+      });
+    }
+  });
 }
 
 function renderCalendar() {
@@ -1204,9 +1226,10 @@ function openSessionModal(date = null, session = null) {
     clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   
   if (session) {
-    // Edit mode
+    // Edit mode - hide recurring options for existing sessions
     title.textContent = 'Edit Session';
     document.getElementById('session-id').value = session.id;
+    document.getElementById('session-recurring').closest('.border-t').style.display = 'none';
     
     const sessionDate = new Date(session.session_date);
     document.getElementById('session-trainer').value = session.trainer_id;
@@ -1219,10 +1242,12 @@ function openSessionModal(date = null, session = null) {
     document.getElementById('session-status').value = session.status;
     document.getElementById('session-notes').value = session.notes || '';
   } else {
-    // Create mode
+    // Create mode - show recurring options
     title.textContent = 'New Session';
     form.reset();
     document.getElementById('session-id').value = '';
+    document.getElementById('session-recurring').closest('.border-t').style.display = 'block';
+    document.getElementById('recurring-options').classList.add('hidden');
     
     if (date) {
       document.getElementById('session-date').value = date.toISOString().split('T')[0];
@@ -1243,30 +1268,56 @@ async function handleSessionSubmit(e) {
   
   const formData = new FormData(e.target);
   const sessionId = document.getElementById('session-id').value;
+  const isRecurring = document.getElementById('session-recurring').checked;
   
   // Combine date and time
   const date = formData.get('date');
   const time = formData.get('time');
   const sessionDate = new Date(`${date}T${time}`);
   
-  const data = {
+  const baseData = {
     trainer_id: parseInt(formData.get('trainer_id')),
     client_id: parseInt(formData.get('client_id')),
-    session_date: sessionDate.toISOString(),
     duration: parseInt(formData.get('duration')),
     session_type: formData.get('session_type'),
     location: formData.get('location'),
-    status: formData.get('status'),
     notes: formData.get('notes')
   };
   
   try {
     if (sessionId) {
       // Update existing session
+      const data = {
+        ...baseData,
+        session_date: sessionDate.toISOString(),
+        status: formData.get('status')
+      };
       await sessionAPI.update(sessionId, data);
       showToast('Session updated successfully');
+    } else if (isRecurring) {
+      // Create recurring session
+      const recurrenceDays = Array.from(
+        document.querySelectorAll('input[name="recurrence_days"]:checked')
+      ).map(cb => parseInt(cb.value));
+      
+      const recurringData = {
+        ...baseData,
+        start_time: time,
+        start_date: date,
+        end_date: formData.get('recurrence_end_date') || null,
+        recurrence_pattern: formData.get('recurrence_pattern'),
+        recurrence_days: recurrenceDays.length > 0 ? recurrenceDays : null
+      };
+      
+      const response = await recurringSessionAPI.create(recurringData);
+      showToast(`Recurring session created! ${response.data.sessions_created} sessions scheduled.`);
     } else {
-      // Create new session
+      // Create single session
+      const data = {
+        ...baseData,
+        session_date: sessionDate.toISOString(),
+        status: formData.get('status')
+      };
       await sessionAPI.create(data);
       showToast('Session created successfully');
     }
@@ -1278,7 +1329,7 @@ async function handleSessionSubmit(e) {
     if (error.response && error.response.status === 409) {
       showToast('Session conflicts with existing booking');
     } else {
-      showToast('Error saving session');
+      showToast('Error saving session: ' + (error.response?.data?.error || error.message));
     }
   }
 }
