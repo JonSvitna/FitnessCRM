@@ -18,7 +18,11 @@ def create_app(config_name=None):
     
     # Initialize extensions
     db.init_app(app)
-    CORS(app)
+    
+    # CORS Configuration
+    # Allow requests from frontend (Vercel) and localhost for development
+    cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:5173,http://localhost:3000').split(',')
+    CORS(app, origins=cors_origins, supports_credentials=True)
     
     # Add logging middleware
     app.wsgi_app = LoggerMiddleware(app.wsgi_app)

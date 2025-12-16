@@ -227,6 +227,9 @@ DATABASE_URL=postgresql://user:pass@host:5432/dbname
 SECRET_KEY=your-secret-key-here
 FLASK_ENV=production
 
+# CORS Configuration - Add your Vercel domain
+CORS_ORIGINS=https://your-project.vercel.app,http://localhost:5173
+
 # Optional
 PORT=5000
 ```
@@ -343,12 +346,19 @@ Access to fetch at 'xxx' from origin 'yyy' has been blocked by CORS policy
 ```
 
 **Solution**:
-- Verify Flask-CORS is installed
-- Check CORS configuration in app.py:
+1. Verify Flask-CORS is installed
+2. Check CORS configuration in app.py:
 ```python
 from flask_cors import CORS
-CORS(app)
+cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:5173').split(',')
+CORS(app, origins=cors_origins, supports_credentials=True)
 ```
+3. Verify `CORS_ORIGINS` environment variable is set in Railway:
+```bash
+CORS_ORIGINS=https://your-project.vercel.app,http://localhost:5173
+```
+4. Make sure to include your actual Vercel domain (e.g., `https://fitness-ekirbp658-jonsvitnas-projects.vercel.app`)
+5. Restart the Railway service after adding the environment variable
 
 ## Custom Domain (Optional)
 
