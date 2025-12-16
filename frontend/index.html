@@ -81,6 +81,32 @@
     <section id="trainers-section" class="section hidden">
       <h2 class="section-title">Trainer Management</h2>
       
+      <!-- Search and Filter -->
+      <div class="card mb-6">
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex-1">
+            <input 
+              type="text" 
+              id="trainer-search" 
+              class="input-field" 
+              placeholder="🔍 Search by name, email, or phone..."
+            >
+          </div>
+          <div class="flex gap-2">
+            <select id="trainer-specialization-filter" class="input-field">
+              <option value="">All Specializations</option>
+              <option value="Strength Training">Strength Training</option>
+              <option value="Cardio">Cardio</option>
+              <option value="Yoga">Yoga</option>
+              <option value="Pilates">Pilates</option>
+              <option value="CrossFit">CrossFit</option>
+              <option value="HIIT">HIIT</option>
+            </select>
+            <button id="trainer-clear-filters" class="btn-outline">Clear</button>
+          </div>
+        </div>
+      </div>
+      
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Add Trainer Form -->
         <div class="card">
@@ -127,6 +153,29 @@
     <!-- Clients Section -->
     <section id="clients-section" class="section hidden">
       <h2 class="section-title">Client Management</h2>
+      
+      <!-- Search and Filter -->
+      <div class="card mb-6">
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex-1">
+            <input 
+              type="text" 
+              id="client-search" 
+              class="input-field" 
+              placeholder="🔍 Search by name, email, or phone..."
+            >
+          </div>
+          <div class="flex gap-2">
+            <select id="client-status-filter" class="input-field">
+              <option value="">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="pending">Pending</option>
+            </select>
+            <button id="client-clear-filters" class="btn-outline">Clear</button>
+          </div>
+        </div>
+      </div>
       
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Add Client Form -->

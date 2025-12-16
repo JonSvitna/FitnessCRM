@@ -8,8 +8,33 @@ api_bp = Blueprint('api', __name__, url_prefix='/api')
 # Trainer Routes
 @api_bp.route('/trainers', methods=['GET'])
 def get_trainers():
-    """Get all trainers"""
-    trainers = Trainer.query.all()
+    """Get all trainers with optional search and filter"""
+    query = Trainer.query
+    
+    # Search by name, email, or phone
+    search = request.args.get('search', '').strip()
+    if search:
+        search_pattern = f'%{search}%'
+        query = query.filter(
+            db.or_(
+                Trainer.name.ilike(search_pattern),
+                Trainer.email.ilike(search_pattern),
+                Trainer.phone.ilike(search_pattern)
+            )
+        )
+    
+    # Filter by specialization
+    specialization = request.args.get('specialization', '').strip()
+    if specialization:
+        query = query.filter(Trainer.specialization.ilike(f'%{specialization}%'))
+    
+    # Filter by active status
+    active = request.args.get('active')
+    if active is not None:
+        active_bool = active.lower() in ['true', '1', 'yes']
+        query = query.filter(Trainer.active == active_bool)
+    
+    trainers = query.order_by(Trainer.name).all()
     return jsonify([trainer.to_dict() for trainer in trainers]), 200
 
 @api_bp.route('/trainers/<int:trainer_id>', methods=['GET'])
@@ -100,8 +125,32 @@ def delete_trainer(trainer_id):
 # Client Routes
 @api_bp.route('/clients', methods=['GET'])
 def get_clients():
-    """Get all clients"""
-    clients = Client.query.all()
+    """Get all clients with optional search and filter"""
+    query = Client.query
+    
+    # Search by name, email, or phone
+    search = request.args.get('search', '').strip()
+    if search:
+        search_pattern = f'%{search}%'
+        query = query.filter(
+            db.or_(
+                Client.name.ilike(search_pattern),
+                Client.email.ilike(search_pattern),
+                Client.phone.ilike(search_pattern)
+            )
+        )
+    
+    # Filter by status
+    status = request.args.get('status', '').strip()
+    if status:
+        query = query.filter(Client.status == status)
+    
+    # Filter by goals
+    goals = request.args.get('goals', '').strip()
+    if goals:
+        query = query.filter(Client.goals.ilike(f'%{goals}%'))
+    
+    clients = query.order_by(Client.name).all()
     return jsonify([client.to_dict() for client in clients]), 200
 
 @api_bp.route('/clients/<int:client_id>', methods=['GET'])

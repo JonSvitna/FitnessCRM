@@ -162,10 +162,10 @@ async function loadDashboard() {
   }
 }
 
-// Load trainers
-async function loadTrainers() {
+// Load trainers with optional search and filter
+async function loadTrainers(searchParams = {}) {
   try {
-    const response = await trainerAPI.getAll();
+    const response = await trainerAPI.getAll(searchParams);
     state.trainers = response.data;
     renderTrainers();
   } catch (error) {
@@ -173,6 +173,25 @@ async function loadTrainers() {
     document.getElementById('trainers-list').innerHTML = '<p class="text-gray-400">Error loading trainers</p>';
   }
 }
+
+// Trainer search and filter handlers
+document.getElementById('trainer-search')?.addEventListener('input', (e) => {
+  const search = e.target.value;
+  const specialization = document.getElementById('trainer-specialization-filter').value;
+  loadTrainers({ search, specialization });
+});
+
+document.getElementById('trainer-specialization-filter')?.addEventListener('change', (e) => {
+  const specialization = e.target.value;
+  const search = document.getElementById('trainer-search').value;
+  loadTrainers({ search, specialization });
+});
+
+document.getElementById('trainer-clear-filters')?.addEventListener('click', () => {
+  document.getElementById('trainer-search').value = '';
+  document.getElementById('trainer-specialization-filter').value = '';
+  loadTrainers();
+});
 
 function renderTrainers() {
   const container = document.getElementById('trainers-list');
@@ -202,10 +221,10 @@ function renderTrainers() {
   `).join('');
 }
 
-// Load clients
-async function loadClients() {
+// Load clients with optional search and filter
+async function loadClients(searchParams = {}) {
   try {
-    const response = await clientAPI.getAll();
+    const response = await clientAPI.getAll(searchParams);
     state.clients = response.data;
     renderClients();
   } catch (error) {
@@ -213,6 +232,25 @@ async function loadClients() {
     document.getElementById('clients-list').innerHTML = '<p class="text-gray-400">Error loading clients</p>';
   }
 }
+
+// Client search and filter handlers
+document.getElementById('client-search')?.addEventListener('input', (e) => {
+  const search = e.target.value;
+  const status = document.getElementById('client-status-filter').value;
+  loadClients({ search, status });
+});
+
+document.getElementById('client-status-filter')?.addEventListener('change', (e) => {
+  const status = e.target.value;
+  const search = document.getElementById('client-search').value;
+  loadClients({ search, status });
+});
+
+document.getElementById('client-clear-filters')?.addEventListener('click', () => {
+  document.getElementById('client-search').value = '';
+  document.getElementById('client-status-filter').value = '';
+  loadClients();
+});
 
 function renderClients() {
   const container = document.getElementById('clients-list');

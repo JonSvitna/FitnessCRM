@@ -12,7 +12,7 @@ const api = axios.create({
 // Trainer API
 export const trainerAPI = {
   create: (data) => api.post('/api/trainers', data),
-  getAll: () => api.get('/api/trainers'),
+  getAll: (params = {}) => api.get('/api/trainers', { params }),
   getById: (id) => api.get(`/api/trainers/${id}`),
   update: (id, data) => api.put(`/api/trainers/${id}`, data),
   delete: (id) => api.delete(`/api/trainers/${id}`),
@@ -21,7 +21,7 @@ export const trainerAPI = {
 // Client API
 export const clientAPI = {
   create: (data) => api.post('/api/clients', data),
-  getAll: () => api.get('/api/clients'),
+  getAll: (params = {}) => api.get('/api/clients', { params }),
   getById: (id) => api.get(`/api/clients/${id}`),
   update: (id, data) => api.put(`/api/clients/${id}`, data),
   delete: (id) => api.delete(`/api/clients/${id}`),
