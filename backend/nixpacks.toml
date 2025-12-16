@@ -1,6 +1,11 @@
 # Nixpacks configuration for Python 3.11 backend
 # Used when Root Directory is set to "backend" in Railway
-# Start command comes from Procfile
+#
+# Note: This is NOT redundant with Procfile:
+# - Nixpacks reads this file to set up the build environment
+# - Procfile is a Railway/Heroku standard that can be used as an alternative
+# - [start] section is REQUIRED by Nixpacks to define the start command
+# - Railway will use this config when Root Directory is set to "backend"
 
 [phases.setup]
 nixPkgs = ["python311", "postgresql"]

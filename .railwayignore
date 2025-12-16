@@ -4,9 +4,8 @@
 # Frontend directory (deployed separately on Vercel)
 frontend/
 
-# Documentation
+# Documentation (not needed for deployment)
 *.md
-!backend/README.md
 CHANGELOG.md
 CONTRIBUTING.md
 FEATURES.md

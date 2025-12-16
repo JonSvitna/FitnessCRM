@@ -3,6 +3,10 @@
 # 
 # Note: Commands include "cd backend" because this file is at the repository root.
 # Railway executes commands from the root, so we navigate into backend/ first.
+#
+# This is NOT redundant with backend/nixpacks.toml - they serve different purposes:
+# - This file (railway.toml): Used when deploying from repository root (automatic config)
+# - backend/nixpacks.toml: Used when Root Directory is manually set to "backend"
 
 [build]
 builder = "nixpacks"
