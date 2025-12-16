@@ -1408,6 +1408,129 @@
     </div>
   </div>
 
+  <!-- Workout View/Edit Modal -->
+  <div id="workout-view-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex items-center justify-between">
+          <h3 id="workout-view-title" class="text-2xl font-bold text-neutral-900">Workout Details</h3>
+          <button id="close-workout-view-modal" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div class="p-6">
+        <form id="workout-view-form" class="space-y-6">
+          <input type="hidden" id="workout-view-id" name="id">
+          
+          <!-- Workout Info -->
+          <div class="border-b border-neutral-200 pb-6">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-lg font-semibold text-neutral-900">Workout Information</h4>
+              <div class="flex gap-2">
+                <button type="button" id="workout-edit-toggle-btn" class="btn-outline py-2 px-4">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                  <span id="workout-edit-toggle-text">Edit</span>
+                </button>
+                <button type="button" id="workout-assign-btn" class="btn-primary py-2 px-4">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                  </svg>
+                  Assign to Client
+                </button>
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="form-label">Workout Name *</label>
+                <input type="text" id="workout-view-name" name="name" required class="input-field" readonly>
+              </div>
+
+              <div>
+                <label class="form-label">Description</label>
+                <textarea id="workout-view-description" name="description" rows="3" class="input-field" readonly></textarea>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="form-label">Category</label>
+                  <select id="workout-view-category" name="category" class="input-field" disabled>
+                    <option value="">Select...</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Difficulty</label>
+                  <select id="workout-view-difficulty" name="difficulty" class="input-field" disabled>
+                    <option value="">Select...</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Duration (minutes)</label>
+                  <input type="number" id="workout-view-duration" name="duration_minutes" class="input-field" readonly>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label">Image URL</label>
+                  <input type="url" id="workout-view-image" name="image_url" class="input-field" readonly placeholder="https://example.com/workout.jpg">
+                </div>
+                <div>
+                  <label class="form-label">Video URL</label>
+                  <input type="url" id="workout-view-video" name="video_url" class="input-field" readonly placeholder="https://youtube.com/watch?v=...">
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input type="checkbox" id="workout-view-public" name="is_public" class="w-4 h-4 text-primary-500 rounded" disabled>
+                <label for="workout-view-public" class="text-sm text-neutral-700">Make this template public (visible to other trainers)</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Media Preview -->
+          <div id="workout-media-preview" class="border-b border-neutral-200 pb-6 hidden">
+            <h4 class="text-lg font-semibold text-neutral-900 mb-4">Media</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div id="workout-image-container" class="hidden">
+                <img id="workout-image-preview" src="" alt="Workout" class="w-full h-48 object-cover rounded-lg">
+              </div>
+              <div id="workout-video-container" class="hidden">
+                <div class="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                  <a id="workout-video-link" href="" target="_blank" class="text-primary-500 hover:text-primary-600 font-medium">Watch Video</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Exercises -->
+          <div>
+            <h4 class="text-lg font-semibold text-neutral-900 mb-4">Exercises</h4>
+            <div id="workout-view-exercises" class="space-y-3">
+              <div class="text-center py-8 border-2 border-dashed border-neutral-300 rounded-lg">
+                <p class="text-gray-500">No exercises in this workout yet.</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="workout-view-actions" class="flex justify-end gap-3 pt-4 hidden">
+            <button type="button" id="workout-view-cancel-btn" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Workout Template Modal -->
   <div id="template-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
     <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">

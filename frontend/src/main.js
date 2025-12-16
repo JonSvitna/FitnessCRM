@@ -2526,6 +2526,268 @@ function renderWorkoutTemplates() {
   `).join('');
 }
 
+// View Template Function
+window.viewTemplate = async function(templateId) {
+  try {
+    const response = await workoutAPI.getTemplateById(templateId);
+    openWorkoutViewModal(response);
+  } catch (error) {
+    showToast('Error loading workout template');
+    console.error(error);
+  }
+};
+
+window.editTemplate = function(templateId) {
+  // Open the workout view modal in edit mode
+  viewTemplate(templateId);
+};
+
+window.deleteTemplate = async function(templateId) {
+  if (!confirm('Are you sure you want to delete this workout template?')) return;
+  
+  try {
+    await workoutAPI.deleteTemplate(templateId);
+    showToast('Template deleted successfully');
+    loadWorkoutTemplates();
+  } catch (error) {
+    showToast('Error deleting template');
+    console.error(error);
+  }
+};
+
+// Workout View Modal Functions
+function openWorkoutViewModal(template) {
+  const modal = document.getElementById('workout-view-modal');
+  const form = document.getElementById('workout-view-form');
+  
+  // Populate form
+  document.getElementById('workout-view-id').value = template.id;
+  document.getElementById('workout-view-name').value = template.name || '';
+  document.getElementById('workout-view-description').value = template.description || '';
+  document.getElementById('workout-view-category').value = template.category || '';
+  document.getElementById('workout-view-difficulty').value = template.difficulty || '';
+  document.getElementById('workout-view-duration').value = template.duration_minutes || '';
+  document.getElementById('workout-view-image').value = template.image_url || '';
+  document.getElementById('workout-view-video').value = template.video_url || '';
+  document.getElementById('workout-view-public').checked = template.is_public || false;
+  
+  // Load category options
+  loadWorkoutCategoriesForView();
+  
+  // Render media preview
+  renderMediaPreview(template);
+  
+  // Render exercises
+  renderWorkoutViewExercises(template.exercises || []);
+  
+  // Set view mode (read-only)
+  setWorkoutViewMode(false);
+  
+  modal.classList.remove('hidden');
+}
+
+function closeWorkoutViewModal() {
+  document.getElementById('workout-view-modal').classList.add('hidden');
+}
+
+function setWorkoutViewMode(isEditing) {
+  const fields = ['workout-view-name', 'workout-view-description', 'workout-view-duration', 'workout-view-image', 'workout-view-video'];
+  const selects = ['workout-view-category', 'workout-view-difficulty'];
+  const checkbox = document.getElementById('workout-view-public');
+  const toggleBtn = document.getElementById('workout-edit-toggle-btn');
+  const toggleText = document.getElementById('workout-edit-toggle-text');
+  const actions = document.getElementById('workout-view-actions');
+  
+  fields.forEach(id => {
+    const field = document.getElementById(id);
+    if (isEditing) {
+      field.removeAttribute('readonly');
+      field.classList.remove('bg-gray-50');
+    } else {
+      field.setAttribute('readonly', 'readonly');
+      field.classList.add('bg-gray-50');
+    }
+  });
+  
+  selects.forEach(id => {
+    const select = document.getElementById(id);
+    if (isEditing) {
+      select.removeAttribute('disabled');
+      select.classList.remove('bg-gray-50');
+    } else {
+      select.setAttribute('disabled', 'disabled');
+      select.classList.add('bg-gray-50');
+    }
+  });
+  
+  if (isEditing) {
+    checkbox.removeAttribute('disabled');
+    toggleText.textContent = 'Cancel Edit';
+    actions.classList.remove('hidden');
+  } else {
+    checkbox.setAttribute('disabled', 'disabled');
+    toggleText.textContent = 'Edit';
+    actions.classList.add('hidden');
+  }
+}
+
+function renderMediaPreview(template) {
+  const mediaPreview = document.getElementById('workout-media-preview');
+  const imageContainer = document.getElementById('workout-image-container');
+  const videoContainer = document.getElementById('workout-video-container');
+  const imagePreview = document.getElementById('workout-image-preview');
+  const videoLink = document.getElementById('workout-video-link');
+  
+  let hasMedia = false;
+  
+  if (template.image_url) {
+    imagePreview.src = template.image_url;
+    imageContainer.classList.remove('hidden');
+    hasMedia = true;
+  } else {
+    imageContainer.classList.add('hidden');
+  }
+  
+  if (template.video_url) {
+    videoLink.href = template.video_url;
+    videoContainer.classList.remove('hidden');
+    hasMedia = true;
+  } else {
+    videoContainer.classList.add('hidden');
+  }
+  
+  if (hasMedia) {
+    mediaPreview.classList.remove('hidden');
+  } else {
+    mediaPreview.classList.add('hidden');
+  }
+}
+
+function renderWorkoutViewExercises(exercises) {
+  const container = document.getElementById('workout-view-exercises');
+  
+  if (!exercises || exercises.length === 0) {
+    container.innerHTML = '<div class="text-center py-8 border-2 border-dashed border-neutral-300 rounded-lg"><p class="text-gray-500">No exercises in this workout yet.</p></div>';
+    return;
+  }
+  
+  container.innerHTML = exercises.map((item, idx) => `
+    <div class="border border-neutral-200 rounded-lg p-4">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-sm font-semibold text-gray-500">#${idx + 1}</span>
+            <h4 class="font-semibold text-neutral-900">${item.exercise?.name || 'Exercise'}</h4>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+            <div><span class="text-gray-600">Sets:</span> <span class="font-medium">${item.sets || '-'}</span></div>
+            <div><span class="text-gray-600">Reps:</span> <span class="font-medium">${item.reps || '-'}</span></div>
+            <div><span class="text-gray-600">Rest:</span> <span class="font-medium">${item.rest_seconds || 0}s</span></div>
+            <div><span class="text-gray-600">Weight:</span> <span class="font-medium">${item.weight || '-'}</span></div>
+            ${item.notes ? `<div class="col-span-full"><span class="text-gray-600">Notes:</span> <span class="font-medium">${item.notes}</span></div>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadWorkoutCategoriesForView() {
+  try {
+    const response = await workoutAPI.getCategories();
+    const select = document.getElementById('workout-view-category');
+    select.innerHTML = '<option value="">Select...</option>' + 
+      response.categories.map(cat => `<option value="${cat.value}">${cat.label}</option>`).join('');
+  } catch (error) {
+    console.error('Error loading categories:', error);
+  }
+}
+
+// Event Listeners for Workout View Modal
+document.getElementById('close-workout-view-modal').addEventListener('click', closeWorkoutViewModal);
+
+document.getElementById('workout-edit-toggle-btn').addEventListener('click', () => {
+  const toggleText = document.getElementById('workout-edit-toggle-text');
+  const isCurrentlyEditing = toggleText.textContent === 'Cancel Edit';
+  
+  if (isCurrentlyEditing) {
+    // Cancel editing - reload the template
+    const templateId = document.getElementById('workout-view-id').value;
+    if (templateId) {
+      viewTemplate(parseInt(templateId));
+    }
+  } else {
+    // Enable editing
+    setWorkoutViewMode(true);
+  }
+});
+
+document.getElementById('workout-view-cancel-btn').addEventListener('click', () => {
+  const templateId = document.getElementById('workout-view-id').value;
+  if (templateId) {
+    viewTemplate(parseInt(templateId));
+  }
+});
+
+document.getElementById('workout-view-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const templateId = document.getElementById('workout-view-id').value;
+  const formData = new FormData(e.target);
+  
+  const data = {
+    name: formData.get('name'),
+    description: formData.get('description') || null,
+    category: formData.get('category') || null,
+    difficulty: formData.get('difficulty') || null,
+    duration_minutes: formData.get('duration_minutes') ? parseInt(formData.get('duration_minutes')) : null,
+    image_url: formData.get('image_url') || null,
+    video_url: formData.get('video_url') || null,
+    is_public: formData.get('is_public') === 'on'
+  };
+  
+  try {
+    await workoutAPI.updateTemplate(templateId, data);
+    showToast('Workout updated successfully');
+    loadWorkoutTemplates();
+    viewTemplate(parseInt(templateId)); // Reload the view
+  } catch (error) {
+    showToast('Error updating workout');
+    console.error(error);
+  }
+});
+
+document.getElementById('workout-assign-btn').addEventListener('click', () => {
+  const templateId = document.getElementById('workout-view-id').value;
+  if (templateId) {
+    openAssignWorkoutModal(parseInt(templateId));
+  }
+});
+
+function openAssignWorkoutModal(templateId) {
+  const modal = document.getElementById('assign-workout-modal');
+  const templateSelect = document.getElementById('assign-template-select');
+  
+  // Pre-select the template
+  templateSelect.value = templateId;
+  
+  // Load clients
+  loadClientsForAssignment();
+  
+  modal.classList.remove('hidden');
+}
+
+async function loadClientsForAssignment() {
+  try {
+    const response = await clientAPI.getAll();
+    const select = document.getElementById('assign-client-select');
+    select.innerHTML = '<option value="">Select client...</option>' + 
+      response.clients.map(client => `<option value="${client.id}">${client.name}</option>`).join('');
+  } catch (error) {
+    console.error('Error loading clients:', error);
+  }
+}
+
 // Template filters
 document.getElementById('template-search').addEventListener('input', debounce(loadWorkoutTemplates, 300));
 document.getElementById('template-category-filter').addEventListener('change', loadWorkoutTemplates);
