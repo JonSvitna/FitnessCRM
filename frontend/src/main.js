@@ -120,6 +120,11 @@ function showToast(message, duration = 3000) {
   }, duration);
 }
 
+function capitalize(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
 function showSection(sectionId, title) {
   const sections = document.querySelectorAll('.section');
   sections.forEach(section => {
