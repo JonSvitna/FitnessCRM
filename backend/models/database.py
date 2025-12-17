@@ -914,3 +914,152 @@ class MessageAttachment(db.Model):
             'file': self.file.to_dict() if self.file else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
+
+class SMSTemplate(db.Model):
+    """SMS message templates"""
+    __tablename__ = 'sms_templates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    category = db.Column(db.String(50))  # reminder, notification, marketing, custom
+    message = db.Column(db.Text, nullable=False)
+    
+    # Template variables (comma-separated)
+    variables = db.Column(db.String(500))  # e.g., "client_name,trainer_name,session_date"
+    
+    # Status
+    active = db.Column(db.Boolean, default=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'category': self.category,
+            'message': self.message,
+            'variables': self.variables.split(',') if self.variables else [],
+            'active': self.active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+class SMSLog(db.Model):
+    """SMS message log for tracking and analytics"""
+    __tablename__ = 'sms_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Message details
+    to_number = db.Column(db.String(20), nullable=False)
+    from_number = db.Column(db.String(20))
+    message = db.Column(db.Text, nullable=False)
+    message_sid = db.Column(db.String(100))  # Twilio message SID
+    
+    # Associations
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=True)
+    trainer_id = db.Column(db.Integer, db.ForeignKey('trainers.id'), nullable=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('sessions.id'), nullable=True)
+    template_id = db.Column(db.Integer, db.ForeignKey('sms_templates.id'), nullable=True)
+    
+    # Status
+    status = db.Column(db.String(50), default='queued')  # queued, sent, delivered, failed, undelivered
+    error_message = db.Column(db.Text)
+    
+    # Twilio details
+    twilio_status = db.Column(db.String(50))
+    price = db.Column(db.Float)  # Cost in USD
+    price_unit = db.Column(db.String(10))  # USD
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    delivered_at = db.Column(db.DateTime)
+    
+    # Relationships
+    client = db.relationship('Client', foreign_keys=[client_id], backref='sms_logs')
+    trainer = db.relationship('Trainer', foreign_keys=[trainer_id], backref='sms_logs')
+    session = db.relationship('Session', foreign_keys=[session_id], backref='sms_logs')
+    template = db.relationship('SMSTemplate', foreign_keys=[template_id])
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'to_number': self.to_number,
+            'from_number': self.from_number,
+            'message': self.message,
+            'message_sid': self.message_sid,
+            'client_id': self.client_id,
+            'trainer_id': self.trainer_id,
+            'session_id': self.session_id,
+            'template_id': self.template_id,
+            'status': self.status,
+            'error_message': self.error_message,
+            'twilio_status': self.twilio_status,
+            'price': self.price,
+            'price_unit': self.price_unit,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'delivered_at': self.delivered_at.isoformat() if self.delivered_at else None,
+        }
+
+class SMSSchedule(db.Model):
+    """Scheduled SMS messages"""
+    __tablename__ = 'sms_schedules'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Schedule details
+    name = db.Column(db.String(200))
+    template_id = db.Column(db.Integer, db.ForeignKey('sms_templates.id'), nullable=True)
+    message = db.Column(db.Text)  # Custom message if no template
+    
+    # Recipients
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=True)
+    trainer_id = db.Column(db.Integer, db.ForeignKey('trainers.id'), nullable=True)
+    to_number = db.Column(db.String(20), nullable=False)
+    
+    # Scheduling
+    schedule_type = db.Column(db.String(50), nullable=False)  # once, daily, weekly, monthly, custom
+    scheduled_time = db.Column(db.DateTime, nullable=False)
+    timezone = db.Column(db.String(50), default='UTC')
+    
+    # Recurrence (for recurring schedules)
+    recurrence_end_date = db.Column(db.DateTime)
+    recurrence_days = db.Column(db.JSON)  # For weekly: [0,2,4] = Mon, Wed, Fri
+    
+    # Status
+    status = db.Column(db.String(50), default='scheduled')  # scheduled, sent, cancelled, failed
+    last_sent_at = db.Column(db.DateTime)
+    next_send_at = db.Column(db.DateTime)
+    
+    # Template variables (JSON)
+    template_variables = db.Column(db.JSON)  # {"client_name": "John", "trainer_name": "Jane"}
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    template = db.relationship('SMSTemplate', foreign_keys=[template_id])
+    client = db.relationship('Client', foreign_keys=[client_id])
+    trainer = db.relationship('Trainer', foreign_keys=[trainer_id])
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'template_id': self.template_id,
+            'message': self.message,
+            'client_id': self.client_id,
+            'trainer_id': self.trainer_id,
+            'to_number': self.to_number,
+            'schedule_type': self.schedule_type,
+            'scheduled_time': self.scheduled_time.isoformat() if self.scheduled_time else None,
+            'timezone': self.timezone,
+            'recurrence_end_date': self.recurrence_end_date.isoformat() if self.recurrence_end_date else None,
+            'recurrence_days': self.recurrence_days,
+            'status': self.status,
+            'last_sent_at': self.last_sent_at.isoformat() if self.last_sent_at else None,
+            'next_send_at': self.next_send_at.isoformat() if self.next_send_at else None,
+            'template_variables': self.template_variables,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }

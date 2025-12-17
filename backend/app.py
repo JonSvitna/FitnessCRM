@@ -16,6 +16,14 @@ from api.payment_routes import payment_bp
 from api.analytics_routes import analytics_bp
 from api.report_routes import report_bp
 from utils.logger import logger, LoggerMiddleware
+
+# Import SMS routes (optional - for Phase 5 M5.2)
+sms_bp = None
+try:
+    from api.sms_routes import sms_bp
+except Exception as e:
+    import sys
+    print(f"Warning: Failed to import SMS routes: {e}. SMS features will be disabled.", file=sys.stderr)
 from utils.email import init_mail
 import os
 
@@ -88,6 +96,8 @@ def create_app(config_name=None):
     app.register_blueprint(payment_bp)
     app.register_blueprint(analytics_bp)
     app.register_blueprint(report_bp)
+    if sms_bp:
+        app.register_blueprint(sms_bp)
     if message_bp:
         app.register_blueprint(message_bp)
     
@@ -112,6 +122,7 @@ def create_app(config_name=None):
                 'payments': '/api/payments',
                 'analytics': '/api/analytics',
                 'reports': '/api/reports',
+                'sms': '/api/sms',
                 'messages': '/api/messages',
                 'health': '/api/health'
             }

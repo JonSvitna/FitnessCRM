@@ -180,22 +180,47 @@ def test_sendgrid():
 
 @settings_bp.route('/test-twilio', methods=['POST'])
 def test_twilio():
-    """Test Twilio configuration"""
+    """Test Twilio configuration by sending a test SMS"""
     try:
+        from utils.sms import send_sms, get_twilio_client
+        
         settings = Settings.query.first()
         
         if not settings or not settings.twilio_account_sid:
             return jsonify({'error': 'Twilio not configured'}), 400
         
-        # TODO: Implement actual Twilio test SMS
-        # For now, just return success if credentials exist
+        if not settings.twilio_enabled:
+            return jsonify({'error': 'Twilio is not enabled'}), 400
         
-        log_activity('test', 'twilio', settings.id)
-        return jsonify({
-            'message': 'Twilio test successful',
-            'configured': True,
-            'enabled': settings.twilio_enabled
-        }), 200
+        # Get test phone number from request (optional)
+        data = request.get_json() or {}
+        test_number = data.get('test_number')
+        
+        if not test_number:
+            return jsonify({
+                'message': 'Twilio credentials are valid',
+                'configured': True,
+                'enabled': settings.twilio_enabled,
+                'note': 'Provide test_number in request body to send test SMS'
+            }), 200
+        
+        # Send test SMS
+        result = send_sms(test_number, 'Test SMS from FitnessCRM - Twilio is configured correctly!')
+        
+        if result.get('success'):
+            log_activity('test', 'twilio', settings.id)
+            return jsonify({
+                'message': 'Test SMS sent successfully',
+                'configured': True,
+                'enabled': settings.twilio_enabled,
+                'message_sid': result.get('message_sid')
+            }), 200
+        else:
+            return jsonify({
+                'error': result.get('error', 'Failed to send test SMS'),
+                'configured': True,
+                'enabled': settings.twilio_enabled
+            }), 400
         
     except Exception as e:
         logger.error(f"Error testing Twilio: {str(e)}")
