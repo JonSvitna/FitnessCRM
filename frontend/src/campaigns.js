@@ -5,6 +5,7 @@
 
 import { campaignAPI } from './api.js';
 import { showToast } from './main.js';
+import { initCollapsibleSections } from './sidebar-sections.js';
 
 // Global state
 let campaigns = [];
@@ -15,6 +16,7 @@ let currentTemplateId = null;
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   initializeSidebar();
+  initCollapsibleSections();
   setupTabs();
   setupEventListeners();
   loadCampaigns();

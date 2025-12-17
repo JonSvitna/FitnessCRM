@@ -5,6 +5,7 @@
 
 import { automationAPI } from './api.js';
 import { showToast } from './main.js';
+import { initCollapsibleSections } from './sidebar-sections.js';
 
 // Global state
 let rules = [];
@@ -13,6 +14,7 @@ let logs = [];
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   initializeSidebar();
+  initCollapsibleSections();
   setupTabs();
   setupEventListeners();
   loadRules();

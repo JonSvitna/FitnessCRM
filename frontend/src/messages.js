@@ -5,6 +5,7 @@
 
 import { messageAPI, trainerAPI, clientAPI } from './api.js';
 import { showToast } from './main.js';
+import { initCollapsibleSections } from './sidebar-sections.js';
 
 // Global state
 let currentUser = { type: 'trainer', id: 1 }; // TODO: Get from auth/session
@@ -54,6 +55,7 @@ const unreadBadge = document.getElementById('unread-badge');
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   initializeSidebar();
+  initCollapsibleSections();
   loadThreads();
   loadUnreadCount();
   setupEventListeners();

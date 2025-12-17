@@ -5,6 +5,7 @@
 
 import { smsAPI, clientAPI, trainerAPI } from './api.js';
 import { showToast } from './main.js';
+import { initCollapsibleSections } from './sidebar-sections.js';
 
 // Global state
 let currentTab = 'send';
@@ -16,6 +17,7 @@ let currentTemplateId = null;
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   initializeSidebar();
+  initCollapsibleSections();
   setupTabs();
   setupEventListeners();
   loadRecipients();
