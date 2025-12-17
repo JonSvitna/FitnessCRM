@@ -336,4 +336,17 @@
   .progress-bar-fill {
     @apply bg-gradient-to-r from-orange-500 to-primary-500 h-full rounded-full transition-all duration-500;
   }
+
+  /* Analytics Page */
+  .tab-button {
+    @apply text-gray-600 border-b-2 border-transparent transition-all hover:text-primary-600 hover:bg-orange-50;
+  }
+
+  .tab-button-active {
+    @apply text-primary-600 border-primary-600 bg-orange-50;
+  }
+
+  .tab-content {
+    @apply transition-all duration-200;
+  }
 }
