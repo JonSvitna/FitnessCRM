@@ -83,7 +83,7 @@ def create_payment():
     """Create a new payment"""
     data = request.get_json()
     
-    if not data or not data.get('client_id') or not data.get('amount'):
+    if not data or not data.get('client_id') or data.get('amount') is None:
         return jsonify({'error': 'Client ID and amount are required'}), 400
     
     # Validate client exists

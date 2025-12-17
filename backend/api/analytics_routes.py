@@ -190,16 +190,22 @@ def get_client_lifetime_value():
             for c in top_clients
         ]
         
-        # LTV by membership type - simplified query
-        # First get client LTVs per membership type
+        # LTV by membership type - build mapping from client_id to membership and LTV
+        # First, get membership types for all clients
+        clients_with_membership = Client.query.all()
+        client_membership_map = {c.id: c.membership_type for c in clients_with_membership}
+        
+        # Group LTVs by membership type
         client_ltv_by_membership = {}
         for c in client_values:
-            membership = c[1] if len(c) > 1 else None  # Get membership type if exists
-            # Using index 0 for id, 4 for total_paid from the client_values query
-            membership_key = membership or 'None'
-            if membership_key not in client_ltv_by_membership:
-                client_ltv_by_membership[membership_key] = []
-            client_ltv_by_membership[membership_key].append(float(c[4]))
+            # c = (id, name, created_at, status, total_paid)
+            client_id = c[0]
+            total_paid = float(c[4])
+            membership_type = client_membership_map.get(client_id) or 'None'
+            
+            if membership_type not in client_ltv_by_membership:
+                client_ltv_by_membership[membership_type] = []
+            client_ltv_by_membership[membership_type].append(total_paid)
         
         # Calculate averages
         membership_breakdown = []

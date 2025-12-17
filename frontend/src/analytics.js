@@ -111,6 +111,12 @@ async function loadRevenueData() {
     document.getElementById('revenue-total').textContent = `$${data.total_revenue.toFixed(2)}`;
     document.getElementById('revenue-month').textContent = `$${data.revenue_this_month.toFixed(2)}`;
     document.getElementById('revenue-average').textContent = `$${data.average_payment.toFixed(2)}`;
+    
+    // Also update overview if this is the initial load
+    if (document.getElementById('overview-total-revenue')) {
+      document.getElementById('overview-total-revenue').textContent = `$${data.total_revenue.toFixed(2)}`;
+      document.getElementById('overview-month-revenue').textContent = data.revenue_this_month.toFixed(2);
+    }
 
     // Revenue by type chart
     createRevenueByTypeChart(data.revenue_by_type);
@@ -707,8 +713,12 @@ function showNotification(message, type = 'info') {
     warning: 'bg-yellow-500'
   };
   
-  // Default to info if invalid type provided
-  const bgColor = colors[type] || colors.info;
+  // Validate type and default to info if invalid
+  if (!colors[type]) {
+    console.warn(`Invalid notification type: ${type}. Defaulting to 'info'.`);
+    type = 'info';
+  }
+  const bgColor = colors[type];
   
   const notification = document.createElement('div');
   notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity`;
