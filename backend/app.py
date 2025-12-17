@@ -32,6 +32,14 @@ try:
 except Exception as e:
     import sys
     print(f"Warning: Failed to import Campaign routes: {e}. Email campaign features will be disabled.", file=sys.stderr)
+
+# Import Automation routes (optional - for Phase 5 M5.4)
+automation_bp = None
+try:
+    from api.automation_routes import automation_bp
+except Exception as e:
+    import sys
+    print(f"Warning: Failed to import Automation routes: {e}. Automation features will be disabled.", file=sys.stderr)
 from utils.email import init_mail
 import os
 
@@ -108,6 +116,8 @@ def create_app(config_name=None):
         app.register_blueprint(sms_bp)
     if campaign_bp:
         app.register_blueprint(campaign_bp)
+    if automation_bp:
+        app.register_blueprint(automation_bp)
     if message_bp:
         app.register_blueprint(message_bp)
     
@@ -134,6 +144,7 @@ def create_app(config_name=None):
                 'reports': '/api/reports',
                 'sms': '/api/sms',
                 'campaigns': '/api/campaigns',
+                'automation': '/api/automation',
                 'messages': '/api/messages',
                 'health': '/api/health'
             }

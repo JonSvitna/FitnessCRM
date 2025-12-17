@@ -1231,3 +1231,110 @@ class CampaignRecipient(db.Model):
             'click_count': self.click_count,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
+
+class AutomationRule(db.Model):
+    """Automated reminder and notification rules"""
+    __tablename__ = 'automation_rules'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    
+    # Rule type and trigger
+    rule_type = db.Column(db.String(50), nullable=False)  # session_reminder, payment_reminder, birthday, re_engagement, custom
+    trigger_event = db.Column(db.String(50))  # session_created, payment_due, birthday, inactivity
+    trigger_conditions = db.Column(db.JSON)  # {"hours_before": 24, "status": "scheduled"}
+    
+    # Action
+    action_type = db.Column(db.String(50), nullable=False)  # email, sms, both
+    template_id = db.Column(db.Integer, db.ForeignKey('email_templates.id'), nullable=True)
+    sms_template_id = db.Column(db.Integer, db.ForeignKey('sms_templates.id'), nullable=True)
+    custom_message = db.Column(db.Text)
+    
+    # Targeting
+    target_audience = db.Column(db.String(50), default='all')  # all, clients, trainers, specific
+    target_filters = db.Column(db.JSON)  # {"status": "active", "membership_type": "monthly"}
+    target_ids = db.Column(db.JSON)  # [1, 2, 3] for specific targets
+    
+    # Scheduling
+    enabled = db.Column(db.Boolean, default=True)
+    timezone = db.Column(db.String(50), default='UTC')
+    
+    # Status
+    last_run_at = db.Column(db.DateTime)
+    next_run_at = db.Column(db.DateTime)
+    run_count = db.Column(db.Integer, default=0)
+    success_count = db.Column(db.Integer, default=0)
+    failure_count = db.Column(db.Integer, default=0)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    email_template = db.relationship('EmailTemplate', foreign_keys=[template_id])
+    sms_template = db.relationship('SMSTemplate', foreign_keys=[sms_template_id])
+    logs = db.relationship('AutomationLog', backref='rule', lazy=True, cascade='all, delete-orphan')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'rule_type': self.rule_type,
+            'trigger_event': self.trigger_event,
+            'trigger_conditions': self.trigger_conditions,
+            'action_type': self.action_type,
+            'template_id': self.template_id,
+            'sms_template_id': self.sms_template_id,
+            'custom_message': self.custom_message,
+            'target_audience': self.target_audience,
+            'target_filters': self.target_filters,
+            'target_ids': self.target_ids,
+            'enabled': self.enabled,
+            'timezone': self.timezone,
+            'last_run_at': self.last_run_at.isoformat() if self.last_run_at else None,
+            'next_run_at': self.next_run_at.isoformat() if self.next_run_at else None,
+            'run_count': self.run_count,
+            'success_count': self.success_count,
+            'failure_count': self.failure_count,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+class AutomationLog(db.Model):
+    """Log of automation rule executions"""
+    __tablename__ = 'automation_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    rule_id = db.Column(db.Integer, db.ForeignKey('automation_rules.id'), nullable=False)
+    
+    # Execution details
+    executed_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    status = db.Column(db.String(50), default='success')  # success, failed, skipped
+    error_message = db.Column(db.Text)
+    
+    # Action details
+    action_type = db.Column(db.String(50))  # email, sms, both
+    recipients_count = db.Column(db.Integer, default=0)
+    sent_count = db.Column(db.Integer, default=0)
+    failed_count = db.Column(db.Integer, default=0)
+    
+    # Context
+    trigger_context = db.Column(db.JSON)  # {"session_id": 123, "client_id": 456}
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'rule_id': self.rule_id,
+            'executed_at': self.executed_at.isoformat() if self.executed_at else None,
+            'status': self.status,
+            'error_message': self.error_message,
+            'action_type': self.action_type,
+            'recipients_count': self.recipients_count,
+            'sent_count': self.sent_count,
+            'failed_count': self.failed_count,
+            'trigger_context': self.trigger_context,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
