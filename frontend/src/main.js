@@ -1,5 +1,5 @@
 import './styles/main.css';
-import { trainerAPI, clientAPI, crmAPI, settingsAPI, activityAPI, sessionAPI, recurringSessionAPI, measurementAPI, fileAPI, exerciseAPI, workoutAPI } from './api.js';
+import { trainerAPI, clientAPI, crmAPI, settingsAPI, activityAPI, sessionAPI, recurringSessionAPI, measurementAPI, fileAPI, exerciseAPI, workoutAPI, progressPhotoAPI, goalAPI } from './api.js';
 import Chart from 'chart.js/auto';
 
 // State management
@@ -13,6 +13,8 @@ let state = {
   exercises: [],
   workoutTemplates: [],
   clientAssignments: [],
+  progressPhotos: [],
+  goals: [],
   settings: null,
   trainersPagination: { page: 1, per_page: 25, total: 0, pages: 0 },
   clientsPagination: { page: 1, per_page: 25, total: 0, pages: 0 },
@@ -1454,6 +1456,20 @@ async function loadClientProgress(clientId) {
     // Update measurements table
     const measurementsResponse = await measurementAPI.getAll({ client_id: clientId, per_page: 10 });
     updateMeasurementsTable(measurementsResponse.data.measurements);
+    
+    // Load progress photos
+    const photosResponse = await progressPhotoAPI.getAll({ client_id: clientId });
+    state.progressPhotos = photosResponse.data.data || [];
+    renderProgressPhotos(state.progressPhotos);
+    
+    // Load comparison view
+    const comparisonResponse = await progressPhotoAPI.getComparison(clientId);
+    renderComparisonView(comparisonResponse.data.data);
+    
+    // Load goals
+    const goalsResponse = await goalAPI.getSummary(clientId);
+    state.goals = goalsResponse.data.data.goals || [];
+    renderGoals(state.goals);
     
   } catch (error) {
     console.error('Error loading progress:', error);
@@ -3144,6 +3160,282 @@ window.deleteTemplate = async function(id) {
     await loadWorkoutTemplates();
   } catch (error) {
     console.error('Error deleting template:', error);
+    showToast('Error: ' + (error.response?.data?.error || error.message));
+  }
+};
+
+// ===== Progress Photo Functions =====
+function renderProgressPhotos(photos) {
+  const grid = document.getElementById('progress-photos-grid');
+  
+  if (!photos || photos.length === 0) {
+    grid.innerHTML = '<div class="text-center text-gray-400 col-span-full py-8">No photos uploaded</div>';
+    return;
+  }
+  
+  grid.innerHTML = photos.map(photo => `
+    <div class="photo-item">
+      <img src="${progressPhotoAPI.getFile(photo.id)}" alt="${photo.caption || 'Progress photo'}" />
+      <div class="photo-overlay">
+        <div class="flex gap-2">
+          <button onclick="deleteProgressPhoto(${photo.id})" class="bg-red-500 text-white p-2 rounded">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="p-2 bg-neutral-800">
+        <p class="text-sm text-white">${photo.photo_type} - ${new Date(photo.taken_date).toLocaleDateString()}</p>
+        ${photo.caption ? `<p class="text-xs text-gray-400">${photo.caption}</p>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderComparisonView(comparisonData) {
+  const photoTypes = ['front', 'side', 'back'];
+  
+  photoTypes.forEach(type => {
+    const container = document.getElementById(`comparison-${type}`);
+    const data = comparisonData[type];
+    
+    if (!data || !data.before) {
+      container.innerHTML = '<div class="text-gray-400">No photos available</div>';
+      return;
+    }
+    
+    container.innerHTML = `
+      <div class="comparison-images">
+        <div class="comparison-image">
+          <img src="${progressPhotoAPI.getFile(data.before.id)}" alt="Before" />
+          <span class="comparison-label">Before</span>
+          <p class="text-xs text-gray-400 mt-1">${new Date(data.before.taken_date).toLocaleDateString()}</p>
+        </div>
+        ${data.after ? `
+          <div class="comparison-image">
+            <img src="${progressPhotoAPI.getFile(data.after.id)}" alt="After" />
+            <span class="comparison-label">After</span>
+            <p class="text-xs text-gray-400 mt-1">${new Date(data.after.taken_date).toLocaleDateString()}</p>
+          </div>
+        ` : '<div class="text-gray-400 flex items-center justify-center">Keep taking photos to see progress!</div>'}
+      </div>
+    `;
+  });
+}
+
+function renderGoals(goals) {
+  const container = document.getElementById('goals-list');
+  
+  if (!goals || goals.length === 0) {
+    container.innerHTML = '<div class="text-center text-gray-400 py-8">No goals set</div>';
+    return;
+  }
+  
+  container.innerHTML = goals.map(goal => `
+    <div class="goal-card priority-${goal.priority} status-${goal.status}">
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <h4 class="font-semibold text-lg text-neutral-900">${goal.title}</h4>
+          <p class="text-sm text-gray-600 mt-1">${goal.description || ''}</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="editGoal(${goal.id})" class="text-blue-600 hover:text-blue-700">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+          </button>
+          <button onclick="deleteGoal(${goal.id})" class="text-red-600 hover:text-red-700">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="mt-3">
+        <div class="flex justify-between text-sm text-gray-600 mb-1">
+          <span>Progress: ${goal.progress}%</span>
+          ${goal.target_value ? `<span>${goal.current_value || 0} / ${goal.target_value} ${goal.target_unit || ''}</span>` : ''}
+        </div>
+        <div class="progress-bar">
+          <div class="progress-bar-fill" style="width: ${goal.progress}%"></div>
+        </div>
+      </div>
+      <div class="mt-2 flex flex-wrap gap-2 text-xs">
+        <span class="px-2 py-1 bg-neutral-200 rounded-full">${goal.category}</span>
+        <span class="px-2 py-1 bg-neutral-200 rounded-full">${goal.priority} priority</span>
+        <span class="px-2 py-1 ${goal.status === 'completed' ? 'bg-green-200' : 'bg-blue-200'} rounded-full">${goal.status}</span>
+        ${goal.target_date ? `<span class="px-2 py-1 bg-neutral-200 rounded-full">Target: ${new Date(goal.target_date).toLocaleDateString()}</span>` : ''}
+      </div>
+      ${goal.milestones && goal.milestones.length > 0 ? `
+        <div class="mt-3 pt-3 border-t border-gray-200">
+          <p class="text-sm font-medium text-gray-700 mb-2">Milestones:</p>
+          <ul class="space-y-1">
+            ${goal.milestones.map(m => `
+              <li class="flex items-center text-sm ${m.completed ? 'text-green-600 line-through' : 'text-gray-600'}">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${m.completed ? 'M5 13l4 4L19 7' : 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'}"/>
+                </svg>
+                ${m.title}
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+}
+
+// Progress Photo Modal Handlers
+document.getElementById('upload-progress-photo-btn')?.addEventListener('click', () => {
+  if (!state.selectedProgressClient) {
+    showToast('Please select a client first');
+    return;
+  }
+  document.getElementById('progress-photo-modal').classList.remove('hidden');
+  document.getElementById('progress-photo-date').valueAsDate = new Date();
+});
+
+document.getElementById('close-progress-photo-modal')?.addEventListener('click', () => {
+  document.getElementById('progress-photo-modal').classList.add('hidden');
+  document.getElementById('progress-photo-form').reset();
+});
+
+document.getElementById('cancel-progress-photo-btn')?.addEventListener('click', () => {
+  document.getElementById('progress-photo-modal').classList.add('hidden');
+  document.getElementById('progress-photo-form').reset();
+});
+
+document.getElementById('progress-photo-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  try {
+    const formData = new FormData();
+    const fileInput = document.getElementById('progress-photo-file');
+    formData.append('file', fileInput.files[0]);
+    formData.append('client_id', state.selectedProgressClient);
+    formData.append('photo_type', document.getElementById('progress-photo-type').value);
+    formData.append('taken_date', document.getElementById('progress-photo-date').value);
+    formData.append('caption', document.getElementById('progress-photo-caption').value);
+    
+    await progressPhotoAPI.upload(formData);
+    showToast('Progress photo uploaded successfully');
+    document.getElementById('progress-photo-modal').classList.add('hidden');
+    document.getElementById('progress-photo-form').reset();
+    
+    // Reload progress data
+    await loadClientProgress(state.selectedProgressClient);
+  } catch (error) {
+    console.error('Error uploading photo:', error);
+    showToast('Error: ' + (error.response?.data?.error || error.message));
+  }
+});
+
+window.deleteProgressPhoto = async function(id) {
+  if (!confirm('Are you sure you want to delete this photo?')) return;
+  
+  try {
+    await progressPhotoAPI.delete(id);
+    showToast('Photo deleted successfully');
+    await loadClientProgress(state.selectedProgressClient);
+  } catch (error) {
+    console.error('Error deleting photo:', error);
+    showToast('Error: ' + (error.response?.data?.error || error.message));
+  }
+};
+
+// Goal Modal Handlers
+document.getElementById('add-goal-btn')?.addEventListener('click', () => {
+  if (!state.selectedProgressClient) {
+    showToast('Please select a client first');
+    return;
+  }
+  document.getElementById('goal-modal-title').textContent = 'Add Goal';
+  document.getElementById('goal-id').value = '';
+  document.getElementById('goal-form').reset();
+  document.getElementById('goal-modal').classList.remove('hidden');
+});
+
+document.getElementById('close-goal-modal')?.addEventListener('click', () => {
+  document.getElementById('goal-modal').classList.add('hidden');
+  document.getElementById('goal-form').reset();
+});
+
+document.getElementById('cancel-goal-btn')?.addEventListener('click', () => {
+  document.getElementById('goal-modal').classList.add('hidden');
+  document.getElementById('goal-form').reset();
+});
+
+document.getElementById('goal-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const goalId = document.getElementById('goal-id').value;
+  const goalData = {
+    client_id: state.selectedProgressClient,
+    title: document.getElementById('goal-title').value,
+    description: document.getElementById('goal-description').value,
+    category: document.getElementById('goal-category').value,
+    target_value: parseFloat(document.getElementById('goal-target-value').value) || null,
+    target_unit: document.getElementById('goal-target-unit').value,
+    current_value: parseFloat(document.getElementById('goal-current-value').value) || 0,
+    target_date: document.getElementById('goal-target-date').value || null,
+    priority: document.getElementById('goal-priority').value,
+    status: document.getElementById('goal-status').value,
+    notes: document.getElementById('goal-notes').value,
+  };
+  
+  try {
+    if (goalId) {
+      await goalAPI.update(goalId, goalData);
+      showToast('Goal updated successfully');
+    } else {
+      await goalAPI.create(goalData);
+      showToast('Goal created successfully');
+    }
+    
+    document.getElementById('goal-modal').classList.add('hidden');
+    document.getElementById('goal-form').reset();
+    await loadClientProgress(state.selectedProgressClient);
+  } catch (error) {
+    console.error('Error saving goal:', error);
+    showToast('Error: ' + (error.response?.data?.error || error.message));
+  }
+});
+
+window.editGoal = async function(id) {
+  try {
+    const response = await goalAPI.getById(id);
+    const goal = response.data.data;
+    
+    document.getElementById('goal-modal-title').textContent = 'Edit Goal';
+    document.getElementById('goal-id').value = goal.id;
+    document.getElementById('goal-title').value = goal.title;
+    document.getElementById('goal-description').value = goal.description || '';
+    document.getElementById('goal-category').value = goal.category;
+    document.getElementById('goal-target-value').value = goal.target_value || '';
+    document.getElementById('goal-target-unit').value = goal.target_unit || '';
+    document.getElementById('goal-current-value').value = goal.current_value || '';
+    document.getElementById('goal-target-date').value = goal.target_date ? goal.target_date.split('T')[0] : '';
+    document.getElementById('goal-priority').value = goal.priority;
+    document.getElementById('goal-status').value = goal.status;
+    document.getElementById('goal-notes').value = goal.notes || '';
+    
+    document.getElementById('goal-modal').classList.remove('hidden');
+  } catch (error) {
+    console.error('Error loading goal:', error);
+    showToast('Error loading goal');
+  }
+};
+
+window.deleteGoal = async function(id) {
+  if (!confirm('Are you sure you want to delete this goal?')) return;
+  
+  try {
+    await goalAPI.delete(id);
+    showToast('Goal deleted successfully');
+    await loadClientProgress(state.selectedProgressClient);
+  } catch (error) {
+    console.error('Error deleting goal:', error);
     showToast('Error: ' + (error.response?.data?.error || error.message));
   }
 };

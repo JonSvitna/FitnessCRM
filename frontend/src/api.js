@@ -152,4 +152,36 @@ export const workoutAPI = {
   getCategories: () => api.get('/api/workouts/categories'),
 };
 
+// Progress Photo API
+export const progressPhotoAPI = {
+  upload: (formData) => {
+    return api.post('/progress-photos', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  getAll: (params = {}) => api.get('/progress-photos', { params }),
+  getById: (id) => api.get(`/progress-photos/${id}`),
+  update: (id, data) => api.put(`/progress-photos/${id}`, data),
+  delete: (id) => api.delete(`/progress-photos/${id}`),
+  getFile: (id) => `${API_BASE_URL}/progress-photos/${id}/file`,
+  getComparison: (clientId) => api.get(`/progress-photos/client/${clientId}/comparison`),
+};
+
+// Goal API
+export const goalAPI = {
+  create: (data) => api.post('/goals', data),
+  getAll: (params = {}) => api.get('/goals', { params }),
+  getById: (id) => api.get(`/goals/${id}`),
+  update: (id, data) => api.put(`/goals/${id}`, data),
+  delete: (id) => api.delete(`/goals/${id}`),
+  getSummary: (clientId) => api.get(`/goals/client/${clientId}/summary`),
+  
+  // Milestones
+  createMilestone: (goalId, data) => api.post(`/goals/${goalId}/milestones`, data),
+  updateMilestone: (goalId, milestoneId, data) => api.put(`/goals/${goalId}/milestones/${milestoneId}`, data),
+  deleteMilestone: (goalId, milestoneId) => api.delete(`/goals/${goalId}/milestones/${milestoneId}`),
+};
+
 export default api;

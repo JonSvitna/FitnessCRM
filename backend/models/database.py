@@ -661,3 +661,135 @@ class WorkoutLog(db.Model):
             'difficulty_rating': self.difficulty_rating,
             'notes': self.notes,
         }
+
+class ProgressPhoto(db.Model):
+    """Progress photos for clients"""
+    __tablename__ = 'progress_photos'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
+    measurement_id = db.Column(db.Integer, db.ForeignKey('measurements.id'), nullable=True)
+    
+    # Photo details
+    file_path = db.Column(db.String(500), nullable=False)  # Path to stored image
+    photo_type = db.Column(db.String(50))  # front, side, back, other
+    caption = db.Column(db.String(500))
+    taken_date = db.Column(db.DateTime, default=datetime.utcnow)
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('trainers.id'), nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    client = db.relationship('Client', backref='progress_photos')
+    measurement = db.relationship('Measurement', backref='photos')
+    uploader = db.relationship('Trainer', foreign_keys=[uploaded_by])
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'client_id': self.client_id,
+            'measurement_id': self.measurement_id,
+            'file_path': self.file_path,
+            'photo_type': self.photo_type,
+            'caption': self.caption,
+            'taken_date': self.taken_date.isoformat() if self.taken_date else None,
+            'uploaded_by': self.uploaded_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
+
+class Goal(db.Model):
+    """Client goals and milestones"""
+    __tablename__ = 'goals'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
+    
+    # Goal details
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    category = db.Column(db.String(50))  # weight_loss, muscle_gain, strength, endurance, flexibility, other
+    
+    # Target values
+    target_value = db.Column(db.Float)  # e.g., target weight
+    target_unit = db.Column(db.String(50))  # e.g., lbs, kg, %
+    current_value = db.Column(db.Float)
+    
+    # Dates
+    start_date = db.Column(db.DateTime, default=datetime.utcnow)
+    target_date = db.Column(db.DateTime)
+    completed_date = db.Column(db.DateTime)
+    
+    # Status
+    status = db.Column(db.String(50), default='active')  # active, completed, abandoned, on_hold
+    priority = db.Column(db.String(50), default='medium')  # low, medium, high
+    
+    # Tracking
+    notes = db.Column(db.Text)
+    created_by = db.Column(db.Integer, db.ForeignKey('trainers.id'), nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    client = db.relationship('Client', backref='goals')
+    creator = db.relationship('Trainer', foreign_keys=[created_by])
+    milestones = db.relationship('GoalMilestone', backref='goal', lazy=True, cascade='all, delete-orphan')
+    
+    def to_dict(self):
+        progress = 0
+        if self.target_value and self.current_value:
+            progress = min(100, (self.current_value / self.target_value) * 100)
+        
+        return {
+            'id': self.id,
+            'client_id': self.client_id,
+            'title': self.title,
+            'description': self.description,
+            'category': self.category,
+            'target_value': self.target_value,
+            'target_unit': self.target_unit,
+            'current_value': self.current_value,
+            'progress': round(progress, 1),
+            'start_date': self.start_date.isoformat() if self.start_date else None,
+            'target_date': self.target_date.isoformat() if self.target_date else None,
+            'completed_date': self.completed_date.isoformat() if self.completed_date else None,
+            'status': self.status,
+            'priority': self.priority,
+            'notes': self.notes,
+            'created_by': self.created_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'milestones': [m.to_dict() for m in self.milestones] if hasattr(self, 'milestones') else []
+        }
+
+class GoalMilestone(db.Model):
+    """Milestones for tracking goal progress"""
+    __tablename__ = 'goal_milestones'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
+    
+    # Milestone details
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    target_value = db.Column(db.Float)
+    target_date = db.Column(db.DateTime)
+    
+    # Status
+    completed = db.Column(db.Boolean, default=False)
+    completed_date = db.Column(db.DateTime)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'goal_id': self.goal_id,
+            'title': self.title,
+            'description': self.description,
+            'target_value': self.target_value,
+            'target_date': self.target_date.isoformat() if self.target_date else None,
+            'completed': self.completed,
+            'completed_date': self.completed_date.isoformat() if self.completed_date else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }

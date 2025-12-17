@@ -10,6 +10,8 @@ from api.measurement_routes import measurement_bp
 from api.file_routes import file_bp
 from api.exercise_routes import exercise_bp
 from api.workout_routes import workout_bp
+from api.progress_photo_routes import progress_photo_bp
+from api.goal_routes import goal_bp
 from utils.logger import logger, LoggerMiddleware
 from utils.email import init_mail
 import os
@@ -51,6 +53,8 @@ def create_app(config_name=None):
     app.register_blueprint(file_bp)
     app.register_blueprint(exercise_bp)
     app.register_blueprint(workout_bp)
+    app.register_blueprint(progress_photo_bp)
+    app.register_blueprint(goal_bp)
     
     # Root endpoint
     @app.route('/')

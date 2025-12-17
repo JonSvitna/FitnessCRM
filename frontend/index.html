@@ -555,7 +555,7 @@
         </div>
 
         <!-- Latest Measurements Table -->
-        <div class="card">
+        <div class="card mb-6">
           <h3 class="text-lg font-semibold text-white mb-4">Latest Measurements</h3>
           <div class="overflow-x-auto">
             <table class="data-table">
@@ -577,6 +577,63 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Progress Photos Section -->
+        <div class="card mb-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-white">Progress Photos</h3>
+            <button id="upload-progress-photo-btn" class="btn-secondary">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              Upload Photo
+            </button>
+          </div>
+          <div id="progress-photos-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center text-gray-400 col-span-full py-8">No photos uploaded</div>
+          </div>
+        </div>
+
+        <!-- Progress Comparison View -->
+        <div class="card mb-6">
+          <h3 class="text-lg font-semibold text-white mb-4">Before & After Comparison</h3>
+          <div id="comparison-view" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+              <h4 class="text-gray-300 font-medium mb-3">Front View</h4>
+              <div id="comparison-front" class="comparison-container">
+                <div class="text-gray-400">No photos available</div>
+              </div>
+            </div>
+            <div class="text-center">
+              <h4 class="text-gray-300 font-medium mb-3">Side View</h4>
+              <div id="comparison-side" class="comparison-container">
+                <div class="text-gray-400">No photos available</div>
+              </div>
+            </div>
+            <div class="text-center">
+              <h4 class="text-gray-300 font-medium mb-3">Back View</h4>
+              <div id="comparison-back" class="comparison-container">
+                <div class="text-gray-400">No photos available</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Goals Section -->
+        <div class="card">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-white">Goals & Milestones</h3>
+            <button id="add-goal-btn" class="btn-secondary">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+              </svg>
+              Add Goal
+            </button>
+          </div>
+          <div id="goals-list" class="space-y-4">
+            <div class="text-center text-gray-400 py-8">No goals set</div>
           </div>
         </div>
       </div>
@@ -1702,6 +1759,148 @@
         <div class="flex justify-end gap-3 pt-4">
           <button type="button" id="cancel-assign-btn" class="btn-secondary">Cancel</button>
           <button type="submit" class="btn-primary">Assign Workout</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Progress Photo Upload Modal -->
+  <div id="progress-photo-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex items-center justify-between">
+          <h3 class="text-2xl font-bold text-neutral-900">Upload Progress Photo</h3>
+          <button id="close-progress-photo-modal" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <form id="progress-photo-form" class="p-6 space-y-4">
+        <div>
+          <label class="form-label">Photo *</label>
+          <input type="file" id="progress-photo-file" name="file" required accept="image/*" class="input-field">
+        </div>
+
+        <div>
+          <label class="form-label">Photo Type *</label>
+          <select id="progress-photo-type" name="photo_type" required class="input-field">
+            <option value="front">Front View</option>
+            <option value="side">Side View</option>
+            <option value="back">Back View</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label">Date Taken</label>
+          <input type="date" id="progress-photo-date" name="taken_date" class="input-field">
+        </div>
+
+        <div>
+          <label class="form-label">Caption</label>
+          <input type="text" id="progress-photo-caption" name="caption" class="input-field" placeholder="Optional caption">
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="cancel-progress-photo-btn" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Upload Photo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Goal Modal -->
+  <div id="goal-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex items-center justify-between">
+          <h3 id="goal-modal-title" class="text-2xl font-bold text-neutral-900">Add Goal</h3>
+          <button id="close-goal-modal" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <form id="goal-form" class="p-6 space-y-4">
+        <input type="hidden" id="goal-id" name="id">
+        
+        <div>
+          <label class="form-label">Goal Title *</label>
+          <input type="text" id="goal-title" name="title" required class="input-field" placeholder="e.g., Lose 20 lbs">
+        </div>
+
+        <div>
+          <label class="form-label">Category</label>
+          <select id="goal-category" name="category" class="input-field">
+            <option value="weight_loss">Weight Loss</option>
+            <option value="muscle_gain">Muscle Gain</option>
+            <option value="strength">Strength</option>
+            <option value="endurance">Endurance</option>
+            <option value="flexibility">Flexibility</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label">Description</label>
+          <textarea id="goal-description" name="description" rows="3" class="input-field" placeholder="Describe your goal..."></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Target Value</label>
+            <input type="number" step="0.1" id="goal-target-value" name="target_value" class="input-field" placeholder="e.g., 180">
+          </div>
+          <div>
+            <label class="form-label">Unit</label>
+            <input type="text" id="goal-target-unit" name="target_unit" class="input-field" placeholder="e.g., lbs, kg, %">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Current Value</label>
+            <input type="number" step="0.1" id="goal-current-value" name="current_value" class="input-field" placeholder="Starting point">
+          </div>
+          <div>
+            <label class="form-label">Target Date</label>
+            <input type="date" id="goal-target-date" name="target_date" class="input-field">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Priority</label>
+            <select id="goal-priority" name="priority" class="input-field">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Status</label>
+            <select id="goal-status" name="status" class="input-field">
+              <option value="active" selected>Active</option>
+              <option value="on_hold">On Hold</option>
+              <option value="completed">Completed</option>
+              <option value="abandoned">Abandoned</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">Notes</label>
+          <textarea id="goal-notes" name="notes" rows="2" class="input-field" placeholder="Additional notes..."></textarea>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="cancel-goal-btn" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Save Goal</button>
         </div>
       </form>
     </div>
