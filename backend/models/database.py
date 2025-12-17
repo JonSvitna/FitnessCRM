@@ -793,3 +793,124 @@ class GoalMilestone(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
+
+class MessageThread(db.Model):
+    """Message thread/conversation between trainer and client"""
+    __tablename__ = 'message_threads'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    trainer_id = db.Column(db.Integer, db.ForeignKey('trainers.id'), nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
+    
+    # Thread metadata
+    subject = db.Column(db.String(200))
+    last_message_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_message_by = db.Column(db.String(50))  # 'trainer' or 'client'
+    
+    # Status
+    trainer_unread_count = db.Column(db.Integer, default=0)
+    client_unread_count = db.Column(db.Integer, default=0)
+    archived_by_trainer = db.Column(db.Boolean, default=False)
+    archived_by_client = db.Column(db.Boolean, default=False)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    trainer = db.relationship('Trainer', foreign_keys=[trainer_id], backref='message_threads')
+    client = db.relationship('Client', foreign_keys=[client_id], backref='message_threads')
+    messages = db.relationship('Message', backref='thread', lazy='dynamic', cascade='all, delete-orphan', order_by='Message.created_at')
+    
+    def to_dict(self, include_messages=False):
+        data = {
+            'id': self.id,
+            'trainer_id': self.trainer_id,
+            'client_id': self.client_id,
+            'trainer': self.trainer.to_dict() if self.trainer else None,
+            'client': self.client.to_dict() if self.client else None,
+            'subject': self.subject,
+            'last_message_at': self.last_message_at.isoformat() if self.last_message_at else None,
+            'last_message_by': self.last_message_by,
+            'trainer_unread_count': self.trainer_unread_count,
+            'client_unread_count': self.client_unread_count,
+            'archived_by_trainer': self.archived_by_trainer,
+            'archived_by_client': self.archived_by_client,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+        
+        if include_messages:
+            data['messages'] = [msg.to_dict() for msg in self.messages]
+        
+        return data
+
+class Message(db.Model):
+    """Individual message in a thread"""
+    __tablename__ = 'messages'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    thread_id = db.Column(db.Integer, db.ForeignKey('message_threads.id'), nullable=False)
+    
+    # Sender information
+    sender_type = db.Column(db.String(20), nullable=False)  # 'trainer' or 'client'
+    sender_id = db.Column(db.Integer, nullable=False)  # trainer_id or client_id
+    
+    # Message content
+    content = db.Column(db.Text, nullable=False)
+    
+    # Status
+    read = db.Column(db.Boolean, default=False)
+    read_at = db.Column(db.DateTime)
+    deleted_by_sender = db.Column(db.Boolean, default=False)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    # Relationships
+    attachments = db.relationship('MessageAttachment', backref='message', lazy=True, cascade='all, delete-orphan')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'thread_id': self.thread_id,
+            'sender_type': self.sender_type,
+            'sender_id': self.sender_id,
+            'sender': self._get_sender_dict(),
+            'content': self.content,
+            'read': self.read,
+            'read_at': self.read_at.isoformat() if self.read_at else None,
+            'deleted_by_sender': self.deleted_by_sender,
+            'attachments': [att.to_dict() for att in self.attachments],
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
+    
+    def _get_sender_dict(self):
+        """Get sender information based on sender_type"""
+        if self.sender_type == 'trainer':
+            trainer = Trainer.query.get(self.sender_id)
+            return trainer.to_dict() if trainer else None
+        elif self.sender_type == 'client':
+            client = Client.query.get(self.sender_id)
+            return client.to_dict() if client else None
+        return None
+
+class MessageAttachment(db.Model):
+    """File attachments in messages"""
+    __tablename__ = 'message_attachments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey('messages.id'), nullable=False)
+    file_id = db.Column(db.Integer, db.ForeignKey('files.id'), nullable=False)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    file = db.relationship('File', foreign_keys=[file_id])
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'message_id': self.message_id,
+            'file_id': self.file_id,
+            'file': self.file.to_dict() if self.file else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }

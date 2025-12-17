@@ -15,9 +15,14 @@ from api.goal_routes import goal_bp
 from api.payment_routes import payment_bp
 from api.analytics_routes import analytics_bp
 from api.report_routes import report_bp
+from api.message_routes import message_bp
 from utils.logger import logger, LoggerMiddleware
 from utils.email import init_mail
+from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
+
+# Initialize SocketIO globally
+socketio = SocketIO(cors_allowed_origins="*", async_mode='threading')
 
 def create_app(config_name=None):
     """Application factory"""
@@ -30,6 +35,9 @@ def create_app(config_name=None):
     # Initialize extensions
     db.init_app(app)
     init_mail(app)
+    
+    # Initialize SocketIO for real-time messaging
+    socketio.init_app(app)
     
     # CORS Configuration
     # Use regex to match all Vercel deployments (they change per deployment)
@@ -61,6 +69,7 @@ def create_app(config_name=None):
     app.register_blueprint(payment_bp)
     app.register_blueprint(analytics_bp)
     app.register_blueprint(report_bp)
+    app.register_blueprint(message_bp)
     
     # Root endpoint
     @app.route('/')
@@ -68,7 +77,7 @@ def create_app(config_name=None):
         logger.info("Root endpoint accessed")
         return jsonify({
             'message': 'Fitness CRM API',
-            'version': '1.3.0',
+            'version': '1.4.0',
             'endpoints': {
                 'trainers': '/api/trainers',
                 'clients': '/api/clients',
@@ -83,6 +92,7 @@ def create_app(config_name=None):
                 'payments': '/api/payments',
                 'analytics': '/api/analytics',
                 'reports': '/api/reports',
+                'messages': '/api/messages',
                 'health': '/api/health'
             }
         }), 200
@@ -112,6 +122,40 @@ def create_app(config_name=None):
     else:
         logger.info("Skipping database initialization (SKIP_DB_INIT=true)")
     
+    # SocketIO event handlers
+    @socketio.on('connect')
+    def handle_connect():
+        logger.info('Client connected to SocketIO')
+    
+    @socketio.on('disconnect')
+    def handle_disconnect():
+        logger.info('Client disconnected from SocketIO')
+    
+    @socketio.on('join_thread')
+    def handle_join_thread(data):
+        """Join a message thread room"""
+        thread_id = data.get('thread_id')
+        if thread_id:
+            join_room(f'thread_{thread_id}')
+            logger.info(f'User joined thread {thread_id}')
+    
+    @socketio.on('leave_thread')
+    def handle_leave_thread(data):
+        """Leave a message thread room"""
+        thread_id = data.get('thread_id')
+        if thread_id:
+            leave_room(f'thread_{thread_id}')
+            logger.info(f'User left thread {thread_id}')
+    
+    @socketio.on('new_message')
+    def handle_new_message(data):
+        """Broadcast new message to thread participants"""
+        thread_id = data.get('thread_id')
+        message_data = data.get('message')
+        if thread_id and message_data:
+            emit('message_received', message_data, room=f'thread_{thread_id}')
+            logger.info(f'Message broadcasted to thread {thread_id}')
+    
     return app
 
 # Create app instance for WSGI servers (gunicorn, etc.)
@@ -122,4 +166,4 @@ if __name__ == '__main__':
     # Development server uses the same app instance created above
     port = int(os.getenv('PORT', 5000))
     logger.info(f"Starting Fitness CRM API on port {port}")
-    app.run(host='0.0.0.0', port=port, debug=True)
+    socketio.run(app, host='0.0.0.0', port=port, debug=True)
