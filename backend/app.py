@@ -12,6 +12,9 @@ from api.exercise_routes import exercise_bp
 from api.workout_routes import workout_bp
 from api.progress_photo_routes import progress_photo_bp
 from api.goal_routes import goal_bp
+from api.payment_routes import payment_bp
+from api.analytics_routes import analytics_bp
+from api.report_routes import report_bp
 from utils.logger import logger, LoggerMiddleware
 from utils.email import init_mail
 import os
@@ -55,6 +58,9 @@ def create_app(config_name=None):
     app.register_blueprint(workout_bp)
     app.register_blueprint(progress_photo_bp)
     app.register_blueprint(goal_bp)
+    app.register_blueprint(payment_bp)
+    app.register_blueprint(analytics_bp)
+    app.register_blueprint(report_bp)
     
     # Root endpoint
     @app.route('/')
@@ -62,7 +68,7 @@ def create_app(config_name=None):
         logger.info("Root endpoint accessed")
         return jsonify({
             'message': 'Fitness CRM API',
-            'version': '1.0.0',
+            'version': '1.3.0',
             'endpoints': {
                 'trainers': '/api/trainers',
                 'clients': '/api/clients',
@@ -74,6 +80,9 @@ def create_app(config_name=None):
                 'files': '/api/files',
                 'exercises': '/api/exercises',
                 'workouts': '/api/workouts',
+                'payments': '/api/payments',
+                'analytics': '/api/analytics',
+                'reports': '/api/reports',
                 'health': '/api/health'
             }
         }), 200
