@@ -15,14 +15,28 @@ from api.goal_routes import goal_bp
 from api.payment_routes import payment_bp
 from api.analytics_routes import analytics_bp
 from api.report_routes import report_bp
-from api.message_routes import message_bp
 from utils.logger import logger, LoggerMiddleware
+
+# Import message routes (optional - for Phase 5 M5.1)
+message_bp = None
+try:
+    from api.message_routes import message_bp
+except Exception as e:
+    logger.warning(f"Failed to import message routes: {e}. Messaging features will be disabled.")
 from utils.email import init_mail
-from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
 
-# Initialize SocketIO globally
-socketio = SocketIO(cors_allowed_origins="*", async_mode='threading')
+# Initialize SocketIO globally (optional - may fail in some environments)
+socketio = None
+try:
+    from flask_socketio import SocketIO, emit, join_room, leave_room
+    socketio = SocketIO(cors_allowed_origins="*", async_mode='threading')
+except ImportError:
+    import sys
+    print("Warning: Flask-SocketIO not available. Real-time messaging will be disabled.", file=sys.stderr)
+except Exception as e:
+    import sys
+    print(f"Warning: Failed to initialize SocketIO: {e}. Real-time messaging will be disabled.", file=sys.stderr)
 
 def create_app(config_name=None):
     """Application factory"""
@@ -36,8 +50,12 @@ def create_app(config_name=None):
     db.init_app(app)
     init_mail(app)
     
-    # Initialize SocketIO for real-time messaging
-    socketio.init_app(app)
+    # Initialize SocketIO for real-time messaging (if available)
+    if socketio:
+        try:
+            socketio.init_app(app)
+        except Exception as e:
+            logger.warning(f"Failed to initialize SocketIO with app: {e}")
     
     # CORS Configuration
     # Use regex to match all Vercel deployments (they change per deployment)
@@ -69,7 +87,8 @@ def create_app(config_name=None):
     app.register_blueprint(payment_bp)
     app.register_blueprint(analytics_bp)
     app.register_blueprint(report_bp)
-    app.register_blueprint(message_bp)
+    if message_bp:
+        app.register_blueprint(message_bp)
     
     # Root endpoint
     @app.route('/')
@@ -122,39 +141,40 @@ def create_app(config_name=None):
     else:
         logger.info("Skipping database initialization (SKIP_DB_INIT=true)")
     
-    # SocketIO event handlers
-    @socketio.on('connect')
-    def handle_connect():
-        logger.info('Client connected to SocketIO')
-    
-    @socketio.on('disconnect')
-    def handle_disconnect():
-        logger.info('Client disconnected from SocketIO')
-    
-    @socketio.on('join_thread')
-    def handle_join_thread(data):
-        """Join a message thread room"""
-        thread_id = data.get('thread_id')
-        if thread_id:
-            join_room(f'thread_{thread_id}')
-            logger.info(f'User joined thread {thread_id}')
-    
-    @socketio.on('leave_thread')
-    def handle_leave_thread(data):
-        """Leave a message thread room"""
-        thread_id = data.get('thread_id')
-        if thread_id:
-            leave_room(f'thread_{thread_id}')
-            logger.info(f'User left thread {thread_id}')
-    
-    @socketio.on('new_message')
-    def handle_new_message(data):
-        """Broadcast new message to thread participants"""
-        thread_id = data.get('thread_id')
-        message_data = data.get('message')
-        if thread_id and message_data:
-            emit('message_received', message_data, room=f'thread_{thread_id}')
-            logger.info(f'Message broadcasted to thread {thread_id}')
+    # SocketIO event handlers (only if SocketIO is available)
+    if socketio:
+        @socketio.on('connect')
+        def handle_connect():
+            logger.info('Client connected to SocketIO')
+        
+        @socketio.on('disconnect')
+        def handle_disconnect():
+            logger.info('Client disconnected from SocketIO')
+        
+        @socketio.on('join_thread')
+        def handle_join_thread(data):
+            """Join a message thread room"""
+            thread_id = data.get('thread_id')
+            if thread_id:
+                join_room(f'thread_{thread_id}')
+                logger.info(f'User joined thread {thread_id}')
+        
+        @socketio.on('leave_thread')
+        def handle_leave_thread(data):
+            """Leave a message thread room"""
+            thread_id = data.get('thread_id')
+            if thread_id:
+                leave_room(f'thread_{thread_id}')
+                logger.info(f'User left thread {thread_id}')
+        
+        @socketio.on('new_message')
+        def handle_new_message(data):
+            """Broadcast new message to thread participants"""
+            thread_id = data.get('thread_id')
+            message_data = data.get('message')
+            if thread_id and message_data:
+                emit('message_received', message_data, room=f'thread_{thread_id}')
+                logger.info(f'Message broadcasted to thread {thread_id}')
     
     return app
 
@@ -166,4 +186,7 @@ if __name__ == '__main__':
     # Development server uses the same app instance created above
     port = int(os.getenv('PORT', 5000))
     logger.info(f"Starting Fitness CRM API on port {port}")
-    socketio.run(app, host='0.0.0.0', port=port, debug=True)
+    if socketio:
+        socketio.run(app, host='0.0.0.0', port=port, debug=True)
+    else:
+        app.run(host='0.0.0.0', port=port, debug=True)
