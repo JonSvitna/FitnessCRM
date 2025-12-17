@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMS Management - FitnessCRM</title>
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body class="bg-neutral-50">
+  <!-- Mobile Overlay -->
+  <div id="mobile-overlay" class="mobile-overlay hidden"></div>
+
+  <!-- Sidebar Navigation -->
+  <aside id="sidebar" class="sidebar sidebar-expanded">
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+        </div>
+        <div id="sidebar-logo-text" class="flex flex-col">
+          <h1 class="text-xl font-bold text-neutral-900 leading-tight">FitnessCRM</h1>
+          <span class="text-xs text-gray-500">Admin Portal</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar-nav">
+      <a href="/index.html" class="sidebar-item">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+        </svg>
+        <span class="sidebar-label">Dashboard</span>
+      </a>
+
+      <a href="/messages.html" class="sidebar-item">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+        </svg>
+        <span class="sidebar-label">Messages</span>
+      </a>
+
+      <div id="nav-sms" class="sidebar-item sidebar-item-active">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+        </svg>
+        <span class="sidebar-label">SMS</span>
+      </div>
+
+      <a href="/campaigns.html" class="sidebar-item">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+        </svg>
+        <span class="sidebar-label">Campaigns</span>
+      </a>
+
+      <a href="/automation.html" class="sidebar-item">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span class="sidebar-label">Automation</span>
+      </a>
+
+      <a href="/analytics.html" class="sidebar-item">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        <span class="sidebar-label">Analytics</span>
+      </a>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      <button id="sidebar-toggle" class="w-full flex items-center justify-center p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors">
+        <svg id="collapse-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div id="main-content" class="main-content main-content-expanded">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="flex items-center">
+        <button id="mobile-menu-toggle" class="md:hidden mr-4 text-gray-600 hover:text-orange-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+        <h2 class="text-2xl font-bold text-neutral-900">SMS Management</h2>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button id="new-sms-btn" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+          <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Send SMS
+        </button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="p-6">
+      <!-- Tabs -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="border-b border-gray-200">
+          <nav class="flex -mb-px">
+            <button id="tab-send" class="tab-button active px-6 py-4 text-sm font-medium text-orange-600 border-b-2 border-orange-600">
+              Send SMS
+            </button>
+            <button id="tab-templates" class="tab-button px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+              Templates
+            </button>
+            <button id="tab-schedules" class="tab-button px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+              Scheduled
+            </button>
+            <button id="tab-logs" class="tab-button px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+              Message Log
+            </button>
+            <button id="tab-analytics" class="tab-button px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+              Analytics
+            </button>
+          </nav>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="p-6">
+          <!-- Send SMS Tab -->
+          <div id="content-send" class="tab-content">
+            <form id="send-sms-form" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">To</label>
+                  <select id="sms-recipient-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    <option value="">Select recipient...</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                  <input type="tel" id="sms-phone" placeholder="+1234567890" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                <textarea id="sms-message" rows="4" placeholder="Type your message..." maxlength="1600" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"></textarea>
+                <p class="text-sm text-gray-500 mt-1"><span id="sms-char-count">0</span>/1600 characters</p>
+              </div>
+              <div class="flex justify-end">
+                <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                  Send SMS
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Templates Tab -->
+          <div id="content-templates" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold">SMS Templates</h3>
+              <button id="new-template-btn" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                New Template
+              </button>
+            </div>
+            <div id="templates-list" class="space-y-3">
+              <div class="text-center text-gray-500 py-8">Loading templates...</div>
+            </div>
+          </div>
+
+          <!-- Schedules Tab -->
+          <div id="content-schedules" class="tab-content hidden">
+            <div id="schedules-list" class="space-y-3">
+              <div class="text-center text-gray-500 py-8">Loading schedules...</div>
+            </div>
+          </div>
+
+          <!-- Logs Tab -->
+          <div id="content-logs" class="tab-content hidden">
+            <div class="mb-4">
+              <input type="text" id="logs-search" placeholder="Search logs..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+            </div>
+            <div id="logs-list" class="space-y-3">
+              <div class="text-center text-gray-500 py-8">Loading logs...</div>
+            </div>
+          </div>
+
+          <!-- Analytics Tab -->
+          <div id="content-analytics" class="tab-content hidden">
+            <div id="analytics-content" class="space-y-6">
+              <div class="text-center text-gray-500 py-8">Loading analytics...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Template Modal -->
+  <div id="template-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-gray-200">
+        <h3 class="text-xl font-bold text-gray-900" id="template-modal-title">New Template</h3>
+      </div>
+      <div class="p-6">
+        <form id="template-form">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Template Name</label>
+              <input type="text" id="template-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+              <select id="template-category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                <option value="reminder">Reminder</option>
+                <option value="notification">Notification</option>
+                <option value="marketing">Marketing</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+              <textarea id="template-message" rows="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"></textarea>
+              <p class="text-sm text-gray-500 mt-1">Use variables like {client_name}, {trainer_name}, {session_date}</p>
+            </div>
+            <div class="flex justify-end space-x-3">
+              <button type="button" id="cancel-template-btn" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
+              <button type="submit" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors">Save Template</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/sms.js"></script>
+</body>
+</html>
+

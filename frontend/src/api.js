@@ -203,4 +203,65 @@ export const messageAPI = {
   getUnreadCount: (params) => api.get('/api/messages/unread-count', { params }),
 };
 
+// SMS API
+export const smsAPI = {
+  // Send SMS
+  send: (data) => api.post('/api/sms/send', data),
+  
+  // Templates
+  getTemplates: (params) => api.get('/api/sms/templates', { params }),
+  createTemplate: (data) => api.post('/api/sms/templates', data),
+  updateTemplate: (id, data) => api.put(`/api/sms/templates/${id}`, data),
+  deleteTemplate: (id) => api.delete(`/api/sms/templates/${id}`),
+  sendTemplate: (id, data) => api.post(`/api/sms/templates/${id}/send`, data),
+  
+  // Logs
+  getLogs: (params) => api.get('/api/sms/logs', { params }),
+  
+  // Schedules
+  getSchedules: (params) => api.get('/api/sms/schedules', { params }),
+  createSchedule: (data) => api.post('/api/sms/schedules', data),
+  cancelSchedule: (id) => api.delete(`/api/sms/schedules/${id}`),
+  
+  // Analytics
+  getAnalytics: (params) => api.get('/api/sms/analytics', { params }),
+};
+
+// Campaign API
+export const campaignAPI = {
+  // Campaigns
+  getCampaigns: (params) => api.get('/api/campaigns', { params }),
+  createCampaign: (data) => api.post('/api/campaigns', data),
+  getCampaign: (id) => api.get(`/api/campaigns/${id}`),
+  updateCampaign: (id, data) => api.put(`/api/campaigns/${id}`, data),
+  sendCampaign: (id) => api.post(`/api/campaigns/${id}/send`),
+  cancelCampaign: (id) => api.post(`/api/campaigns/${id}/cancel`),
+  getRecipients: (id, params) => api.get(`/api/campaigns/${id}/recipients`, { params }),
+  getAnalytics: (id) => api.get(`/api/campaigns/${id}/analytics`),
+  
+  // Templates
+  getTemplates: (params) => api.get('/api/campaigns/templates', { params }),
+  createTemplate: (data) => api.post('/api/campaigns/templates', data),
+  updateTemplate: (id, data) => api.put(`/api/campaigns/templates/${id}`, data),
+  deleteTemplate: (id) => api.delete(`/api/campaigns/templates/${id}`),
+};
+
+// Automation API
+export const automationAPI = {
+  // Rules
+  getRules: (params) => api.get('/api/automation/rules', { params }),
+  createRule: (data) => api.post('/api/automation/rules', data),
+  getRule: (id) => api.get(`/api/automation/rules/${id}`),
+  updateRule: (id, data) => api.put(`/api/automation/rules/${id}`, data),
+  deleteRule: (id) => api.delete(`/api/automation/rules/${id}`),
+  toggleRule: (id) => api.post(`/api/automation/rules/${id}/toggle`),
+  executeRule: (id) => api.post(`/api/automation/rules/${id}/execute`),
+  
+  // Logs
+  getLogs: (params) => api.get('/api/automation/logs', { params }),
+  
+  // Analytics
+  getAnalytics: (params) => api.get('/api/automation/analytics', { params }),
+};
+
 export default api;

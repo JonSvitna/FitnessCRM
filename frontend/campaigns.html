@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Campaigns - FitnessCRM</title>
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body class="bg-neutral-50">
+  <!-- Mobile Overlay -->
+  <div id="mobile-overlay" class="mobile-overlay hidden"></div>
+
+  <!-- Sidebar Navigation -->
+  <aside id="sidebar" class="sidebar sidebar-expanded">
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+        </div>
+        <div id="sidebar-logo-text" class="flex flex-col">
+          <h1 class="text-xl font-bold text-neutral-900 leading-tight">FitnessCRM</h1>
+          <span class="text-xs text-gray-500">Admin Portal</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar-nav">
+      <a href="/index.html" class="sidebar-item">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+        </svg>
+        <span class="sidebar-label">Dashboard</span>
+      </a>
+
+      <a href="/messages.html" class="sidebar-item">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+        </svg>
+        <span class="sidebar-label">Messages</span>
+      </a>
+
+      <a href="/sms.html" class="sidebar-item">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+        </svg>
+        <span class="sidebar-label">SMS</span>
+      </a>
+
+      <div id="nav-campaigns" class="sidebar-item sidebar-item-active">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+        </svg>
+        <span class="sidebar-label">Campaigns</span>
+      </div>
+
+      <a href="/automation.html" class="sidebar-item">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span class="sidebar-label">Automation</span>
+      </a>
+
+      <a href="/analytics.html" class="sidebar-item">
+        <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        <span class="sidebar-label">Analytics</span>
+      </a>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      <button id="sidebar-toggle" class="w-full flex items-center justify-center p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors">
+        <svg id="collapse-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div id="main-content" class="main-content main-content-expanded">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="flex items-center">
+        <button id="mobile-menu-toggle" class="md:hidden mr-4 text-gray-600 hover:text-orange-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+        <h2 class="text-2xl font-bold text-neutral-900">Email Campaigns</h2>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button id="new-campaign-btn" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+          <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          New Campaign
+        </button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="p-6">
+      <!-- Tabs -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="border-b border-gray-200">
+          <nav class="flex -mb-px">
+            <button id="tab-campaigns" class="tab-button active px-6 py-4 text-sm font-medium text-orange-600 border-b-2 border-orange-600">
+              Campaigns
+            </button>
+            <button id="tab-templates" class="tab-button px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+              Templates
+            </button>
+          </nav>
+        </div>
+
+        <!-- Campaigns Tab -->
+        <div id="content-campaigns" class="tab-content p-6">
+          <div id="campaigns-list" class="space-y-4">
+            <div class="text-center text-gray-500 py-8">Loading campaigns...</div>
+          </div>
+        </div>
+
+        <!-- Templates Tab -->
+        <div id="content-templates" class="tab-content hidden p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Email Templates</h3>
+            <button id="new-email-template-btn" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+              New Template
+            </button>
+          </div>
+          <div id="email-templates-list" class="space-y-3">
+            <div class="text-center text-gray-500 py-8">Loading templates...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Campaign Modal -->
+  <div id="campaign-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-gray-200">
+        <h3 class="text-xl font-bold text-gray-900" id="campaign-modal-title">New Campaign</h3>
+      </div>
+      <div class="p-6">
+        <form id="campaign-form" class="space-y-6">
+          <!-- Basic Info -->
+          <div>
+            <h4 class="text-lg font-semibold mb-4">Campaign Details</h4>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Campaign Name *</label>
+                <input type="text" id="campaign-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea id="campaign-description" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Template Selection -->
+          <div>
+            <h4 class="text-lg font-semibold mb-4">Email Content</h4>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Use Template</label>
+                <select id="campaign-template" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                  <option value="">Create custom email</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
+                <input type="text" id="campaign-subject" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">HTML Body *</label>
+                <textarea id="campaign-html-body" rows="10" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono text-sm"></textarea>
+                <p class="text-sm text-gray-500 mt-1">Use variables like {client_name}, {trainer_name}</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Plain Text Body</label>
+                <textarea id="campaign-text-body" rows="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- A/B Testing -->
+          <div>
+            <h4 class="text-lg font-semibold mb-4">A/B Testing (Optional)</h4>
+            <div class="space-y-4">
+              <label class="flex items-center">
+                <input type="checkbox" id="campaign-ab-test" class="rounded border-gray-300 text-orange-500 focus:ring-orange-500">
+                <span class="ml-2 text-sm text-gray-700">Enable A/B testing for subject line</span>
+              </label>
+              <div id="ab-test-fields" class="hidden space-y-4 pl-6 border-l-2 border-gray-200">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Subject A</label>
+                  <input type="text" id="campaign-subject-a" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Subject B</label>
+                  <input type="text" id="campaign-subject-b" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Split Percentage (A)</label>
+                  <input type="number" id="campaign-split" min="1" max="99" value="50" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recipients -->
+          <div>
+            <h4 class="text-lg font-semibold mb-4">Recipients</h4>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Segment Type *</label>
+                <select id="campaign-segment-type" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                  <option value="all_clients">All Active Clients</option>
+                  <option value="all_trainers">All Active Trainers</option>
+                  <option value="custom">Custom Filter</option>
+                  <option value="specific_ids">Specific Recipients</option>
+                </select>
+              </div>
+              <div id="custom-filters" class="hidden space-y-2">
+                <label class="block text-sm font-medium text-gray-700">Status</label>
+                <select id="filter-status" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                  <option value="">All</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+                <label class="block text-sm font-medium text-gray-700 mt-2">Membership Type</label>
+                <select id="filter-membership" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                  <option value="">All</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="annual">Annual</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scheduling -->
+          <div>
+            <h4 class="text-lg font-semibold mb-4">Scheduling</h4>
+            <div class="space-y-4">
+              <label class="flex items-center">
+                <input type="checkbox" id="campaign-send-now" checked class="rounded border-gray-300 text-orange-500 focus:ring-orange-500">
+                <span class="ml-2 text-sm text-gray-700">Send immediately</span>
+              </label>
+              <div id="schedule-fields" class="hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Schedule Date & Time</label>
+                <input type="datetime-local" id="campaign-scheduled-at" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+            <button type="button" id="cancel-campaign-btn" class="px-6 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
+            <button type="submit" class="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors">Create Campaign</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email Template Modal -->
+  <div id="email-template-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-gray-200">
+        <h3 class="text-xl font-bold text-gray-900" id="email-template-modal-title">New Email Template</h3>
+      </div>
+      <div class="p-6">
+        <form id="email-template-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Template Name *</label>
+            <input type="text" id="email-template-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <select id="email-template-category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+              <option value="newsletter">Newsletter</option>
+              <option value="promotion">Promotion</option>
+              <option value="announcement">Announcement</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
+            <input type="text" id="email-template-subject" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">HTML Body *</label>
+            <textarea id="email-template-html" rows="10" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono text-sm"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Plain Text Body</label>
+            <textarea id="email-template-text" rows="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"></textarea>
+          </div>
+          <div class="flex justify-end space-x-3">
+            <button type="button" id="cancel-email-template-btn" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
+            <button type="submit" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors">Save Template</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/campaigns.js"></script>
+</body>
+</html>
+
