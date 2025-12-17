@@ -24,6 +24,14 @@ try:
 except Exception as e:
     import sys
     print(f"Warning: Failed to import SMS routes: {e}. SMS features will be disabled.", file=sys.stderr)
+
+# Import Campaign routes (optional - for Phase 5 M5.3)
+campaign_bp = None
+try:
+    from api.campaign_routes import campaign_bp
+except Exception as e:
+    import sys
+    print(f"Warning: Failed to import Campaign routes: {e}. Email campaign features will be disabled.", file=sys.stderr)
 from utils.email import init_mail
 import os
 
@@ -98,6 +106,8 @@ def create_app(config_name=None):
     app.register_blueprint(report_bp)
     if sms_bp:
         app.register_blueprint(sms_bp)
+    if campaign_bp:
+        app.register_blueprint(campaign_bp)
     if message_bp:
         app.register_blueprint(message_bp)
     
@@ -123,6 +133,7 @@ def create_app(config_name=None):
                 'analytics': '/api/analytics',
                 'reports': '/api/reports',
                 'sms': '/api/sms',
+                'campaigns': '/api/campaigns',
                 'messages': '/api/messages',
                 'health': '/api/health'
             }

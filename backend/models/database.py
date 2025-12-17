@@ -1063,3 +1063,171 @@ class SMSSchedule(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
+
+class EmailTemplate(db.Model):
+    """Email campaign templates"""
+    __tablename__ = 'email_templates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    category = db.Column(db.String(50))  # newsletter, promotion, announcement, custom
+    subject = db.Column(db.String(200), nullable=False)
+    html_body = db.Column(db.Text, nullable=False)
+    text_body = db.Column(db.Text)  # Plain text version
+    
+    # Template variables (comma-separated)
+    variables = db.Column(db.String(500))  # e.g., "client_name,trainer_name,date"
+    
+    # Status
+    active = db.Column(db.Boolean, default=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'category': self.category,
+            'subject': self.subject,
+            'html_body': self.html_body,
+            'text_body': self.text_body,
+            'variables': self.variables.split(',') if self.variables else [],
+            'active': self.active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+class EmailCampaign(db.Model):
+    """Email campaign"""
+    __tablename__ = 'email_campaigns'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    
+    # Campaign content
+    template_id = db.Column(db.Integer, db.ForeignKey('email_templates.id'), nullable=True)
+    subject = db.Column(db.String(200), nullable=False)
+    html_body = db.Column(db.Text, nullable=False)
+    text_body = db.Column(db.Text)
+    
+    # Recipient segmentation
+    segment_type = db.Column(db.String(50), nullable=False)  # all_clients, all_trainers, custom, specific_ids
+    segment_filters = db.Column(db.JSON)  # {"status": "active", "membership_type": "monthly"}
+    recipient_ids = db.Column(db.JSON)  # [1, 2, 3] for specific_ids
+    
+    # A/B Testing
+    ab_test_enabled = db.Column(db.Boolean, default=False)
+    ab_test_subject_a = db.Column(db.String(200))
+    ab_test_subject_b = db.Column(db.String(200))
+    ab_test_split_percentage = db.Column(db.Integer, default=50)  # Percentage for variant A
+    
+    # Scheduling
+    scheduled_at = db.Column(db.DateTime)
+    send_immediately = db.Column(db.Boolean, default=False)
+    
+    # Status
+    status = db.Column(db.String(50), default='draft')  # draft, scheduled, sending, sent, cancelled, failed
+    sent_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
+    
+    # Statistics
+    total_recipients = db.Column(db.Integer, default=0)
+    emails_sent = db.Column(db.Integer, default=0)
+    emails_delivered = db.Column(db.Integer, default=0)
+    emails_opened = db.Column(db.Integer, default=0)
+    emails_clicked = db.Column(db.Integer, default=0)
+    emails_bounced = db.Column(db.Integer, default=0)
+    emails_failed = db.Column(db.Integer, default=0)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    template = db.relationship('EmailTemplate', foreign_keys=[template_id])
+    recipients = db.relationship('CampaignRecipient', backref='campaign', lazy=True, cascade='all, delete-orphan')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'template_id': self.template_id,
+            'subject': self.subject,
+            'html_body': self.html_body,
+            'text_body': self.text_body,
+            'segment_type': self.segment_type,
+            'segment_filters': self.segment_filters,
+            'recipient_ids': self.recipient_ids,
+            'ab_test_enabled': self.ab_test_enabled,
+            'ab_test_subject_a': self.ab_test_subject_a,
+            'ab_test_subject_b': self.ab_test_subject_b,
+            'ab_test_split_percentage': self.ab_test_split_percentage,
+            'scheduled_at': self.scheduled_at.isoformat() if self.scheduled_at else None,
+            'send_immediately': self.send_immediately,
+            'status': self.status,
+            'sent_at': self.sent_at.isoformat() if self.sent_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'total_recipients': self.total_recipients,
+            'emails_sent': self.emails_sent,
+            'emails_delivered': self.emails_delivered,
+            'emails_opened': self.emails_opened,
+            'emails_clicked': self.emails_clicked,
+            'emails_bounced': self.emails_bounced,
+            'emails_failed': self.emails_failed,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+class CampaignRecipient(db.Model):
+    """Individual recipient in an email campaign"""
+    __tablename__ = 'campaign_recipients'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    campaign_id = db.Column(db.Integer, db.ForeignKey('email_campaigns.id'), nullable=False)
+    
+    # Recipient info
+    email = db.Column(db.String(120), nullable=False)
+    recipient_type = db.Column(db.String(20))  # 'client' or 'trainer'
+    recipient_id = db.Column(db.Integer)  # client_id or trainer_id
+    
+    # A/B Test variant
+    ab_variant = db.Column(db.String(1))  # 'A' or 'B'
+    
+    # Status
+    status = db.Column(db.String(50), default='pending')  # pending, sent, delivered, opened, clicked, bounced, failed
+    sent_at = db.Column(db.DateTime)
+    delivered_at = db.Column(db.DateTime)
+    opened_at = db.Column(db.DateTime)
+    clicked_at = db.Column(db.DateTime)
+    bounced_at = db.Column(db.DateTime)
+    failed_at = db.Column(db.DateTime)
+    error_message = db.Column(db.Text)
+    
+    # Tracking
+    open_count = db.Column(db.Integer, default=0)
+    click_count = db.Column(db.Integer, default=0)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'campaign_id': self.campaign_id,
+            'email': self.email,
+            'recipient_type': self.recipient_type,
+            'recipient_id': self.recipient_id,
+            'ab_variant': self.ab_variant,
+            'status': self.status,
+            'sent_at': self.sent_at.isoformat() if self.sent_at else None,
+            'delivered_at': self.delivered_at.isoformat() if self.delivered_at else None,
+            'opened_at': self.opened_at.isoformat() if self.opened_at else None,
+            'clicked_at': self.clicked_at.isoformat() if self.clicked_at else None,
+            'bounced_at': self.bounced_at.isoformat() if self.bounced_at else None,
+            'failed_at': self.failed_at.isoformat() if self.failed_at else None,
+            'error_message': self.error_message,
+            'open_count': self.open_count,
+            'click_count': self.click_count,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
