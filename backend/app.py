@@ -16,15 +16,16 @@ from api.payment_routes import payment_bp
 from api.analytics_routes import analytics_bp
 from api.report_routes import report_bp
 from utils.logger import logger, LoggerMiddleware
+from utils.email import init_mail
+import os
 
 # Import message routes (optional - for Phase 5 M5.1)
 message_bp = None
 try:
     from api.message_routes import message_bp
 except Exception as e:
-    logger.warning(f"Failed to import message routes: {e}. Messaging features will be disabled.")
-from utils.email import init_mail
-import os
+    import sys
+    print(f"Warning: Failed to import message routes: {e}. Messaging features will be disabled.", file=sys.stderr)
 
 # Initialize SocketIO globally (optional - may fail in some environments)
 socketio = None
