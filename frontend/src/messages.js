@@ -5,6 +5,7 @@
 
 import { messageAPI, trainerAPI, clientAPI } from './api.js';
 import { showToast } from './main.js';
+import { io } from 'socket.io-client';
 import { initCollapsibleSections } from './sidebar-sections.js';
 
 // Global state
