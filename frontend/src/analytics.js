@@ -614,11 +614,17 @@ function displayCustomReportResults(data) {
         <div class="col-span-full card bg-gray-50">
           <h5 class="font-semibold text-gray-700 mb-2">${key.replace(/_/g, ' ').toUpperCase()}</h5>
           <div class="max-h-60 overflow-y-auto">
-            ${value.map(item => `
-              <div class="text-sm py-1 border-b border-gray-200 last:border-0">
-                ${JSON.stringify(item)}
-              </div>
-            `).join('')}
+            ${value.map(item => {
+              if (typeof item === 'object') {
+                // Format objects in a readable way
+                return `<div class="text-sm py-2 border-b border-gray-200 last:border-0">
+                  ${Object.entries(item).map(([k, v]) => 
+                    `<span class="inline-block mr-4"><strong>${k}:</strong> ${v}</span>`
+                  ).join('')}
+                </div>`;
+              }
+              return `<div class="text-sm py-1 border-b border-gray-200 last:border-0">${item}</div>`;
+            }).join('')}
           </div>
         </div>
       `;
@@ -697,11 +703,15 @@ function showNotification(message, type = 'info') {
   const colors = {
     success: 'bg-green-500',
     error: 'bg-red-500',
-    info: 'bg-blue-500'
+    info: 'bg-blue-500',
+    warning: 'bg-yellow-500'
   };
   
+  // Default to info if invalid type provided
+  const bgColor = colors[type] || colors.info;
+  
   const notification = document.createElement('div');
-  notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity`;
+  notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity`;
   notification.textContent = message;
   
   document.body.appendChild(notification);

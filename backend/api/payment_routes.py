@@ -280,9 +280,15 @@ def get_revenue_report():
         if end_date:
             query = query.filter(Payment.payment_date <= datetime.fromisoformat(end_date))
         
-        # Total revenue
+        # Total revenue - rebuild query with same filters
+        total_query = Payment.query.filter(Payment.status == 'completed')
+        if start_date:
+            total_query = total_query.filter(Payment.payment_date >= datetime.fromisoformat(start_date))
+        if end_date:
+            total_query = total_query.filter(Payment.payment_date <= datetime.fromisoformat(end_date))
+        
         total = db.session.query(func.sum(Payment.amount)).filter(
-            query.whereclause if hasattr(query, 'whereclause') else True
+            total_query.whereclause
         ).scalar() or 0
         
         # Payment count
@@ -341,8 +347,8 @@ def get_revenue_report():
             for item in revenue_by_type
         ]
         
-        # Top paying clients
-        top_clients = db.session.query(
+        # Top paying clients - build query
+        top_clients_query = db.session.query(
             Payment.client_id,
             func.sum(Payment.amount).label('total')
         ).filter(
@@ -350,11 +356,13 @@ def get_revenue_report():
         )
         
         if start_date:
-            top_clients = top_clients.filter(Payment.payment_date >= datetime.fromisoformat(start_date))
+            top_clients_query = top_clients_query.filter(Payment.payment_date >= datetime.fromisoformat(start_date))
         if end_date:
-            top_clients = top_clients.filter(Payment.payment_date <= datetime.fromisoformat(end_date))
+            top_clients_query = top_clients_query.filter(Payment.payment_date <= datetime.fromisoformat(end_date))
         
-        top_clients = top_clients.group_by(Payment.client_id).order_by(func.sum(Payment.amount).desc()).limit(10).all()
+        top_clients = top_clients_query.group_by(Payment.client_id).order_by(
+            func.sum(Payment.amount).desc()
+        ).limit(10).all()
         
         top_clients_list = []
         for client_id, total in top_clients:

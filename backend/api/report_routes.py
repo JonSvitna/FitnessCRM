@@ -16,163 +16,30 @@ def generate_custom_report():
         
         # Get report parameters
         metrics = data.get('metrics', [])  # List of metrics to include
-        start_date = data.get('start_date')
-        end_date = data.get('end_date')
-        filters = data.get('filters', {})  # Additional filters
+        start_date_str = data.get('start_date')
+        end_date_str = data.get('end_date')
         
         if not metrics:
             return jsonify({'error': 'At least one metric must be selected'}), 400
         
         # Parse dates
-        if start_date:
-            start_date = datetime.fromisoformat(start_date)
+        if start_date_str:
+            start_date = datetime.fromisoformat(start_date_str)
         else:
             start_date = datetime.utcnow() - timedelta(days=30)
         
-        if end_date:
-            end_date = datetime.fromisoformat(end_date)
+        if end_date_str:
+            end_date = datetime.fromisoformat(end_date_str)
         else:
             end_date = datetime.utcnow()
         
-        report_data = {
-            'report_name': data.get('name', 'Custom Report'),
-            'generated_at': datetime.utcnow().isoformat(),
-            'date_range': {
-                'start': start_date.isoformat(),
-                'end': end_date.isoformat()
-            },
-            'metrics': {}
-        }
-        
-        # Calculate requested metrics
-        for metric in metrics:
-            if metric == 'total_revenue':
-                revenue = db.session.query(func.sum(Payment.amount)).filter(
-                    Payment.status == 'completed',
-                    Payment.payment_date >= start_date,
-                    Payment.payment_date <= end_date
-                ).scalar() or 0
-                report_data['metrics']['total_revenue'] = float(revenue)
-            
-            elif metric == 'payment_count':
-                count = Payment.query.filter(
-                    Payment.status == 'completed',
-                    Payment.payment_date >= start_date,
-                    Payment.payment_date <= end_date
-                ).count()
-                report_data['metrics']['payment_count'] = count
-            
-            elif metric == 'client_count':
-                count = Client.query.filter(
-                    Client.created_at <= end_date
-                ).count()
-                report_data['metrics']['client_count'] = count
-            
-            elif metric == 'active_clients':
-                count = Client.query.filter(
-                    Client.status == 'active',
-                    Client.created_at <= end_date
-                ).count()
-                report_data['metrics']['active_clients'] = count
-            
-            elif metric == 'new_clients':
-                count = Client.query.filter(
-                    Client.created_at >= start_date,
-                    Client.created_at <= end_date
-                ).count()
-                report_data['metrics']['new_clients'] = count
-            
-            elif metric == 'total_sessions':
-                count = Session.query.filter(
-                    Session.session_date >= start_date,
-                    Session.session_date <= end_date
-                ).count()
-                report_data['metrics']['total_sessions'] = count
-            
-            elif metric == 'completed_sessions':
-                count = Session.query.filter(
-                    Session.session_date >= start_date,
-                    Session.session_date <= end_date,
-                    Session.status == 'completed'
-                ).count()
-                report_data['metrics']['completed_sessions'] = count
-            
-            elif metric == 'attendance_rate':
-                total = Session.query.filter(
-                    Session.session_date >= start_date,
-                    Session.session_date <= end_date
-                ).count()
-                completed = Session.query.filter(
-                    Session.session_date >= start_date,
-                    Session.session_date <= end_date,
-                    Session.status == 'completed'
-                ).count()
-                rate = (completed / total * 100) if total > 0 else 0
-                report_data['metrics']['attendance_rate'] = round(rate, 2)
-            
-            elif metric == 'active_trainers':
-                count = Trainer.query.filter(Trainer.active == True).count()
-                report_data['metrics']['active_trainers'] = count
-            
-            elif metric == 'revenue_by_type':
-                revenue_by_type = db.session.query(
-                    Payment.payment_type,
-                    func.sum(Payment.amount).label('total')
-                ).filter(
-                    Payment.status == 'completed',
-                    Payment.payment_date >= start_date,
-                    Payment.payment_date <= end_date
-                ).group_by(Payment.payment_type).all()
-                
-                report_data['metrics']['revenue_by_type'] = {
-                    item[0] or 'Not specified': float(item[1]) for item in revenue_by_type
-                }
-            
-            elif metric == 'sessions_by_type':
-                sessions_by_type = db.session.query(
-                    Session.session_type,
-                    func.count(Session.id).label('count')
-                ).filter(
-                    Session.session_date >= start_date,
-                    Session.session_date <= end_date,
-                    Session.status == 'completed'
-                ).group_by(Session.session_type).all()
-                
-                report_data['metrics']['sessions_by_type'] = {
-                    item[0] or 'Not specified': item[1] for item in sessions_by_type
-                }
-            
-            elif metric == 'trainer_performance':
-                trainers = Trainer.query.filter(Trainer.active == True).all()
-                performance = []
-                
-                for trainer in trainers:
-                    sessions = Session.query.filter(
-                        Session.trainer_id == trainer.id,
-                        Session.session_date >= start_date,
-                        Session.session_date <= end_date,
-                        Session.status == 'completed'
-                    ).count()
-                    
-                    revenue = db.session.query(func.sum(Payment.amount)).join(
-                        Client, Payment.client_id == Client.id
-                    ).join(
-                        Assignment, Assignment.client_id == Client.id
-                    ).filter(
-                        Assignment.trainer_id == trainer.id,
-                        Payment.status == 'completed',
-                        Payment.payment_date >= start_date,
-                        Payment.payment_date <= end_date
-                    ).scalar() or 0
-                    
-                    performance.append({
-                        'trainer_name': trainer.name,
-                        'sessions': sessions,
-                        'revenue': float(revenue)
-                    })
-                
-                report_data['metrics']['trainer_performance'] = performance
-        
+        # Use shared function to generate report
+        report_data = _generate_report_data(
+            data.get('name', 'Custom Report'),
+            metrics,
+            start_date,
+            end_date
+        )
         return jsonify(report_data), 200
     except Exception as e:
         logger.error(f"Error generating custom report: {str(e)}")
@@ -211,9 +78,11 @@ def export_custom_report():
                 writer.writerow([key, ''])
                 for item in value:
                     if isinstance(item, dict):
-                        writer.writerow(['', ', '.join([f"{k}: {v}" for k, v in item.items()])])
+                        # Format dict items in a readable way
+                        formatted_item = ', '.join([f"{k}: {v}" for k, v in item.items()])
+                        writer.writerow(['', formatted_item])
                     else:
-                        writer.writerow(['', item])
+                        writer.writerow(['', str(item)])
             else:
                 writer.writerow([key.replace('_', ' ').title(), value])
         
@@ -276,6 +145,155 @@ def get_report_templates():
     
     return jsonify({'templates': templates}), 200
 
+def _generate_report_data(name, metrics, start_date, end_date):
+    """Shared function to generate report data"""
+    # Parse dates
+    if isinstance(start_date, str):
+        start_date = datetime.fromisoformat(start_date)
+    if isinstance(end_date, str):
+        end_date = datetime.fromisoformat(end_date)
+    
+    report_data = {
+        'report_name': name,
+        'generated_at': datetime.utcnow().isoformat(),
+        'date_range': {
+            'start': start_date.isoformat(),
+            'end': end_date.isoformat()
+        },
+        'metrics': {}
+    }
+    
+    # Calculate requested metrics (same logic as in generate_custom_report)
+    for metric in metrics:
+        if metric == 'total_revenue':
+            revenue = db.session.query(func.sum(Payment.amount)).filter(
+                Payment.status == 'completed',
+                Payment.payment_date >= start_date,
+                Payment.payment_date <= end_date
+            ).scalar() or 0
+            report_data['metrics']['total_revenue'] = float(revenue)
+        
+        elif metric == 'payment_count':
+            count = Payment.query.filter(
+                Payment.status == 'completed',
+                Payment.payment_date >= start_date,
+                Payment.payment_date <= end_date
+            ).count()
+            report_data['metrics']['payment_count'] = count
+        
+        elif metric == 'client_count':
+            count = Client.query.filter(
+                Client.created_at <= end_date
+            ).count()
+            report_data['metrics']['client_count'] = count
+        
+        elif metric == 'active_clients':
+            count = Client.query.filter(
+                Client.status == 'active',
+                Client.created_at <= end_date
+            ).count()
+            report_data['metrics']['active_clients'] = count
+        
+        elif metric == 'new_clients':
+            count = Client.query.filter(
+                Client.created_at >= start_date,
+                Client.created_at <= end_date
+            ).count()
+            report_data['metrics']['new_clients'] = count
+        
+        elif metric == 'total_sessions':
+            count = Session.query.filter(
+                Session.session_date >= start_date,
+                Session.session_date <= end_date
+            ).count()
+            report_data['metrics']['total_sessions'] = count
+        
+        elif metric == 'completed_sessions':
+            count = Session.query.filter(
+                Session.session_date >= start_date,
+                Session.session_date <= end_date,
+                Session.status == 'completed'
+            ).count()
+            report_data['metrics']['completed_sessions'] = count
+        
+        elif metric == 'attendance_rate':
+            total = Session.query.filter(
+                Session.session_date >= start_date,
+                Session.session_date <= end_date
+            ).count()
+            completed = Session.query.filter(
+                Session.session_date >= start_date,
+                Session.session_date <= end_date,
+                Session.status == 'completed'
+            ).count()
+            rate = (completed / total * 100) if total > 0 else 0
+            report_data['metrics']['attendance_rate'] = round(rate, 2)
+        
+        elif metric == 'active_trainers':
+            count = Trainer.query.filter(Trainer.active == True).count()
+            report_data['metrics']['active_trainers'] = count
+        
+        elif metric == 'revenue_by_type':
+            revenue_by_type = db.session.query(
+                Payment.payment_type,
+                func.sum(Payment.amount).label('total')
+            ).filter(
+                Payment.status == 'completed',
+                Payment.payment_date >= start_date,
+                Payment.payment_date <= end_date
+            ).group_by(Payment.payment_type).all()
+            
+            report_data['metrics']['revenue_by_type'] = {
+                item[0] or 'Not specified': float(item[1]) for item in revenue_by_type
+            }
+        
+        elif metric == 'sessions_by_type':
+            sessions_by_type = db.session.query(
+                Session.session_type,
+                func.count(Session.id).label('count')
+            ).filter(
+                Session.session_date >= start_date,
+                Session.session_date <= end_date,
+                Session.status == 'completed'
+            ).group_by(Session.session_type).all()
+            
+            report_data['metrics']['sessions_by_type'] = {
+                item[0] or 'Not specified': item[1] for item in sessions_by_type
+            }
+        
+        elif metric == 'trainer_performance':
+            trainers = Trainer.query.filter(Trainer.active == True).all()
+            performance = []
+            
+            for trainer in trainers:
+                sessions = Session.query.filter(
+                    Session.trainer_id == trainer.id,
+                    Session.session_date >= start_date,
+                    Session.session_date <= end_date,
+                    Session.status == 'completed'
+                ).count()
+                
+                revenue = db.session.query(func.sum(Payment.amount)).join(
+                    Client, Payment.client_id == Client.id
+                ).join(
+                    Assignment, Assignment.client_id == Client.id
+                ).filter(
+                    Assignment.trainer_id == trainer.id,
+                    Payment.status == 'completed',
+                    Payment.payment_date >= start_date,
+                    Payment.payment_date <= end_date
+                ).scalar() or 0
+                
+                performance.append({
+                    'trainer_name': trainer.name,
+                    'sessions': sessions,
+                    'revenue': float(revenue)
+                })
+            
+            report_data['metrics']['trainer_performance'] = performance
+    
+    return report_data
+
 @report_bp.route('/templates/<template_id>', methods=['POST'])
 def generate_from_template(template_id):
     """Generate a report from a predefined template"""
@@ -297,37 +315,31 @@ def generate_from_template(template_id):
         
         if not start_date:
             # Apply default date range
-            end_date = datetime.utcnow()
+            end_date_dt = datetime.utcnow()
             if template['default_date_range'] == 'last_30_days':
-                start_date = end_date - timedelta(days=30)
+                start_date_dt = end_date_dt - timedelta(days=30)
             elif template['default_date_range'] == 'last_90_days':
-                start_date = end_date - timedelta(days=90)
+                start_date_dt = end_date_dt - timedelta(days=90)
             elif template['default_date_range'] == 'last_year':
-                start_date = end_date - timedelta(days=365)
+                start_date_dt = end_date_dt - timedelta(days=365)
             else:
-                start_date = end_date - timedelta(days=30)
+                start_date_dt = end_date_dt - timedelta(days=30)
         else:
-            start_date = datetime.fromisoformat(start_date)
+            start_date_dt = datetime.fromisoformat(start_date)
             if end_date:
-                end_date = datetime.fromisoformat(end_date)
+                end_date_dt = datetime.fromisoformat(end_date)
             else:
-                end_date = datetime.utcnow()
+                end_date_dt = datetime.utcnow()
         
-        # Generate the report using the template's metrics
-        report_request = {
-            'name': template['name'],
-            'metrics': template['metrics'],
-            'start_date': start_date.isoformat(),
-            'end_date': end_date.isoformat()
-        }
+        # Generate the report using shared function
+        report_data = _generate_report_data(
+            template['name'],
+            template['metrics'],
+            start_date_dt,
+            end_date_dt
+        )
         
-        # Call the custom report generator
-        with report_bp.app.test_request_context(
-            '/api/reports/custom',
-            method='POST',
-            json=report_request
-        ):
-            return generate_custom_report()
+        return jsonify(report_data), 200
     except Exception as e:
         logger.error(f"Error generating report from template: {str(e)}")
         return jsonify({'error': str(e)}), 500

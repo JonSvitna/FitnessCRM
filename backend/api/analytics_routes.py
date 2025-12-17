@@ -169,11 +169,11 @@ def get_client_lifetime_value():
         avg_ltv = total_revenue / total_clients if total_clients > 0 else 0
         
         # Calculate average client lifespan (in days)
-        active_clients = [c for c in client_values if c[3] == 'active']
-        if active_clients:
-            avg_lifespan_days = sum([
-                (datetime.utcnow() - c[2]).days for c in active_clients
-            ]) / len(active_clients)
+        # Only count active clients for lifespan calculation
+        active_clients_with_dates = [c for c in client_values if c[3] == 'active' and c[2]]
+        if active_clients_with_dates:
+            total_days = sum((datetime.utcnow() - c[2]).days for c in active_clients_with_dates)
+            avg_lifespan_days = total_days / len(active_clients_with_dates)
         else:
             avg_lifespan_days = 0
         
@@ -190,23 +190,25 @@ def get_client_lifetime_value():
             for c in top_clients
         ]
         
-        # LTV by membership type
-        ltv_by_membership = db.session.query(
-            Client.membership_type,
-            func.count(Client.id).label('count'),
-            func.avg(func.coalesce(func.sum(Payment.amount), 0)).label('avg_ltv')
-        ).outerjoin(
-            Payment, (Payment.client_id == Client.id) & (Payment.status == 'completed')
-        ).group_by(Client.membership_type, Client.id).group_by(Client.membership_type).all()
+        # LTV by membership type - simplified query
+        # First get client LTVs per membership type
+        client_ltv_by_membership = {}
+        for c in client_values:
+            membership = c[1] if len(c) > 1 else None  # Get membership type if exists
+            # Using index 0 for id, 4 for total_paid from the client_values query
+            membership_key = membership or 'None'
+            if membership_key not in client_ltv_by_membership:
+                client_ltv_by_membership[membership_key] = []
+            client_ltv_by_membership[membership_key].append(float(c[4]))
         
-        membership_breakdown = [
-            {
-                'membership_type': item[0] or 'None',
-                'client_count': item[1],
-                'average_ltv': float(item[2]) if item[2] else 0
-            }
-            for item in ltv_by_membership
-        ]
+        # Calculate averages
+        membership_breakdown = []
+        for membership_type, ltvs in client_ltv_by_membership.items():
+            membership_breakdown.append({
+                'membership_type': membership_type,
+                'client_count': len(ltvs),
+                'average_ltv': sum(ltvs) / len(ltvs) if ltvs else 0
+            })
         
         return jsonify({
             'total_clients': total_clients,
