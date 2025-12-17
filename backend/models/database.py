@@ -729,7 +729,7 @@ class Goal(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    client = db.relationship('Client', backref='goals')
+    client = db.relationship('Client', backref='goal_records')
     creator = db.relationship('Trainer', foreign_keys=[created_by])
     milestones = db.relationship('GoalMilestone', backref='goal', lazy=True, cascade='all, delete-orphan')
     
