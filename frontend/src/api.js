@@ -184,4 +184,23 @@ export const goalAPI = {
   deleteMilestone: (goalId, milestoneId) => api.delete(`/goals/${goalId}/milestones/${milestoneId}`),
 };
 
+// Message API
+export const messageAPI = {
+  // Threads
+  getThreads: (params) => api.get('/api/messages/threads', { params }),
+  createThread: (data) => api.post('/api/messages/threads', data),
+  getThread: (threadId, params) => api.get(`/api/messages/threads/${threadId}`, { params }),
+  archiveThread: (threadId, data) => api.put(`/api/messages/threads/${threadId}/archive`, data),
+  
+  // Messages
+  createMessage: (threadId, data) => api.post(`/api/messages/threads/${threadId}/messages`, data),
+  markMessageRead: (messageId, data) => api.put(`/api/messages/messages/${messageId}/read`, data),
+  markThreadRead: (threadId, data) => api.put(`/api/messages/threads/${threadId}/read`, data),
+  deleteMessage: (messageId, data) => api.delete(`/api/messages/messages/${messageId}`, { data }),
+  
+  // Search and utilities
+  searchMessages: (params) => api.get('/api/messages/search', { params }),
+  getUnreadCount: (params) => api.get('/api/messages/unread-count', { params }),
+};
+
 export default api;
