@@ -122,10 +122,13 @@ if (document.getElementById('login-form')) {
 
   // Check if already logged in
   if (auth.isAuthenticated()) {
-    const isAuth = await checkAuth();
-    if (isAuth) {
-      window.location.href = '/index.html';
-    }
+    checkAuth().then((isAuth) => {
+      if (isAuth) {
+        window.location.href = '/index.html';
+      }
+    }).catch((error) => {
+      console.error('Auth check error:', error);
+    });
   }
 }
 
