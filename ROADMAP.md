@@ -532,12 +532,12 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 - Push notifications functional
 
 #### M6.2: Mobile Optimization (Week 18)
-- [ ] Touch-optimized UI
-- [ ] Responsive tables
-- [ ] Mobile navigation
-- [ ] Swipe gestures
-- [ ] Mobile performance optimization
-- [ ] Device-specific features
+- [x] Touch-optimized UI
+- [x] Responsive tables
+- [x] Mobile navigation
+- [x] Swipe gestures
+- [x] Mobile performance optimization
+- [x] Device-specific features (pull-to-refresh, orientation handling)
 
 **Deliverables**:
 - Mobile-optimized UI

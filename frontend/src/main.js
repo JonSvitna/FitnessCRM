@@ -3,6 +3,7 @@ import { trainerAPI, clientAPI, crmAPI, settingsAPI, activityAPI, sessionAPI, re
 import { initCollapsibleSections } from './sidebar-sections.js';
 import './pwa.js';
 import './offline.js';
+import './mobile.js';
 import Chart from 'chart.js/auto';
 
 // State management
