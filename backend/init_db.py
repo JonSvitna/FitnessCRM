@@ -6,6 +6,7 @@ Creates all tables and optionally seeds with sample data
 
 from app import create_app
 from models.database import db, Trainer, Client, Assignment
+from models.user import User  # Import User model to ensure table is created
 import sys
 
 def init_database(seed=False):

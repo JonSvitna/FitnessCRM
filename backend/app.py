@@ -271,8 +271,13 @@ def create_app(config_name=None):
     if os.getenv('SKIP_DB_INIT') != 'true':
         with app.app_context():
             try:
+                # Import User model to ensure it's registered with SQLAlchemy
+                from models.user import User
+                # Import all models to ensure they're registered
+                from models.database import Trainer, Client, Assignment
+                
                 db.create_all()
-                logger.info("Database tables created/verified")
+                logger.info("Database tables created/verified (including User table)")
                 
                 # Create default admin user if it doesn't exist
                 try:

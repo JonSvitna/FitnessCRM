@@ -101,9 +101,17 @@ def create_trainer():
         db.session.add(user)
         db.session.commit()
         
+        # Verify User account was created
+        verify_user = User.query.filter_by(email=trainer.email).first()
+        if not verify_user:
+            logger.error(f"CRITICAL: User account was not created for trainer: {trainer.email}")
+            return jsonify({'error': 'Failed to create User account. Please try again.'}), 500
+        
+        logger.info(f"✓ Verified User account created: {verify_user.email} (ID: {verify_user.id}, Role: {verify_user.role})")
+        
         log_activity('create', 'trainer', trainer.id, user_identifier=trainer.email,
                     details={'name': trainer.name})
-        logger.info(f"Trainer created: {trainer.name} (ID: {trainer.id}) with user account")
+        logger.info(f"Trainer created: {trainer.name} (ID: {trainer.id}) with user account (User ID: {verify_user.id})")
         
         return jsonify(trainer.to_dict()), 201
     except IntegrityError as e:
@@ -318,12 +326,20 @@ def create_client():
         db.session.add(user)
         db.session.commit()
         
+        # Verify User account was created
+        verify_user = User.query.filter_by(email=client.email).first()
+        if not verify_user:
+            logger.error(f"CRITICAL: User account was not created for client: {client.email}")
+            return jsonify({'error': 'Failed to create User account. Please try again.'}), 500
+        
+        logger.info(f"✓ Verified User account created: {verify_user.email} (ID: {verify_user.id}, Role: {verify_user.role})")
+        
         # Send welcome email
         send_welcome_email(client.name, client.email)
         
         log_activity('create', 'client', client.id, user_identifier=client.email,
                     details={'name': client.name})
-        logger.info(f"Client created: {client.name} (ID: {client.id}) with user account")
+        logger.info(f"Client created: {client.name} (ID: {client.id}) with user account (User ID: {verify_user.id})")
         
         return jsonify(client.to_dict()), 201
     except IntegrityError as e:
