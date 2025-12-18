@@ -206,6 +206,44 @@ def check_trainer_user(trainer_id):
         'user_id': user.id if user else None
     }), 200
 
+@api_bp.route('/trainers/<int:trainer_id>/change-password', methods=['POST'])
+def change_trainer_password(trainer_id):
+    """Change password for a trainer's user account. Creates User account if it doesn't exist."""
+    trainer = Trainer.query.get_or_404(trainer_id)
+    data = request.get_json()
+    
+    if not data or not data.get('password'):
+        return jsonify({'error': 'Password is required'}), 400
+    
+    if len(data['password']) < 6:
+        return jsonify({'error': 'Password must be at least 6 characters'}), 400
+    
+    try:
+        # Find user account by email
+        user = User.query.filter_by(email=trainer.email).first()
+        
+        if not user:
+            # Create user account if it doesn't exist
+            user = User(
+                email=trainer.email,
+                password_hash=hash_password(data['password']),
+                role='trainer',
+                active=True
+            )
+            db.session.add(user)
+            logger.info(f"Created User account for trainer: {trainer.name} (ID: {trainer.id})")
+        else:
+            # Update password
+            user.password_hash = hash_password(data['password'])
+            logger.info(f"Password changed for trainer: {trainer.name} (ID: {trainer.id})")
+        
+        db.session.commit()
+        return jsonify({'message': 'Password set successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error changing trainer password: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 @api_bp.route('/check-email', methods=['POST'])
 def check_email():
     """Check if a User account exists for an email address"""

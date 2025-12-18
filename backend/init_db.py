@@ -7,6 +7,7 @@ Creates all tables and optionally seeds with sample data
 from app import create_app
 from models.database import db, Trainer, Client, Assignment
 from models.user import User  # Import User model to ensure table is created
+from utils.auth import hash_password
 import sys
 
 def init_database(seed=False):
@@ -65,6 +66,24 @@ def seed_database():
     db.session.commit()
     print(f"  ✓ Added {len(trainers)} trainers")
     
+    # Create User accounts for trainers
+    trainer_users = []
+    for trainer in trainers:
+        # Check if user already exists
+        existing_user = User.query.filter_by(email=trainer.email).first()
+        if not existing_user:
+            user = User(
+                email=trainer.email,
+                password_hash=hash_password('trainer123'),  # Default password
+                role='trainer',
+                active=True
+            )
+            trainer_users.append(user)
+            db.session.add(user)
+    
+    db.session.commit()
+    print(f"  ✓ Created {len(trainer_users)} User accounts for trainers (password: 'trainer123')")
+    
     # Create sample clients
     clients = [
         Client(
@@ -114,6 +133,24 @@ def seed_database():
     
     db.session.commit()
     print(f"  ✓ Added {len(clients)} clients")
+    
+    # Create User accounts for clients
+    client_users = []
+    for client in clients:
+        # Check if user already exists
+        existing_user = User.query.filter_by(email=client.email).first()
+        if not existing_user:
+            user = User(
+                email=client.email,
+                password_hash=hash_password('client123'),  # Default password
+                role='client',
+                active=True
+            )
+            client_users.append(user)
+            db.session.add(user)
+    
+    db.session.commit()
+    print(f"  ✓ Created {len(client_users)} User accounts for clients (password: 'client123')")
     
     # Create sample assignments
     assignments = [
