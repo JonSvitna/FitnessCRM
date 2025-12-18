@@ -112,41 +112,72 @@ def create_app(config_name=None):
     app.register_blueprint(payment_bp)
     app.register_blueprint(analytics_bp)
     app.register_blueprint(report_bp)
+    # Register communication blueprints
     if sms_bp:
         app.register_blueprint(sms_bp)
+        logger.info("SMS routes registered")
+    else:
+        logger.warning("SMS routes not available - blueprint import failed")
+    
     if campaign_bp:
         app.register_blueprint(campaign_bp)
+        logger.info("Campaign routes registered")
+    else:
+        logger.warning("Campaign routes not available - blueprint import failed")
+    
     if automation_bp:
         app.register_blueprint(automation_bp)
+        logger.info("Automation routes registered")
+    else:
+        logger.warning("Automation routes not available - blueprint import failed")
+    
     if message_bp:
         app.register_blueprint(message_bp)
+        logger.info("Message routes registered")
+    else:
+        logger.warning("Message routes not available - blueprint import failed")
     
     # Root endpoint
     @app.route('/')
     def index():
         logger.info("Root endpoint accessed")
+        endpoints = {
+            'trainers': '/api/trainers',
+            'clients': '/api/clients',
+            'crm': '/api/crm',
+            'settings': '/api/settings',
+            'activity': '/api/activity',
+            'sessions': '/api/sessions',
+            'measurements': '/api/measurements',
+            'files': '/api/files',
+            'exercises': '/api/exercises',
+            'workouts': '/api/workouts',
+            'payments': '/api/payments',
+            'analytics': '/api/analytics',
+            'reports': '/api/reports',
+        }
+        
+        # Add communication endpoints if available
+        if sms_bp:
+            endpoints['sms'] = '/api/sms'
+        if campaign_bp:
+            endpoints['campaigns'] = '/api/campaigns'
+        if automation_bp:
+            endpoints['automation'] = '/api/automation'
+        if message_bp:
+            endpoints['messages'] = '/api/messages'
+        
+        endpoints['health'] = '/api/health'
+        
         return jsonify({
             'message': 'Fitness CRM API',
             'version': '1.4.0',
-            'endpoints': {
-                'trainers': '/api/trainers',
-                'clients': '/api/clients',
-                'crm': '/api/crm',
-                'settings': '/api/settings',
-                'activity': '/api/activity',
-                'sessions': '/api/sessions',
-                'measurements': '/api/measurements',
-                'files': '/api/files',
-                'exercises': '/api/exercises',
-                'workouts': '/api/workouts',
-                'payments': '/api/payments',
-                'analytics': '/api/analytics',
-                'reports': '/api/reports',
-                'sms': '/api/sms',
-                'campaigns': '/api/campaigns',
-                'automation': '/api/automation',
-                'messages': '/api/messages',
-                'health': '/api/health'
+            'endpoints': endpoints,
+            'communication_features': {
+                'sms': sms_bp is not None,
+                'campaigns': campaign_bp is not None,
+                'automation': automation_bp is not None,
+                'messages': message_bp is not None
             }
         }), 200
     
