@@ -513,12 +513,12 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 ### Milestones
 
 #### M6.1: Progressive Web App (Week 17)
-- [ ] PWA manifest
-- [ ] Service worker for offline support
-- [ ] Push notifications
-- [ ] Install prompts
-- [ ] Offline data sync
-- [ ] App icon and splash screen
+- [x] PWA manifest
+- [x] Service worker for offline support
+- [x] Push notifications (needs VAPID key configuration)
+- [x] Install prompts
+- [x] Offline data sync
+- [ ] App icon and splash screen (icons directory created, need actual icon files)
 
 **Deliverables**:
 - PWA configuration

@@ -2,6 +2,7 @@ import './styles/main.css';
 import { trainerAPI, clientAPI, crmAPI, settingsAPI, activityAPI, sessionAPI, recurringSessionAPI, measurementAPI, fileAPI, exerciseAPI, workoutAPI, progressPhotoAPI, goalAPI } from './api.js';
 import { initCollapsibleSections } from './sidebar-sections.js';
 import './pwa.js';
+import './offline.js';
 import Chart from 'chart.js/auto';
 
 // State management

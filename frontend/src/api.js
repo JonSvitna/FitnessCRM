@@ -9,6 +9,88 @@ const api = axios.create({
   },
 });
 
+// Add response interceptor to handle offline errors
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    // If offline and it's a POST/PUT/DELETE request, queue it
+    if (!navigator.onLine && error.config && ['post', 'put', 'delete'].includes(error.config.method?.toLowerCase())) {
+      const config = error.config;
+      const actionType = getActionTypeFromUrl(config.url, config.method);
+      
+      if (actionType) {
+        // Dynamically import to avoid circular dependency
+        const { queueOfflineAction } = await import('./offline.js');
+        queueOfflineAction(
+          actionType,
+          config.data ? JSON.parse(config.data) : {},
+          extractIdFromUrl(config.url),
+          extractThreadIdFromUrl(config.url)
+        );
+        
+        // Return a fake success response so the UI doesn't break
+        return Promise.resolve({
+          data: { 
+            success: true, 
+            message: 'Action queued for sync when online',
+            queued: true 
+          },
+          status: 202,
+          statusText: 'Accepted',
+          headers: {},
+          config: config
+        });
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
+// Helper function to determine action type from URL and method
+function getActionTypeFromUrl(url, method) {
+  if (!url || !method) return null;
+  
+  const lowerMethod = method.toLowerCase();
+  const lowerUrl = url.toLowerCase();
+  
+  if (lowerUrl.includes('/api/clients')) {
+    if (lowerMethod === 'post') return 'create_client';
+    if (lowerMethod === 'put') return 'update_client';
+  }
+  
+  if (lowerUrl.includes('/api/trainers')) {
+    if (lowerMethod === 'post') return 'create_trainer';
+    if (lowerMethod === 'put') return 'update_trainer';
+  }
+  
+  if (lowerUrl.includes('/sessions') && lowerMethod === 'post') {
+    return 'create_session';
+  }
+  
+  if (lowerUrl.includes('/api/messages/threads') && lowerUrl.includes('/messages') && lowerMethod === 'post') {
+    return 'create_message';
+  }
+  
+  if (lowerUrl.includes('/api/sms/send') && lowerMethod === 'post') {
+    return 'send_sms';
+  }
+  
+  return null;
+}
+
+// Helper function to extract ID from URL
+function extractIdFromUrl(url) {
+  const match = url.match(/\/(\d+)(?:\/|$)/);
+  return match ? parseInt(match[1]) : null;
+}
+
+// Helper function to extract thread ID from URL
+function extractThreadIdFromUrl(url) {
+  const match = url.match(/\/threads\/(\d+)/);
+  return match ? parseInt(match[1]) : null;
+}
+
 // Trainer API
 export const trainerAPI = {
   create: (data) => api.post('/api/trainers', data),
