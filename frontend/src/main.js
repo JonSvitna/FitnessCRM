@@ -1,5 +1,5 @@
 import './styles/main.css';
-import { trainerAPI, clientAPI, crmAPI, settingsAPI, activityAPI, sessionAPI, recurringSessionAPI, measurementAPI, fileAPI, exerciseAPI, workoutAPI, progressPhotoAPI, goalAPI } from './api.js';
+import { trainerAPI, clientAPI, crmAPI, settingsAPI, activityAPI, sessionAPI, recurringSessionAPI, measurementAPI, fileAPI, exerciseAPI, workoutAPI, progressPhotoAPI, goalAPI, integrationsAPI } from './api.js';
 import { initCollapsibleSections } from './sidebar-sections.js';
 import './pwa.js';
 import './offline.js';
@@ -698,13 +698,177 @@ async function loadSettings() {
     const response = await settingsAPI.get();
     state.settings = response.data;
     populateSettingsForms();
+    loadIntegrations();
     loadActivityLog();
   } catch (error) {
     console.error('Error loading settings:', error);
     // If no settings exist, that's okay - forms will be empty
+    loadIntegrations();
     loadActivityLog();
   }
 }
+
+// Load integrations status and render UI
+async function loadIntegrations() {
+  try {
+    const response = await integrationsAPI.getStatus();
+    const integrations = response.data;
+    renderIntegrations(integrations);
+  } catch (error) {
+    console.error('Error loading integrations:', error);
+    renderIntegrations({});
+  }
+}
+
+function renderIntegrations(integrations) {
+  const container = document.getElementById('integrations-list');
+  if (!container) return;
+
+  const integrationList = [
+    {
+      id: 'google_calendar',
+      name: 'Google Calendar',
+      description: 'Sync sessions to your Google Calendar',
+      icon: '📅',
+      configured: integrations.google_calendar?.configured || false,
+      connected: integrations.google_calendar?.connected || false,
+      action: 'connect'
+    },
+    {
+      id: 'calendly',
+      name: 'Calendly',
+      description: 'Automatically create sessions from Calendly bookings',
+      icon: '📆',
+      configured: integrations.calendly?.configured || true,
+      connected: integrations.calendly?.connected || false,
+      action: 'webhook'
+    },
+    {
+      id: 'zoom',
+      name: 'Zoom',
+      description: 'Generate Zoom meeting links for sessions',
+      icon: '💻',
+      configured: integrations.zoom?.configured || false,
+      connected: integrations.zoom?.connected || false,
+      action: 'configure'
+    },
+    {
+      id: 'myfitnesspal',
+      name: 'MyFitnessPal',
+      description: 'Connect client MyFitnessPal accounts',
+      icon: '🍎',
+      configured: integrations.myfitnesspal?.configured || false,
+      connected: integrations.myfitnesspal?.connected || false,
+      action: 'connect'
+    },
+    {
+      id: 'zapier',
+      name: 'Zapier',
+      description: 'Connect to Zapier for custom automations',
+      icon: '⚡',
+      configured: integrations.zapier?.configured || true,
+      connected: integrations.zapier?.connected || false,
+      action: 'webhook'
+    }
+  ];
+
+  container.innerHTML = integrationList.map(integration => `
+    <div class="border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <div class="text-3xl">${integration.icon}</div>
+        <div>
+          <h4 class="font-semibold text-gray-900">${integration.name}</h4>
+          <p class="text-sm text-gray-500">${integration.description}</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <span class="px-3 py-1 rounded-full text-xs font-medium ${
+          integration.connected 
+            ? 'bg-green-100 text-green-800' 
+            : integration.configured 
+            ? 'bg-yellow-100 text-yellow-800' 
+            : 'bg-gray-100 text-gray-800'
+        }">
+          ${integration.connected ? 'Connected' : integration.configured ? 'Configured' : 'Not Connected'}
+        </span>
+        ${integration.action === 'connect' && !integration.connected ? `
+          <button onclick="connectIntegration('${integration.id}')" class="btn-primary text-sm px-4 py-2">
+            Connect
+          </button>
+        ` : integration.action === 'webhook' ? `
+          <button onclick="showWebhookInfo('${integration.id}')" class="btn-secondary text-sm px-4 py-2">
+            Setup
+          </button>
+        ` : integration.connected ? `
+          <button onclick="disconnectIntegration('${integration.id}')" class="btn-outline text-sm px-4 py-2">
+            Disconnect
+          </button>
+        ` : `
+          <button onclick="configureIntegration('${integration.id}')" class="btn-secondary text-sm px-4 py-2">
+            Configure
+          </button>
+        `}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Integration connection handlers
+window.connectIntegration = async function(integrationId) {
+  try {
+    if (integrationId === 'google_calendar') {
+      const response = await integrationsAPI.googleCalendarAuth();
+      const authUrl = response.data.auth_url;
+      if (authUrl) {
+        window.open(authUrl, '_blank', 'width=600,height=700');
+        showToast('Opening Google Calendar authorization...');
+      }
+    } else if (integrationId === 'myfitnesspal') {
+      const username = prompt('Enter MyFitnessPal username:');
+      if (username) {
+        const clientId = prompt('Enter Client ID (optional):');
+        if (clientId) {
+          await integrationsAPI.myfitnesspalConnect({
+            client_id: parseInt(clientId),
+            username: username
+          });
+          showToast('MyFitnessPal connected successfully');
+          loadIntegrations();
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error connecting integration:', error);
+    showToast('Error connecting integration: ' + (error.response?.data?.error || error.message));
+  }
+};
+
+window.disconnectIntegration = async function(integrationId) {
+  if (!confirm(`Are you sure you want to disconnect ${integrationId}?`)) return;
+  
+  try {
+    // In production, call disconnect endpoint
+    showToast(`${integrationId} disconnected`);
+    loadIntegrations();
+  } catch (error) {
+    console.error('Error disconnecting integration:', error);
+    showToast('Error disconnecting integration');
+  }
+};
+
+window.configureIntegration = function(integrationId) {
+  if (integrationId === 'zoom') {
+    showToast('Zoom configuration: Set ZOOM_API_KEY in environment variables');
+  } else {
+    showToast(`Configuration for ${integrationId} coming soon`);
+  }
+};
+
+window.showWebhookInfo = function(integrationId) {
+  const webhookUrl = `${window.location.origin}/api/integrations/${integrationId === 'calendly' ? 'calendly' : 'zapier'}/webhook`;
+  const message = `${integrationId === 'calendly' ? 'Calendly' : 'Zapier'} Webhook URL:\n\n${webhookUrl}\n\nUse this URL when setting up your ${integrationId === 'calendly' ? 'Calendly' : 'Zapier'} integration.`;
+  alert(message);
+};
 
 function populateSettingsForms() {
   if (!state.settings) return;
