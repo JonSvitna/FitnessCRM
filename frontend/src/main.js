@@ -1168,7 +1168,7 @@ window.changeTrainerPassword = async function(id, email) {
 };
 
 window.changeClientPassword = async function(id, email) {
-  const newPassword = prompt(`Enter new password for ${email}:\n(Minimum 6 characters)`);
+  const newPassword = prompt(`Enter new password for ${email}:\n(Minimum 6 characters)\n\nNote: This will create a User account if one doesn't exist.`);
   if (!newPassword) return;
   
   if (newPassword.length < 6) {
@@ -1190,13 +1190,13 @@ window.changeClientPassword = async function(id, email) {
     const data = await response.json();
     
     if (response.ok) {
-      showToast('Password changed successfully!');
+      showToast('Password set successfully! Client can now log in.');
     } else {
-      showToast(data.error || 'Failed to change password', 'error');
+      showToast(data.error || 'Failed to set password', 'error');
     }
   } catch (error) {
     console.error('Error changing password:', error);
-    showToast('Error changing password', 'error');
+    showToast('Error setting password', 'error');
   }
 };
 

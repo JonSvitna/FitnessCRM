@@ -278,7 +278,7 @@ def create_client():
 
 @api_bp.route('/clients/<int:client_id>/change-password', methods=['POST'])
 def change_client_password(client_id):
-    """Change password for a client's user account"""
+    """Change password for a client's user account. Creates User account if it doesn't exist."""
     client = Client.query.get_or_404(client_id)
     data = request.get_json()
     
@@ -291,15 +291,24 @@ def change_client_password(client_id):
     try:
         # Find user account by email
         user = User.query.filter_by(email=client.email).first()
+        
         if not user:
-            return jsonify({'error': 'User account not found for this client'}), 404
+            # Create user account if it doesn't exist
+            user = User(
+                email=client.email,
+                password_hash=hash_password(data['password']),
+                role='client',
+                active=True
+            )
+            db.session.add(user)
+            logger.info(f"Created User account for client: {client.name} (ID: {client.id})")
+        else:
+            # Update password
+            user.password_hash = hash_password(data['password'])
+            logger.info(f"Password changed for client: {client.name} (ID: {client.id})")
         
-        # Update password
-        user.password_hash = hash_password(data['password'])
         db.session.commit()
-        
-        logger.info(f"Password changed for client: {client.name} (ID: {client.id})")
-        return jsonify({'message': 'Password changed successfully'}), 200
+        return jsonify({'message': 'Password set successfully'}), 200
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error changing client password: {str(e)}")
