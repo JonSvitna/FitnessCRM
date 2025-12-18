@@ -19,37 +19,49 @@ from utils.logger import logger, LoggerMiddleware
 
 # Import SMS routes (optional - for Phase 5 M5.2)
 sms_bp = None
+sms_import_error = None
 try:
     from api.sms_routes import sms_bp
 except Exception as e:
     import sys
+    sms_import_error = str(e)
     print(f"Warning: Failed to import SMS routes: {e}. SMS features will be disabled.", file=sys.stderr)
+    logger.error(f"SMS routes import error: {e}", exc_info=True)
 
 # Import Campaign routes (optional - for Phase 5 M5.3)
 campaign_bp = None
+campaign_import_error = None
 try:
     from api.campaign_routes import campaign_bp
 except Exception as e:
     import sys
+    campaign_import_error = str(e)
     print(f"Warning: Failed to import Campaign routes: {e}. Email campaign features will be disabled.", file=sys.stderr)
+    logger.error(f"Campaign routes import error: {e}", exc_info=True)
 
 # Import Automation routes (optional - for Phase 5 M5.4)
 automation_bp = None
+automation_import_error = None
 try:
     from api.automation_routes import automation_bp
 except Exception as e:
     import sys
+    automation_import_error = str(e)
     print(f"Warning: Failed to import Automation routes: {e}. Automation features will be disabled.", file=sys.stderr)
+    logger.error(f"Automation routes import error: {e}", exc_info=True)
 from utils.email import init_mail
 import os
 
 # Import message routes (optional - for Phase 5 M5.1)
 message_bp = None
+message_import_error = None
 try:
     from api.message_routes import message_bp
 except Exception as e:
     import sys
+    message_import_error = str(e)
     print(f"Warning: Failed to import message routes: {e}. Messaging features will be disabled.", file=sys.stderr)
+    logger.error(f"Message routes import error: {e}", exc_info=True)
 
 # Initialize SocketIO globally (optional - may fail in some environments)
 socketio = None
@@ -169,7 +181,7 @@ def create_app(config_name=None):
         
         endpoints['health'] = '/api/health'
         
-        return jsonify({
+        response_data = {
             'message': 'Fitness CRM API',
             'version': '1.4.0',
             'endpoints': endpoints,
@@ -179,7 +191,23 @@ def create_app(config_name=None):
                 'automation': automation_bp is not None,
                 'messages': message_bp is not None
             }
-        }), 200
+        }
+        
+        # Add import errors for debugging (if any occurred)
+        import_errors = {}
+        if sms_import_error:
+            import_errors['sms'] = sms_import_error
+        if campaign_import_error:
+            import_errors['campaigns'] = campaign_import_error
+        if automation_import_error:
+            import_errors['automation'] = automation_import_error
+        if message_import_error:
+            import_errors['messages'] = message_import_error
+        
+        if import_errors:
+            response_data['import_errors'] = import_errors
+        
+        return jsonify(response_data), 200
     
     # Error handlers
     @app.errorhandler(404)
