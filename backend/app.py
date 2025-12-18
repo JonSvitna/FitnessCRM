@@ -18,6 +18,7 @@ from api.analytics_routes import analytics_bp
 from api.report_routes import report_bp
 from api.integrations_routes import integrations_bp
 from api.public_api_v2 import public_api_v2
+from api.ai_routes import ai_bp
 
 # Import Stripe routes (optional - for Phase 6 M6.3)
 stripe_bp = None

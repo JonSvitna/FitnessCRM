@@ -623,20 +623,28 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 
 ### Milestones
 
-#### M7.1: AI-Powered Features (Week 21)
-- [ ] AI workout recommendations
-- [ ] Smart session scheduling suggestions
-- [ ] Client progress predictions
-- [ ] Automated workout plan generation
-- [ ] Natural language processing for notes
+#### M7.1: AI-Powered Features (Week 21) ⚠️ REVIEW NEEDED
+- [x] AI workout recommendations (using seed data)
+- [x] Smart session scheduling suggestions (using seed data)
+- [x] Client progress predictions (using seed data)
+- [x] Automated workout plan generation (using seed data)
+- [ ] Natural language processing for notes (pending external AI service)
 
 **Deliverables**:
-- AI recommendation engine
-- ML models for predictions
+- AI recommendation engine (seed data implementation)
+- ML models for predictions (seed data simulation)
 - Integration with workout system
+- **AI Service Abstraction Layer** - Ready for external AI integration
+
+**Implementation Notes**:
+- ⚠️ **Currently using seed/mock data** for AI features
+- AI service configured to be called from external environment
+- Easy to swap seed data with real AI API calls
+- Review needed: Configure external AI service (OpenAI, Anthropic, etc.)
+- AI endpoints accept same format as external service will provide
 
 **Success Metrics**:
-- 80%+ recommendation accuracy
+- 80%+ recommendation accuracy (when real AI integrated)
 - 50% time saved on workout planning
 - Positive user feedback
 
