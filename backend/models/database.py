@@ -219,10 +219,13 @@ class Payment(db.Model):
     client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     payment_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    payment_method = db.Column(db.String(50))  # credit_card, cash, check, etc.
-    payment_type = db.Column(db.String(50))  # membership, session, product, etc.
+    payment_method = db.Column(db.String(50))  # credit_card, cash, check, stripe, etc.
+    payment_type = db.Column(db.String(50))  # membership, session, product, subscription, etc.
     status = db.Column(db.String(50), default='completed')  # pending, completed, refunded, failed
-    transaction_id = db.Column(db.String(200))
+    transaction_id = db.Column(db.String(200))  # Stripe payment intent ID or charge ID
+    stripe_payment_intent_id = db.Column(db.String(200))  # Stripe PaymentIntent ID
+    stripe_charge_id = db.Column(db.String(200))  # Stripe Charge ID
+    stripe_customer_id = db.Column(db.String(200))  # Stripe Customer ID
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     

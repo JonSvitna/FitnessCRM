@@ -13,6 +13,12 @@ from api.workout_routes import workout_bp
 from api.progress_photo_routes import progress_photo_bp
 from api.goal_routes import goal_bp
 from api.payment_routes import payment_bp
+try:
+    from api.stripe_routes import stripe_bp
+    STRIPE_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Failed to import Stripe routes: {e}. Stripe features will be disabled.")
+    STRIPE_AVAILABLE = False
 from api.analytics_routes import analytics_bp
 from api.report_routes import report_bp
 from utils.logger import logger, LoggerMiddleware
