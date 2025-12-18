@@ -67,6 +67,8 @@ def seed_database():
     print(f"  ✓ Added {len(trainers)} trainers")
     
     # Create User accounts for trainers
+    # NOTE: Using default passwords for development/testing only
+    # In production, use the password change endpoint or create users with secure passwords
     trainer_users = []
     for trainer in trainers:
         # Check if user already exists
@@ -74,7 +76,7 @@ def seed_database():
         if not existing_user:
             user = User(
                 email=trainer.email,
-                password_hash=hash_password('trainer123'),  # Default password
+                password_hash=hash_password('trainer123'),  # Development default
                 role='trainer',
                 active=True
             )
@@ -82,7 +84,9 @@ def seed_database():
             db.session.add(user)
     
     db.session.commit()
-    print(f"  ✓ Created {len(trainer_users)} User accounts for trainers (password: 'trainer123')")
+    if len(trainer_users) > 0:
+        print(f"  ✓ Created {len(trainer_users)} User accounts for trainers")
+        print(f"  ⚠ WARNING: Default passwords set. Change them immediately in production!")
     
     # Create sample clients
     clients = [
@@ -135,6 +139,8 @@ def seed_database():
     print(f"  ✓ Added {len(clients)} clients")
     
     # Create User accounts for clients
+    # NOTE: Using default passwords for development/testing only
+    # In production, use the password change endpoint or create users with secure passwords
     client_users = []
     for client in clients:
         # Check if user already exists
@@ -142,7 +148,7 @@ def seed_database():
         if not existing_user:
             user = User(
                 email=client.email,
-                password_hash=hash_password('client123'),  # Default password
+                password_hash=hash_password('client123'),  # Development default
                 role='client',
                 active=True
             )
@@ -150,7 +156,9 @@ def seed_database():
             db.session.add(user)
     
     db.session.commit()
-    print(f"  ✓ Created {len(client_users)} User accounts for clients (password: 'client123')")
+    if len(client_users) > 0:
+        print(f"  ✓ Created {len(client_users)} User accounts for clients")
+        print(f"  ⚠ WARNING: Default passwords set. Change them immediately in production!")
     
     # Create sample assignments
     assignments = [
