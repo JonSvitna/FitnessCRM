@@ -114,8 +114,12 @@ def create_trainer():
         return jsonify({'error': 'Trainer with this email already exists'}), 409
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Error creating trainer: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        error_msg = str(e)
+        logger.error(f"Error creating trainer: {error_msg}", exc_info=True)
+        # Return more user-friendly error message
+        if 'users' in error_msg.lower() or 'user' in error_msg.lower():
+            return jsonify({'error': f'User account error: {error_msg}'}), 500
+        return jsonify({'error': f'Failed to create trainer: {error_msg}'}), 500
 
 @api_bp.route('/trainers/<int:trainer_id>', methods=['PUT'])
 def update_trainer(trainer_id):
@@ -151,16 +155,33 @@ def update_trainer(trainer_id):
 
 @api_bp.route('/trainers/<int:trainer_id>', methods=['DELETE'])
 def delete_trainer(trainer_id):
-    """Delete a trainer"""
+    """Delete a trainer and associated user account"""
     trainer = Trainer.query.get_or_404(trainer_id)
     
     try:
+        # Find and delete associated user account
+        user = User.query.filter_by(email=trainer.email).first()
+        if user:
+            db.session.delete(user)
+            logger.info(f"Deleted User account for trainer: {trainer.email}")
+        
+        # Delete trainer (this will cascade delete assignments and sessions)
         db.session.delete(trainer)
         db.session.commit()
+        
+        log_activity('delete', 'trainer', trainer_id, user_identifier=trainer.email,
+                    details={'name': trainer.name})
+        logger.info(f"Trainer deleted: {trainer.name} (ID: {trainer_id})")
+        
         return jsonify({'message': 'Trainer deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        error_msg = str(e)
+        logger.error(f"Error deleting trainer: {error_msg}", exc_info=True)
+        # Return more user-friendly error message
+        if 'foreign key' in error_msg.lower() or 'constraint' in error_msg.lower():
+            return jsonify({'error': 'Cannot delete trainer: Has associated records (assignments, sessions, etc.)'}), 409
+        return jsonify({'error': f'Failed to delete trainer: {error_msg}'}), 500
 
 @api_bp.route('/trainers/<int:trainer_id>/check-user', methods=['GET'])
 def check_trainer_user(trainer_id):
