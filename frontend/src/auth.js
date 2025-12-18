@@ -125,20 +125,22 @@ if (document.getElementById('login-form')) {
       if (response.data && response.data.token) {
         // Store token and user
         auth.setToken(response.data.token);
-        if (response.data.user) {
-          auth.setUser(response.data.user);
+        const user = response.data.user;
+        if (user) {
+          auth.setUser(user);
         }
 
-        // Redirect based on user role
-        const user = response.data.user;
+        // Redirect based on user role (with safe fallback)
         let redirectTo = '/index.html'; // Default to admin dashboard
         
-        if (user.role === 'trainer') {
-          redirectTo = '/trainer.html';
-        } else if (user.role === 'client' || user.role === 'user') {
-          redirectTo = '/client.html';
-        } else if (user.role === 'admin') {
-          redirectTo = '/index.html';
+        if (user && user.role) {
+          if (user.role === 'trainer') {
+            redirectTo = '/trainer.html';
+          } else if (user.role === 'client' || user.role === 'user') {
+            redirectTo = '/client.html';
+          } else if (user.role === 'admin') {
+            redirectTo = '/index.html';
+          }
         }
         
         // Override with explicit redirect parameter if provided
