@@ -97,3 +97,51 @@ def get_current_user():
         return User.query.get(g.current_user_id)
     return None
 
+def change_user_password(email: str, new_password: str, role: str, name: str = None) -> tuple:
+    """
+    Change or create user password for a given email
+    
+    Args:
+        email: User email address
+        new_password: New password to set
+        role: User role (trainer, client, admin, etc.)
+        name: Optional name for logging purposes
+    
+    Returns:
+        Tuple of (success: bool, message: str, status_code: int)
+    """
+    if len(new_password) < 6:
+        return False, 'Password must be at least 6 characters', 400
+    
+    try:
+        # Find user account by email
+        user = User.query.filter_by(email=email).first()
+        
+        if not user:
+            # Create user account if it doesn't exist
+            user = User(
+                email=email,
+                password_hash=hash_password(new_password),
+                role=role,
+                active=True
+            )
+            db.session.add(user)
+            log_msg = f"Created User account for {role}"
+            if name:
+                log_msg += f": {name}"
+            logger.info(log_msg)
+        else:
+            # Update password
+            user.password_hash = hash_password(new_password)
+            log_msg = f"Password changed for {role}"
+            if name:
+                log_msg += f": {name}"
+            logger.info(log_msg)
+        
+        db.session.commit()
+        return True, 'Password set successfully', 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error changing password for {email}: {str(e)}")
+        return False, str(e), 500
+
