@@ -155,6 +155,9 @@ def create_app(config_name=None):
     # Register AI routes
     app.register_blueprint(ai_bp)
     
+    # Register advanced analytics routes
+    app.register_blueprint(advanced_analytics_bp)
+    
     app.register_blueprint(analytics_bp)
     app.register_blueprint(report_bp)
     # Register communication blueprints

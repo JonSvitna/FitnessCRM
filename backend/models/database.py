@@ -3,6 +3,9 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
+# Import User model (defined separately for auth)
+from models.user import User
+
 class Trainer(db.Model):
     """Trainer model"""
     __tablename__ = 'trainers'
