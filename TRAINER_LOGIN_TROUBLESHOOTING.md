@@ -33,11 +33,9 @@ cd backend
 python utils/create_trainer_user.py
 ```
 
-This will create User accounts with default passwords:
-- Trainers: `trainer123`
-- Clients: `client123`
+This will create User accounts with default passwords.
 
-**⚠️ IMPORTANT**: Change these default passwords immediately after running the script!
+**NOTE**: When running `python init_db.py seed`, User accounts are automatically created for all seeded trainers and clients with development default passwords. These passwords should be changed immediately in production environments using the password change endpoints.
 
 #### Option 3: Check if User Account Exists
 

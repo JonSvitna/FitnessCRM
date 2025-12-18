@@ -3,7 +3,7 @@ from models.database import db, Trainer, Client, Assignment
 from models.user import User
 from sqlalchemy.exc import IntegrityError
 from utils.logger import log_activity, logger
-from utils.auth import hash_password
+from utils.auth import hash_password, change_user_password
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -206,6 +206,27 @@ def check_trainer_user(trainer_id):
         'user_id': user.id if user else None
     }), 200
 
+@api_bp.route('/trainers/<int:trainer_id>/change-password', methods=['POST'])
+def change_trainer_password(trainer_id):
+    """Change password for a trainer's user account. Creates User account if it doesn't exist."""
+    trainer = Trainer.query.get_or_404(trainer_id)
+    data = request.get_json()
+    
+    if not data or not data.get('password'):
+        return jsonify({'error': 'Password is required'}), 400
+    
+    success, message, status_code = change_user_password(
+        email=trainer.email,
+        new_password=data['password'],
+        role='trainer',
+        name=f"{trainer.name} (ID: {trainer.id})"
+    )
+    
+    if success:
+        return jsonify({'message': message}), status_code
+    else:
+        return jsonify({'error': message}), status_code
+
 @api_bp.route('/check-email', methods=['POST'])
 def check_email():
     """Check if a User account exists for an email address"""
@@ -362,34 +383,17 @@ def change_client_password(client_id):
     if not data or not data.get('password'):
         return jsonify({'error': 'Password is required'}), 400
     
-    if len(data['password']) < 6:
-        return jsonify({'error': 'Password must be at least 6 characters'}), 400
+    success, message, status_code = change_user_password(
+        email=client.email,
+        new_password=data['password'],
+        role='client',
+        name=f"{client.name} (ID: {client.id})"
+    )
     
-    try:
-        # Find user account by email
-        user = User.query.filter_by(email=client.email).first()
-        
-        if not user:
-            # Create user account if it doesn't exist
-            user = User(
-                email=client.email,
-                password_hash=hash_password(data['password']),
-                role='client',
-                active=True
-            )
-            db.session.add(user)
-            logger.info(f"Created User account for client: {client.name} (ID: {client.id})")
-        else:
-            # Update password
-            user.password_hash = hash_password(data['password'])
-            logger.info(f"Password changed for client: {client.name} (ID: {client.id})")
-        
-        db.session.commit()
-        return jsonify({'message': 'Password set successfully'}), 200
-    except Exception as e:
-        db.session.rollback()
-        logger.error(f"Error changing client password: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+    if success:
+        return jsonify({'message': message}), status_code
+    else:
+        return jsonify({'error': message}), status_code
 
 @api_bp.route('/clients/<int:client_id>', methods=['PUT'])
 def update_client(client_id):
