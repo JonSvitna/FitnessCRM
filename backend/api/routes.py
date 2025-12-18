@@ -409,16 +409,32 @@ def update_client(client_id):
 
 @api_bp.route('/clients/<int:client_id>', methods=['DELETE'])
 def delete_client(client_id):
-    """Delete a client"""
+    """Delete a client and associated user account"""
     client = Client.query.get_or_404(client_id)
     
     try:
+        # Find and delete associated user account
+        user = User.query.filter_by(email=client.email).first()
+        if user:
+            db.session.delete(user)
+            logger.info(f"Deleted User account for client: {client.email}")
+        
+        # Delete client (this will cascade delete assignments, sessions, progress records)
         db.session.delete(client)
         db.session.commit()
+        
+        log_activity('delete', 'client', client_id, user_identifier=client.email,
+                    details={'name': client.name})
+        logger.info(f"Client deleted: {client.name} (ID: {client_id})")
+        
         return jsonify({'message': 'Client deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        error_msg = str(e)
+        logger.error(f"Error deleting client: {error_msg}", exc_info=True)
+        if 'foreign key' in error_msg.lower() or 'constraint' in error_msg.lower():
+            return jsonify({'error': 'Cannot delete client: Has associated records (assignments, sessions, progress, etc.)'}), 409
+        return jsonify({'error': f'Failed to delete client: {error_msg}'}), 500
 
 # CRM Routes
 @api_bp.route('/crm/dashboard', methods=['GET'])
