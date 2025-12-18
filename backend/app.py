@@ -273,6 +273,27 @@ def create_app(config_name=None):
             try:
                 db.create_all()
                 logger.info("Database tables created/verified")
+                
+                # Create default admin user if it doesn't exist
+                try:
+                    from models.user import User
+                    from utils.auth import hash_password
+                    
+                    admin = User.query.filter_by(email='admin@fitnesscrm.com').first()
+                    if not admin:
+                        default_password = os.getenv('DEFAULT_ADMIN_PASSWORD', 'admin123')
+                        admin = User(
+                            email='admin@fitnesscrm.com',
+                            password_hash=hash_password(default_password),
+                            role='admin',
+                            active=True
+                        )
+                        db.session.add(admin)
+                        db.session.commit()
+                        logger.info("Default admin user created: admin@fitnesscrm.com")
+                except Exception as e:
+                    logger.warning(f"Could not create default admin user: {str(e)}")
+                    
             except Exception as e:
                 logger.warning(f"Database initialization failed: {str(e)}. App will start but database operations will fail.")
     else:
