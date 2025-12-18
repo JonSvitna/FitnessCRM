@@ -154,6 +154,20 @@ export const advancedAnalyticsAPI = {
     api.get('/api/analytics/advanced/predictive-insights', { params: { days_lookback: daysLookback } }),
 };
 
+// Auth API
+export const authAPI = {
+  register: (data) => api.post('/api/auth/register', data),
+  login: (data) => api.post('/api/auth/login', data),
+  getCurrentUser: () => api.get('/api/auth/me'),
+  logout: () => api.post('/api/auth/logout'),
+  changePassword: (data) => api.post('/api/auth/change-password', data),
+};
+
+// Audit API
+export const auditAPI = {
+  getLogs: (params = {}) => api.get('/api/audit/logs', { params }),
+};
+
 // Activity API
 export const activityAPI = {
   getRecent: (limit = 50) => api.get(`/api/activity/recent?limit=${limit}`),
