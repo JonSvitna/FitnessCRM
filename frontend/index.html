@@ -2123,6 +2123,38 @@
     </div>
   </div>
 
+  <!-- Password Change Modal -->
+  <div id="password-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md mx-4">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold text-neutral-900">Set Password</h3>
+        <button id="close-password-modal" class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <form id="password-modal-form" class="space-y-4">
+        <div>
+          <p class="text-sm text-neutral-600 mb-2">Setting password for: <span id="password-modal-email" class="font-semibold"></span></p>
+          <p class="text-xs text-gray-500 mb-4">This will create a User account if one doesn't exist.</p>
+        </div>
+        <div>
+          <label class="form-label">New Password</label>
+          <input type="password" id="password-modal-input" required class="input-field" placeholder="Enter new password (min 6 characters)" minlength="6">
+        </div>
+        <div>
+          <label class="form-label">Confirm Password</label>
+          <input type="password" id="password-modal-confirm" required class="input-field" placeholder="Confirm new password" minlength="6">
+        </div>
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="cancel-password-modal" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Set Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast" class="fixed bottom-4 right-4 hidden z-50">
     <div class="card px-6 py-4 shadow-2xl">

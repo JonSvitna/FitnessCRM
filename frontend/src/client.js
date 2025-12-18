@@ -152,6 +152,20 @@ document.getElementById('nav-messages').addEventListener('click', () => {
   loadMessages();
 });
 
+document.getElementById('nav-settings').addEventListener('click', () => {
+  showSection('settings-section', 'Settings');
+  loadSettings();
+});
+
+// Logout handler
+document.getElementById('logout-btn').addEventListener('click', () => {
+  if (confirm('Are you sure you want to logout?')) {
+    auth.removeToken();
+    auth.removeUser();
+    window.location.href = '/login.html';
+  }
+});
+
 // Dashboard functions
 async function loadDashboard() {
   try {
@@ -279,6 +293,22 @@ function loadMessages() {
   }
 }
 
+// Settings functions
+async function loadSettings() {
+  try {
+    const user = auth.getUser();
+    if (user) {
+      document.getElementById('settings-email').textContent = user.email || 'N/A';
+      document.getElementById('settings-role').textContent = user.role || 'Client';
+      if (user.created_at) {
+        document.getElementById('settings-member-since').textContent = new Date(user.created_at).toLocaleDateString();
+      }
+    }
+  } catch (error) {
+    console.error('Error loading settings:', error);
+  }
+}
+
 // Form handlers
 document.getElementById('profile-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -328,6 +358,52 @@ document.getElementById('message-form').addEventListener('submit', async (e) => 
   }
   showToast('Message sent! (Feature coming in next release)');
   e.target.reset();
+});
+
+document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const currentPassword = formData.get('current_password');
+  const newPassword = formData.get('new_password');
+  const confirmPassword = formData.get('confirm_password');
+
+  // Validate passwords
+  if (newPassword.length < 6) {
+    showToast('New password must be at least 6 characters');
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showToast('New passwords do not match');
+    return;
+  }
+
+  try {
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const response = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${auth.getToken()}`
+      },
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showToast('Password changed successfully!');
+      e.target.reset();
+    } else {
+      showToast(data.error || 'Failed to change password');
+    }
+  } catch (error) {
+    console.error('Error changing password:', error);
+    showToast('Error changing password. Please try again.');
+  }
 });
 
 // Initialize with auth check
