@@ -309,27 +309,33 @@ def process_time_based_triggers():
     
     try:
         # Check for birthday triggers
-        today = now.date()
-        birthday_clients = Client.query.filter(
-            extract('month', Client.date_of_birth) == today.month,
-            extract('day', Client.date_of_birth) == today.day
-        ).all()
-        
-        if birthday_clients:
-            birthday_rules = AutomationRule.query.filter_by(
-                enabled=True,
-                trigger_event='birthday'
+        # Note: Birthday functionality requires Client.date_of_birth field
+        # If the field doesn't exist, skip birthday processing gracefully
+        try:
+            today = now.date()
+            birthday_clients = Client.query.filter(
+                extract('month', Client.date_of_birth) == today.month,
+                extract('day', Client.date_of_birth) == today.day
             ).all()
             
-            for rule in birthday_rules:
-                for client in birthday_clients:
-                    if client.email or client.phone:
-                        context = {'client_id': client.id}
-                        try:
-                            _execute_automation_rule(rule, context)
-                            results['birthdays'] += 1
-                        except Exception as e:
-                            results['errors'].append(f"Birthday rule {rule.id} for client {client.id}: {str(e)}")
+            if birthday_clients:
+                birthday_rules = AutomationRule.query.filter_by(
+                    enabled=True,
+                    trigger_event='birthday'
+                ).all()
+                
+                for rule in birthday_rules:
+                    for client in birthday_clients:
+                        if client.email or client.phone:
+                            context = {'client_id': client.id}
+                            try:
+                                _execute_automation_rule(rule, context)
+                                results['birthdays'] += 1
+                            except Exception as e:
+                                results['errors'].append(f"Birthday rule {rule.id} for client {client.id}: {str(e)}")
+        except (AttributeError, KeyError) as e:
+            # date_of_birth field doesn't exist in Client model, skip birthday processing
+            logger.warning(f"Client model does not have 'date_of_birth' field. Birthday automation is disabled. Error: {str(e)}. Add 'date_of_birth' field to Client model to enable birthday triggers.")
         
         # Check for payment due reminders (payments with pending status)
         # Note: Payment model doesn't have due_date, so we check by status
