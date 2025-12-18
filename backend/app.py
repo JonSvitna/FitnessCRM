@@ -158,6 +158,12 @@ def create_app(config_name=None):
     # Register advanced analytics routes
     app.register_blueprint(advanced_analytics_bp)
     
+    # Register authentication routes
+    app.register_blueprint(auth_bp)
+    
+    # Register audit routes
+    app.register_blueprint(audit_bp)
+    
     app.register_blueprint(analytics_bp)
     app.register_blueprint(report_bp)
     # Register communication blueprints
