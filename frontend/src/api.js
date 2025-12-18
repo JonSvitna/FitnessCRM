@@ -126,6 +126,18 @@ export const settingsAPI = {
   testTwilio: () => api.post('/api/settings/test-twilio'),
 };
 
+// Integrations API
+export const integrationsAPI = {
+  getStatus: () => api.get('/api/integrations/status'),
+  googleCalendarAuth: () => api.get('/api/integrations/google-calendar/auth'),
+  googleCalendarSync: (data) => api.post('/api/integrations/google-calendar/sync', data),
+  zoomGenerateLink: (data) => api.post('/api/integrations/zoom/generate-link', data),
+  myfitnesspalConnect: (data) => api.post('/api/integrations/myfitnesspal/connect', data),
+  listWebhooks: () => api.get('/api/integrations/webhooks'),
+  createWebhook: (data) => api.post('/api/integrations/webhooks', data),
+  deleteWebhook: (id) => api.delete(`/api/integrations/webhooks/${id}`),
+};
+
 // Activity API
 export const activityAPI = {
   getRecent: (limit = 50) => api.get(`/api/activity/recent?limit=${limit}`),
