@@ -688,12 +688,12 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 - Actionable insights
 
 #### M7.4: Security & Compliance (Week 24)
-- [ ] User authentication system
-- [ ] Role-based access control (RBAC)
-- [ ] Audit logging
-- [ ] Data encryption at rest
-- [ ] GDPR compliance features
-- [ ] Two-factor authentication (2FA)
+- [x] User authentication system
+- [x] Role-based access control (RBAC)
+- [x] Audit logging
+- [ ] Data encryption at rest (database-level)
+- [ ] GDPR compliance features (data export, deletion)
+- [ ] Two-factor authentication (2FA) - Future enhancement
 
 **Deliverables**:
 - Authentication system
