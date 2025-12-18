@@ -1,5 +1,6 @@
 import './styles/main.css';
 import { trainerAPI, clientAPI, crmAPI, settingsAPI } from './api.js';
+import { requireRole, auth } from './auth.js';
 
 // State management
 let state = {
@@ -344,8 +345,20 @@ document.getElementById('challenge-form').addEventListener('submit', async (e) =
   e.target.reset();
 });
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize with auth check
+document.addEventListener('DOMContentLoaded', async () => {
+  // Require trainer role
+  const isAuthorized = await requireRole(['trainer', 'admin']);
+  if (!isAuthorized) {
+    return; // requireRole redirects if not authorized
+  }
+
+  // Update trainer ID from auth user if available
+  const user = auth.getUser();
+  if (user && user.id) {
+    state.trainer.id = user.id;
+  }
+
   initSidebar();
   loadDashboard();
 });

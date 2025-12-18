@@ -1,5 +1,6 @@
 import './styles/main.css';
 import { trainerAPI, clientAPI, crmAPI } from './api.js';
+import { requireRole, auth } from './auth.js';
 
 // State management
 let state = {
@@ -329,8 +330,20 @@ document.getElementById('message-form').addEventListener('submit', async (e) => 
   e.target.reset();
 });
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize with auth check
+document.addEventListener('DOMContentLoaded', async () => {
+  // Require client/user role
+  const isAuthorized = await requireRole(['client', 'user', 'admin']);
+  if (!isAuthorized) {
+    return; // requireRole redirects if not authorized
+  }
+
+  // Update client ID from auth user if available
+  const user = auth.getUser();
+  if (user && user.id) {
+    state.client.id = user.id;
+  }
+
   initSidebar();
   loadDashboard();
 });

@@ -52,6 +52,36 @@ export async function requireAuth() {
   return true;
 }
 
+// Require specific role to access a page
+export async function requireRole(allowedRoles) {
+  const isAuth = await checkAuth();
+  if (!isAuth) {
+    window.location.href = '/login.html';
+    return false;
+  }
+  
+  const user = auth.getUser();
+  if (!user || !allowedRoles.includes(user.role)) {
+    // Redirect to appropriate portal based on role
+    if (user) {
+      if (user.role === 'trainer') {
+        window.location.href = '/trainer.html';
+      } else if (user.role === 'client' || user.role === 'user') {
+        window.location.href = '/client.html';
+      } else if (user.role === 'admin') {
+        window.location.href = '/index.html';
+      } else {
+        window.location.href = '/login.html';
+      }
+    } else {
+      window.location.href = '/login.html';
+    }
+    return false;
+  }
+  
+  return true;
+}
+
 // Initialize login page
 if (document.getElementById('login-form')) {
   const loginForm = document.getElementById('login-form');
@@ -99,8 +129,24 @@ if (document.getElementById('login-form')) {
           auth.setUser(response.data.user);
         }
 
-        // Redirect to dashboard
-        const redirectTo = new URLSearchParams(window.location.search).get('redirect') || '/index.html';
+        // Redirect based on user role
+        const user = response.data.user;
+        let redirectTo = '/index.html'; // Default to admin dashboard
+        
+        if (user.role === 'trainer') {
+          redirectTo = '/trainer.html';
+        } else if (user.role === 'client' || user.role === 'user') {
+          redirectTo = '/client.html';
+        } else if (user.role === 'admin') {
+          redirectTo = '/index.html';
+        }
+        
+        // Override with explicit redirect parameter if provided
+        const explicitRedirect = new URLSearchParams(window.location.search).get('redirect');
+        if (explicitRedirect) {
+          redirectTo = explicitRedirect;
+        }
+        
         window.location.href = redirectTo;
       } else {
         throw new Error('Invalid response from server');
