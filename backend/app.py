@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from config.settings import config
 from models.database import db
+from utils.logger import logger, LoggerMiddleware
 from api.routes import api_bp
 from api.settings_routes import settings_bp
 from api.activity_routes import activity_bp
@@ -13,25 +14,21 @@ from api.workout_routes import workout_bp
 from api.progress_photo_routes import progress_photo_bp
 from api.goal_routes import goal_bp
 from api.payment_routes import payment_bp
-try:
-    from api.stripe_routes import stripe_bp
-    STRIPE_AVAILABLE = True
-except ImportError as e:
-    logger.warning(f"Failed to import Stripe routes: {e}. Stripe features will be disabled.")
-    STRIPE_AVAILABLE = False
-    stripe_bp = None
-
-from api.integrations_routes import integrations_bp
-from api.public_api_v2 import public_api_v2
-try:
-    from api.stripe_routes import stripe_bp
-    STRIPE_AVAILABLE = True
-except ImportError as e:
-    logger.warning(f"Failed to import Stripe routes: {e}. Stripe features will be disabled.")
-    STRIPE_AVAILABLE = False
 from api.analytics_routes import analytics_bp
 from api.report_routes import report_bp
-from utils.logger import logger, LoggerMiddleware
+from api.integrations_routes import integrations_bp
+from api.public_api_v2 import public_api_v2
+
+# Import Stripe routes (optional - for Phase 6 M6.3)
+stripe_bp = None
+STRIPE_AVAILABLE = False
+try:
+    from api.stripe_routes import stripe_bp
+    STRIPE_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Failed to import Stripe routes: {e}. Stripe features will be disabled.")
+except Exception as e:
+    logger.warning(f"Failed to import Stripe routes: {e}. Stripe features will be disabled.")
 
 # Import SMS routes (optional - for Phase 5 M5.2)
 sms_bp = None
@@ -138,6 +135,21 @@ def create_app(config_name=None):
     app.register_blueprint(progress_photo_bp)
     app.register_blueprint(goal_bp)
     app.register_blueprint(payment_bp)
+    
+    # Register Stripe routes if available
+    if STRIPE_AVAILABLE and stripe_bp:
+        try:
+            app.register_blueprint(stripe_bp)
+            logger.info("Stripe routes registered successfully")
+        except Exception as e:
+            logger.warning(f"Failed to register Stripe routes: {e}")
+    
+    # Register integrations routes
+    app.register_blueprint(integrations_bp)
+    
+    # Register public API v2
+    app.register_blueprint(public_api_v2)
+    
     app.register_blueprint(analytics_bp)
     app.register_blueprint(report_bp)
     # Register communication blueprints
