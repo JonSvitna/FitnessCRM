@@ -20,6 +20,9 @@ except ImportError as e:
     logger.warning(f"Failed to import Stripe routes: {e}. Stripe features will be disabled.")
     STRIPE_AVAILABLE = False
     stripe_bp = None
+
+from api.integrations_routes import integrations_bp
+from api.public_api_v2 import public_api_v2
 try:
     from api.stripe_routes import stripe_bp
     STRIPE_AVAILABLE = True
