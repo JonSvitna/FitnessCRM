@@ -3,6 +3,7 @@ from models.database import db, Payment, Client
 from sqlalchemy import func, extract
 from datetime import datetime, timedelta
 from utils.logger import log_activity, logger
+from utils.automation import trigger_automation_rules
 
 payment_bp = Blueprint('payment', __name__, url_prefix='/api/payments')
 
@@ -104,6 +105,18 @@ def create_payment():
         )
         db.session.add(payment)
         db.session.commit()
+        
+        # Trigger automation rules if payment is pending/overdue
+        if payment.status in ['pending', 'overdue']:
+            try:
+                trigger_event = 'payment_overdue' if payment.status == 'overdue' else 'payment_due'
+                trigger_automation_rules(trigger_event, {
+                    'payment_id': payment.id,
+                    'client_id': payment.client_id
+                })
+            except Exception as e:
+                # Don't fail payment creation if automation fails
+                logger.warning(f"Failed to trigger automation for payment {payment.id}: {str(e)}")
         
         log_activity('create', 'payment', payment.id, user_identifier='system',
                     details={'client_id': payment.client_id, 'amount': payment.amount})

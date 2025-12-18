@@ -8,6 +8,7 @@ from models.database import db, AutomationRule, AutomationLog, Client, Trainer, 
 from utils.email import send_email
 from utils.sms import send_sms
 from utils.logger import logger
+from utils.automation import _execute_automation_rule as execute_automation_rule_func, process_time_based_triggers
 from datetime import datetime, timedelta
 from sqlalchemy import func, and_, or_
 
@@ -181,7 +182,8 @@ def execute_rule(rule_id):
         if not rule.enabled:
             return jsonify({'error': 'Rule is disabled'}), 400
         
-        result = _execute_automation_rule(rule)
+        context = request.get_json() or {}
+        result = execute_automation_rule_func(rule, context)
         
         return jsonify({
             'message': 'Rule executed',
@@ -284,143 +286,24 @@ def get_analytics():
         logger.error(f"Error getting analytics: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-# ============================================================================
-# HELPER FUNCTIONS
-# ============================================================================
-
-def _execute_automation_rule(rule):
-    """Execute an automation rule"""
-    log = AutomationLog(
-        rule_id=rule.id,
-        action_type=rule.action_type,
-        status='success',
-        trigger_context={}
-    )
-    
+@automation_bp.route('/process-triggers', methods=['POST'])
+def process_triggers():
+    """
+    Background worker endpoint to process time-based automation triggers
+    This should be called periodically (e.g., via cron job or scheduled task)
+    """
     try:
-        # Get recipients based on target audience
-        recipients = _get_rule_recipients(rule)
-        log.recipients_count = len(recipients)
+        # Optional: Add authentication/authorization check here
+        # For example, check for an API key or admin token
         
-        sent_count = 0
-        failed_count = 0
+        results = process_time_based_triggers()
         
-        for recipient in recipients:
-            try:
-                # Prepare message based on rule type
-                subject, message, html_message = _prepare_automation_message(rule, recipient)
-                
-                # Send based on action type
-                if rule.action_type in ['email', 'both']:
-                    success = send_email(recipient['email'], subject, message, html_message)
-                    if success:
-                        sent_count += 1
-                    else:
-                        failed_count += 1
-                
-                if rule.action_type in ['sms', 'both']:
-                    if recipient.get('phone'):
-                        result = send_sms(recipient['phone'], message)
-                        if result.get('success'):
-                            sent_count += 1
-                        else:
-                            failed_count += 1
-                
-            except Exception as e:
-                logger.error(f"Error sending to {recipient.get('email')}: {str(e)}")
-                failed_count += 1
-        
-        log.sent_count = sent_count
-        log.failed_count = failed_count
-        log.status = 'success' if failed_count == 0 else 'partial'
-        
-        # Update rule statistics
-        rule.run_count += 1
-        rule.success_count += (1 if failed_count == 0 else 0)
-        rule.failure_count += (1 if failed_count > 0 else 0)
-        rule.last_run_at = datetime.utcnow()
+        return jsonify({
+            'message': 'Time-based triggers processed',
+            'results': results
+        }), 200
         
     except Exception as e:
-        log.status = 'failed'
-        log.error_message = str(e)
-        rule.failure_count += 1
-        logger.error(f"Error executing rule {rule.id}: {str(e)}")
-    
-    db.session.add(log)
-    db.session.commit()
-    
-    return {
-        'recipients': log.recipients_count,
-        'sent': log.sent_count,
-        'failed': log.failed_count,
-        'status': log.status
-    }
-
-def _get_rule_recipients(rule):
-    """Get recipients for an automation rule"""
-    recipients = []
-    
-    if rule.target_audience == 'all':
-        clients = Client.query.filter_by(status='active').all()
-        recipients.extend([{'email': c.email, 'phone': c.phone, 'type': 'client', 'id': c.id} for c in clients if c.email])
-        
-        trainers = Trainer.query.filter_by(active=True).all()
-        recipients.extend([{'email': t.email, 'phone': t.phone, 'type': 'trainer', 'id': t.id} for t in trainers if t.email])
-    
-    elif rule.target_audience == 'clients':
-        query = Client.query
-        filters = rule.target_filters or {}
-        
-        if 'status' in filters:
-            query = query.filter_by(status=filters['status'])
-        if 'membership_type' in filters:
-            query = query.filter_by(membership_type=filters['membership_type'])
-        
-        clients = query.all()
-        recipients = [{'email': c.email, 'phone': c.phone, 'type': 'client', 'id': c.id} for c in clients if c.email]
-    
-    elif rule.target_audience == 'trainers':
-        trainers = Trainer.query.filter_by(active=True).all()
-        recipients = [{'email': t.email, 'phone': t.phone, 'type': 'trainer', 'id': t.id} for t in trainers if t.email]
-    
-    elif rule.target_audience == 'specific' and rule.target_ids:
-        clients = Client.query.filter(Client.id.in_(rule.target_ids)).all()
-        recipients.extend([{'email': c.email, 'phone': c.phone, 'type': 'client', 'id': c.id} for c in clients if c.email])
-        
-        trainers = Trainer.query.filter(Trainer.id.in_(rule.target_ids)).all()
-        recipients.extend([{'email': t.email, 'phone': t.phone, 'type': 'trainer', 'id': t.id} for t in trainers if t.email])
-    
-    return recipients
-
-def _prepare_automation_message(rule, recipient):
-    """Prepare message content for automation rule"""
-    # Use custom message if provided
-    if rule.custom_message:
-        message = rule.custom_message
-        html_message = None
-    else:
-        # Default messages based on rule type
-        if rule.rule_type == 'session_reminder':
-            message = f"Reminder: You have a training session coming up!"
-            html_message = f"<p>Reminder: You have a training session coming up!</p>"
-        elif rule.rule_type == 'payment_reminder':
-            message = f"Friendly reminder: Your payment is due soon."
-            html_message = f"<p>Friendly reminder: Your payment is due soon.</p>"
-        elif rule.rule_type == 'birthday':
-            name = recipient.get('name', 'there')
-            message = f"Happy Birthday {name}! 🎉"
-            html_message = f"<p>Happy Birthday {name}! 🎉</p>"
-        else:
-            message = rule.custom_message or "Notification from FitnessCRM"
-            html_message = None
-    
-    # Replace variables
-    if recipient.get('name'):
-        message = message.replace('{name}', recipient['name'])
-        if html_message:
-            html_message = html_message.replace('{name}', recipient['name'])
-    
-    subject = f"FitnessCRM: {rule.name}"
-    
-    return subject, message, html_message
+        logger.error(f"Error processing time-based triggers: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 

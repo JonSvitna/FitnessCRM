@@ -473,9 +473,14 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 - [x] Analytics
 
 **Status**: ✅ Complete - **Requires Configuration**
-- Backend: Automation routes and execution engine implemented
+- Backend: Automation routes, execution engine, and automatic triggers implemented
 - Frontend: Automation rule configuration interface implemented
-- **Action Required**: Configure email (M5.3) and SMS (M5.2) first, then create automation rules
+- Automatic triggers: Sessions and payments automatically trigger relevant rules
+- Background worker: Endpoint `/api/automation/process-triggers` for time-based triggers
+- **Action Required**: 
+  - Configure email (M5.3) and SMS (M5.2) first
+  - Set up periodic task to call `/api/automation/process-triggers` (hourly recommended)
+  - Then create automation rules
 
 **Success Metrics**:
 - Reminders sent on time
@@ -490,7 +495,7 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
   - M5.1: Install Flask-SocketIO, verify SocketIO initialization
   - M5.2: Configure Twilio credentials in Settings database
   - M5.3: Configure SMTP settings in environment variables
-  - M5.4: Requires M5.2 and M5.3 to be configured first
+  - M5.4: Requires M5.2 and M5.3 to be configured first, plus background worker setup
 
 ---
 

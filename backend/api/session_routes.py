@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from models.database import db, Session, RecurringSession, Trainer, Client
 from datetime import datetime, timedelta, time
 from utils.email import send_session_confirmation
+from utils.automation import trigger_automation_rules
 
 session_bp = Blueprint('sessions', __name__)
 
@@ -109,6 +110,17 @@ def create_session():
         
         db.session.add(session)
         db.session.commit()
+        
+        # Trigger automation rules for session_created event
+        try:
+            trigger_automation_rules('session_created', {
+                'session_id': session.id,
+                'client_id': session.client_id,
+                'trainer_id': session.trainer_id
+            })
+        except Exception as e:
+            # Don't fail session creation if automation fails
+            pass
         
         # Send confirmation email
         try:

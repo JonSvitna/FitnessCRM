@@ -186,6 +186,41 @@ The backend is configured to allow all origins. For production, update CORS in `
 - [ ] Test email sends successfully
 - [ ] Automation rules can be created and executed
 
+## M5.4: Automated Reminders - Background Worker
+
+### Automatic Triggers
+Automation rules are automatically triggered when:
+- **Sessions are created**: Rules with `trigger_event='session_created'` are executed
+- **Payments are created**: Rules with `trigger_event='payment_due'` or `trigger_event='payment_overdue'` are executed
+
+### Background Worker Setup
+For time-based triggers (birthdays, scheduled reminders), set up a periodic task:
+
+**Option 1: Cron Job (Linux/Mac)**
+```bash
+# Add to crontab (runs every hour)
+0 * * * * curl -X POST https://your-backend-url/api/automation/process-triggers
+```
+
+**Option 2: Scheduled Task (Windows)**
+- Use Task Scheduler to call the endpoint periodically
+- Or use a service like EasyCron
+
+**Option 3: Railway Cron Jobs**
+- Add a cron job in Railway dashboard
+- Set to run hourly: `0 * * * *`
+
+**Option 4: External Service**
+- Use services like cron-job.org or EasyCron
+- Set to POST to: `https://your-backend-url/api/automation/process-triggers`
+
+### Background Worker Endpoint
+- **URL**: `POST /api/automation/process-triggers`
+- **Description**: Processes time-based automation triggers
+- **Returns**: JSON with results (birthdays processed, reminders sent, etc.)
+
+**Note**: Consider adding authentication/authorization to this endpoint in production.
+
 ## Testing Each Feature
 
 ### Test M5.1 (Messaging)
@@ -208,9 +243,10 @@ The backend is configured to allow all origins. For production, update CORS in `
 
 ### Test M5.4 (Automation)
 1. Open `/automation.html`
-2. Create an automation rule
-3. Manually execute it
+2. Create an automation rule with `trigger_event='session_created'`
+3. Create a new session (should automatically trigger the rule)
 4. Check execution logs
+5. Test time-based triggers by calling `/api/automation/process-triggers`
 
 ## Production Considerations
 
