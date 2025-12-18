@@ -458,11 +458,18 @@ function renderTrainers() {
           ${trainer.certification ? `<p class="text-sm text-gray-400">Certification: ${trainer.certification}</p>` : ''}
           ${trainer.experience ? `<p class="text-sm text-gray-400">Experience: ${trainer.experience} years</p>` : ''}
         </div>
-        <button onclick="deleteTrainer(${trainer.id})" class="text-red-400 hover:text-red-300 ml-4">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-          </svg>
-        </button>
+        <div class="flex gap-2 ml-4">
+          <button onclick="changeTrainerPassword(${trainer.id}, '${trainer.email}')" class="text-blue-400 hover:text-blue-300" title="Change Password">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+            </svg>
+          </button>
+          <button onclick="deleteTrainer(${trainer.id})" class="text-red-400 hover:text-red-300" title="Delete">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   `).join('');
@@ -612,11 +619,18 @@ function renderClients() {
           ${client.goals ? `<p class="text-sm text-primary-400 mt-2">Goals: ${client.goals}</p>` : ''}
           ${client.medical_conditions ? `<p class="text-sm text-yellow-400">Medical: ${client.medical_conditions}</p>` : ''}
         </div>
-        <button onclick="deleteClient(${client.id})" class="text-red-400 hover:text-red-300 ml-4">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-          </svg>
-        </button>
+        <div class="flex gap-2 ml-4">
+          <button onclick="changeClientPassword(${client.id}, '${client.email}')" class="text-blue-400 hover:text-blue-300" title="Change Password">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+            </svg>
+          </button>
+          <button onclick="deleteClient(${client.id})" class="text-red-400 hover:text-red-300" title="Delete">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   `).join('');
@@ -1121,6 +1135,71 @@ function exportToCSV(data, filename) {
 }
 
 // Delete functions (global scope for inline onclick handlers)
+window.changeTrainerPassword = async function(id, email) {
+  const newPassword = prompt(`Enter new password for ${email}:\n(Minimum 6 characters)`);
+  if (!newPassword) return;
+  
+  if (newPassword.length < 6) {
+    showToast('Password must be at least 6 characters', 'error');
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/trainers/${id}/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+      },
+      body: JSON.stringify({ password: newPassword })
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      showToast('Password changed successfully!');
+    } else {
+      showToast(data.error || 'Failed to change password', 'error');
+    }
+  } catch (error) {
+    console.error('Error changing password:', error);
+    showToast('Error changing password', 'error');
+  }
+};
+
+window.changeClientPassword = async function(id, email) {
+  const newPassword = prompt(`Enter new password for ${email}:\n(Minimum 6 characters)`);
+  if (!newPassword) return;
+  
+  if (newPassword.length < 6) {
+    showToast('Password must be at least 6 characters', 'error');
+    return;
+  }
+  
+  try {
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const response = await fetch(`${API_BASE_URL}/api/clients/${id}/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+      },
+      body: JSON.stringify({ password: newPassword })
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      showToast('Password changed successfully!');
+    } else {
+      showToast(data.error || 'Failed to change password', 'error');
+    }
+  } catch (error) {
+    console.error('Error changing password:', error);
+    showToast('Error changing password', 'error');
+  }
+};
+
 window.deleteTrainer = async function(id) {
   if (!confirm('Are you sure you want to delete this trainer?')) return;
   

@@ -1,7 +1,9 @@
 from flask import Blueprint, request, jsonify
 from models.database import db, Trainer, Client, Assignment
+from models.user import User
 from sqlalchemy.exc import IntegrityError
 from utils.logger import log_activity, logger
+from utils.auth import hash_password
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -64,13 +66,20 @@ def get_trainer(trainer_id):
 
 @api_bp.route('/trainers', methods=['POST'])
 def create_trainer():
-    """Create a new trainer"""
+    """Create a new trainer and associated user account"""
     data = request.get_json()
     
     if not data or not data.get('name') or not data.get('email'):
         return jsonify({'error': 'Name and email are required'}), 400
     
+    if not data.get('password'):
+        return jsonify({'error': 'Password is required'}), 400
+    
+    if len(data.get('password', '')) < 6:
+        return jsonify({'error': 'Password must be at least 6 characters'}), 400
+    
     try:
+        # Create trainer
         trainer = Trainer(
             name=data['name'],
             email=data['email'],
@@ -80,16 +89,28 @@ def create_trainer():
             experience=data.get('experience')
         )
         db.session.add(trainer)
+        db.session.flush()  # Get trainer ID without committing
+        
+        # Create user account for trainer
+        user = User(
+            email=data['email'],
+            password_hash=hash_password(data['password']),
+            role='trainer',
+            active=True
+        )
+        db.session.add(user)
         db.session.commit()
         
         log_activity('create', 'trainer', trainer.id, user_identifier=trainer.email,
                     details={'name': trainer.name})
-        logger.info(f"Trainer created: {trainer.name} (ID: {trainer.id})")
+        logger.info(f"Trainer created: {trainer.name} (ID: {trainer.id}) with user account")
         
         return jsonify(trainer.to_dict()), 201
-    except IntegrityError:
+    except IntegrityError as e:
         db.session.rollback()
-        logger.warning(f"Duplicate trainer email attempted: {data.get('email')}")
+        logger.warning(f"Duplicate trainer/user email attempted: {data.get('email')}")
+        if 'users.email' in str(e) or 'users_email_key' in str(e):
+            return jsonify({'error': 'User account with this email already exists'}), 409
         return jsonify({'error': 'Trainer with this email already exists'}), 409
     except Exception as e:
         db.session.rollback()
@@ -199,7 +220,7 @@ def get_client(client_id):
 
 @api_bp.route('/clients', methods=['POST'])
 def create_client():
-    """Create a new client"""
+    """Create a new client and associated user account"""
     from utils.email import send_welcome_email
     
     data = request.get_json()
@@ -207,7 +228,14 @@ def create_client():
     if not data or not data.get('name') or not data.get('email'):
         return jsonify({'error': 'Name and email are required'}), 400
     
+    if not data.get('password'):
+        return jsonify({'error': 'Password is required'}), 400
+    
+    if len(data.get('password', '')) < 6:
+        return jsonify({'error': 'Password must be at least 6 characters'}), 400
+    
     try:
+        # Create client
         client = Client(
             name=data['name'],
             email=data['email'],
@@ -217,6 +245,16 @@ def create_client():
             medical_conditions=data.get('medical_conditions')
         )
         db.session.add(client)
+        db.session.flush()  # Get client ID without committing
+        
+        # Create user account for client
+        user = User(
+            email=data['email'],
+            password_hash=hash_password(data['password']),
+            role='client',
+            active=True
+        )
+        db.session.add(user)
         db.session.commit()
         
         # Send welcome email
@@ -224,14 +262,47 @@ def create_client():
         
         log_activity('create', 'client', client.id, user_identifier=client.email,
                     details={'name': client.name})
-        logger.info(f"Client created: {client.name} (ID: {client.id})")
+        logger.info(f"Client created: {client.name} (ID: {client.id}) with user account")
         
         return jsonify(client.to_dict()), 201
-    except IntegrityError:
+    except IntegrityError as e:
         db.session.rollback()
+        logger.warning(f"Duplicate client/user email attempted: {data.get('email')}")
+        if 'users.email' in str(e) or 'users_email_key' in str(e):
+            return jsonify({'error': 'User account with this email already exists'}), 409
         return jsonify({'error': 'Client with this email already exists'}), 409
     except Exception as e:
         db.session.rollback()
+        logger.error(f"Error creating client: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@api_bp.route('/clients/<int:client_id>/change-password', methods=['POST'])
+def change_client_password(client_id):
+    """Change password for a client's user account"""
+    client = Client.query.get_or_404(client_id)
+    data = request.get_json()
+    
+    if not data or not data.get('password'):
+        return jsonify({'error': 'Password is required'}), 400
+    
+    if len(data['password']) < 6:
+        return jsonify({'error': 'Password must be at least 6 characters'}), 400
+    
+    try:
+        # Find user account by email
+        user = User.query.filter_by(email=client.email).first()
+        if not user:
+            return jsonify({'error': 'User account not found for this client'}), 404
+        
+        # Update password
+        user.password_hash = hash_password(data['password'])
+        db.session.commit()
+        
+        logger.info(f"Password changed for client: {client.name} (ID: {client.id})")
+        return jsonify({'message': 'Password changed successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error changing client password: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/clients/<int:client_id>', methods=['PUT'])
