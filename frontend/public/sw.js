@@ -7,12 +7,11 @@ const CACHE_NAME = 'fitnesscrm-v1';
 const RUNTIME_CACHE = 'fitnesscrm-runtime-v1';
 
 // Assets to cache on install
+// Note: Don't hardcode asset paths as Vite hashes them in production
+// Instead, cache dynamically as assets are requested
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
-  '/src/styles/main.css',
-  '/src/main.js',
-  '/src/api.js',
   '/manifest.json'
 ];
 
@@ -23,7 +22,13 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('[Service Worker] Caching app shell');
-        return cache.addAll(PRECACHE_ASSETS);
+        // Only cache essential files that we know exist
+        // Other assets will be cached on-demand via fetch handler
+        return cache.addAll(PRECACHE_ASSETS.map(url => new Request(url, { cache: 'reload' }))).catch((err) => {
+          console.warn('[Service Worker] Some precache assets failed:', err);
+          // Don't fail installation if some assets can't be cached
+          return Promise.resolve();
+        });
       })
       .then(() => self.skipWaiting())
   );
@@ -61,6 +66,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip service worker and manifest requests (they're handled separately)
+  const url = new URL(event.request.url);
+  if (url.pathname === '/sw.js' || url.pathname === '/manifest.json') {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((cachedResponse) => {
@@ -73,7 +84,12 @@ self.addEventListener('fetch', (event) => {
         return fetch(event.request)
           .then((response) => {
             // Don't cache non-successful responses
-            if (!response || response.status !== 200 || response.type !== 'basic') {
+            if (!response || response.status !== 200) {
+              return response;
+            }
+
+            // Don't cache opaque responses (CORS)
+            if (response.type === 'opaque') {
               return response;
             }
 
@@ -93,6 +109,8 @@ self.addEventListener('fetch', (event) => {
             if (event.request.destination === 'document') {
               return caches.match('/index.html');
             }
+            // Return a basic error response for other failed requests
+            return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
           });
       })
   );
