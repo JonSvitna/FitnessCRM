@@ -19,6 +19,7 @@ from api.report_routes import report_bp
 from api.integrations_routes import integrations_bp
 from api.public_api_v2 import public_api_v2
 from api.ai_routes import ai_bp
+from api.ai_routes import ai_bp
 
 # Import Stripe routes (optional - for Phase 6 M6.3)
 stripe_bp = None
@@ -150,6 +151,9 @@ def create_app(config_name=None):
     
     # Register public API v2
     app.register_blueprint(public_api_v2)
+    
+    # Register AI routes
+    app.register_blueprint(ai_bp)
     
     app.register_blueprint(analytics_bp)
     app.register_blueprint(report_bp)
