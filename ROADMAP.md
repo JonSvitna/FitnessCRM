@@ -669,10 +669,10 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 - 90%+ user satisfaction
 
 #### M7.3: Advanced Analytics & Insights (Week 23)
-- [ ] Predictive analytics
-- [ ] Client churn prediction
-- [ ] Revenue forecasting
-- [ ] Trainer performance benchmarking
+- [x] Predictive analytics
+- [x] Client churn prediction
+- [x] Revenue forecasting
+- [x] Trainer performance benchmarking
 - [ ] Custom dashboard builder
 - [ ] Advanced reporting with charts
 
