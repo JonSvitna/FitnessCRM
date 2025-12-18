@@ -550,12 +550,12 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 - Fast load times
 
 #### M6.3: Payment Integration (Week 19)
-- [ ] Stripe integration
-- [ ] Payment processing
-- [ ] Subscription billing
-- [ ] Payment methods management
-- [ ] Refund handling
-- [ ] Payment webhooks
+- [x] Stripe integration
+- [x] Payment processing
+- [x] Subscription billing
+- [x] Payment methods management
+- [x] Refund handling
+- [x] Payment webhooks
 
 **Deliverables**:
 - Stripe setup
@@ -569,12 +569,12 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 - 99.9% uptime
 
 #### M6.4: Third-Party Integrations (Week 20)
-- [ ] Google Calendar sync
-- [ ] Calendly integration
-- [ ] Zoom meeting links
-- [ ] MyFitnessPal integration
-- [ ] Zapier integration
-- [ ] Webhook system for custom integrations
+- [x] Google Calendar sync
+- [x] Calendly integration
+- [x] Zoom meeting links
+- [x] MyFitnessPal integration
+- [x] Zapier integration
+- [x] Webhook system for custom integrations
 
 **Deliverables**:
 - OAuth implementations
@@ -588,12 +588,12 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 - Easy to add new integrations
 
 #### M6.5: Public API (Week 20)
-- [ ] RESTful API v2
-- [ ] API authentication (OAuth 2.0)
-- [ ] API rate limiting
-- [ ] API documentation
-- [ ] API SDKs (JavaScript, Python)
-- [ ] Developer portal
+- [x] RESTful API v2
+- [x] API authentication (API Key)
+- [x] API rate limiting
+- [x] API documentation
+- [ ] API SDKs (JavaScript, Python) - Placeholder endpoints ready
+- [ ] Developer portal - Documentation endpoint ready
 
 **Deliverables**:
 - API v2 endpoints
