@@ -156,8 +156,14 @@ if (document.getElementById('login-form')) {
     } catch (error) {
       console.error('Login error:', error);
       
-      // Show error message
-      const errorText = error.response?.data?.error || error.message || 'Login failed. Please check your credentials.';
+      // Show error message with helpful guidance
+      let errorText = error.response?.data?.error || error.message || 'Login failed. Please check your credentials.';
+      
+      // Add helpful message for common issues
+      if (error.response?.status === 401) {
+        errorText += '\n\nIf this is a trainer/client account, make sure a password has been set via the admin dashboard.';
+      }
+      
       errorMessage.textContent = errorText;
       errorMessage.classList.remove('hidden');
       

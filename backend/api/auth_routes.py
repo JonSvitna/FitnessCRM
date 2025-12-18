@@ -61,12 +61,19 @@ def login():
         return jsonify({'error': 'Email and password are required'}), 400
     
     try:
-        user = User.query.filter_by(email=data['email']).first()
+        email = data['email'].strip().lower()  # Normalize email
+        user = User.query.filter_by(email=email).first()
         
-        if not user or not verify_password(data['password'], user.password_hash):
+        if not user:
+            logger.warning(f"Login attempt with non-existent email: {email}")
+            return jsonify({'error': 'Invalid credentials'}), 401
+        
+        if not verify_password(data['password'], user.password_hash):
+            logger.warning(f"Invalid password attempt for: {email}")
             return jsonify({'error': 'Invalid credentials'}), 401
         
         if not user.active:
+            logger.warning(f"Login attempt for disabled account: {email}")
             return jsonify({'error': 'Account is disabled'}), 403
         
         # Update last login
@@ -76,7 +83,7 @@ def login():
         # Generate token
         token = generate_token(user.id, user.email, user.role)
         
-        logger.info(f"User logged in: {user.email}")
+        logger.info(f"User logged in: {user.email} (role: {user.role})")
         
         return jsonify({
             'user': user.to_dict(),
