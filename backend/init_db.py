@@ -25,7 +25,19 @@ def init_database(seed=False):
             print("✓ Database seeded successfully!")
 
 def seed_database():
-    """Seed the database with sample data"""
+    """Seed the database with sample data
+    
+    WARNING: This function is for development/testing only.
+    Do not use in production environments as it creates accounts with default passwords.
+    """
+    import os
+    
+    # Security check: prevent running in production
+    flask_env = os.getenv('FLASK_ENV', 'production')
+    if flask_env == 'production':
+        print("✗ ERROR: Cannot seed database in production environment!")
+        print("  Set FLASK_ENV=development to seed for testing only.")
+        return
     
     # Check if data already exists
     if Trainer.query.first() is not None:
