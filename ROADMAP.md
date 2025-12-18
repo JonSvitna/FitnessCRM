@@ -649,10 +649,10 @@ This roadmap outlines the planned development phases for Fitness CRM, transformi
 - Positive user feedback
 
 #### M7.2: Enhanced UX & Performance (Week 22)
-- [ ] Advanced search with filters
-- [ ] Bulk operations (bulk edit, bulk delete)
-- [ ] Keyboard shortcuts
-- [ ] Dark mode support
+- [x] Advanced search with filters
+- [x] Bulk operations (bulk edit, bulk delete)
+- [x] Keyboard shortcuts
+- [x] Dark mode support
 - [ ] Performance optimizations (lazy loading, caching)
 - [ ] Advanced data export (Excel, PDF with templates)
 
