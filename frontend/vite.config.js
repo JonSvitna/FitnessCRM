@@ -11,6 +11,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'home.html'),
         app: resolve(__dirname, 'index.html'),
+        login: resolve(__dirname, 'login.html'),
         trainer: resolve(__dirname, 'trainer.html'),
         client: resolve(__dirname, 'client.html'),
       },

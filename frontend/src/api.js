@@ -9,10 +9,35 @@ const api = axios.create({
   },
 });
 
-// Add response interceptor to handle offline errors
+// Add request interceptor to include auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor to handle offline errors and auth errors
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    // Handle 401 Unauthorized - redirect to login
+    if (error.response?.status === 401) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      // Only redirect if not already on login page
+      if (!window.location.pathname.includes('login.html')) {
+        window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+      }
+      return Promise.reject(error);
+    }
+
     // If offline and it's a POST/PUT/DELETE request, queue it
     if (!navigator.onLine && error.config && ['post', 'put', 'delete'].includes(error.config.method?.toLowerCase())) {
       const config = error.config;

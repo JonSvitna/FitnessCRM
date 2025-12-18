@@ -1,6 +1,7 @@
 import './styles/main.css';
-import { trainerAPI, clientAPI, crmAPI, settingsAPI, activityAPI, sessionAPI, recurringSessionAPI, measurementAPI, fileAPI, exerciseAPI, workoutAPI, progressPhotoAPI, goalAPI, integrationsAPI } from './api.js';
+import { trainerAPI, clientAPI, crmAPI, settingsAPI, activityAPI, sessionAPI, recurringSessionAPI, measurementAPI, fileAPI, exerciseAPI, workoutAPI, progressPhotoAPI, goalAPI, integrationsAPI, authAPI } from './api.js';
 import { initCollapsibleSections } from './sidebar-sections.js';
+import { requireAuth, auth } from './auth.js';
 import './pwa.js';
 import './offline.js';
 import './mobile.js';
@@ -3610,8 +3611,60 @@ window.deleteGoal = async function(id) {
   }
 };
 
-// Initialize app
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize app with auth check
+document.addEventListener('DOMContentLoaded', async () => {
+  // Check authentication first
+  const isAuthenticated = await requireAuth();
+  if (!isAuthenticated) {
+    return; // requireAuth redirects to login
+  }
+
+  // Update user info in top bar
+  const user = auth.getUser();
+  if (user) {
+    const userNameEl = document.getElementById('user-name');
+    const userRoleEl = document.getElementById('user-role');
+    const userAvatarEl = document.getElementById('user-avatar');
+    
+    if (userNameEl) {
+      userNameEl.textContent = user.email || 'User';
+    }
+    if (userRoleEl) {
+      userRoleEl.textContent = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User';
+    }
+    if (userAvatarEl) {
+      const initial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
+      userAvatarEl.textContent = initial;
+    }
+  }
+
+  // Setup logout button
+  const logoutButton = document.getElementById('logout-button');
+  if (logoutButton) {
+    logoutButton.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        await authAPI.logout();
+      } catch (error) {
+        console.error('Logout error:', error);
+      } finally {
+        auth.removeToken();
+        auth.removeUser();
+        window.location.href = '/login.html';
+      }
+    });
+  }
+
+  // Setup settings link
+  const settingsLink = document.getElementById('nav-settings-link');
+  if (settingsLink) {
+    settingsLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('nav-settings')?.click();
+    });
+  }
+
+  // Initialize app
   initSidebar();
   initCollapsibleSections();
   loadDashboard();
