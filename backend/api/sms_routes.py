@@ -170,7 +170,7 @@ def delete_template(template_id):
         return jsonify({'error': str(e)}), 500
 
 @sms_bp.route('/templates/<int:template_id>/send', methods=['POST'])
-def send_template():
+def send_template(template_id):
     """Send SMS using a template"""
     try:
         template = SMSTemplate.query.get_or_404(template_id)
