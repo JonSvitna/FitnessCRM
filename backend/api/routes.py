@@ -162,6 +162,46 @@ def delete_trainer(trainer_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+@api_bp.route('/trainers/<int:trainer_id>/check-user', methods=['GET'])
+def check_trainer_user(trainer_id):
+    """Check if trainer has a User account"""
+    trainer = Trainer.query.get_or_404(trainer_id)
+    user = User.query.filter_by(email=trainer.email).first()
+    
+    return jsonify({
+        'trainer_id': trainer.id,
+        'trainer_email': trainer.email,
+        'has_user_account': user is not None,
+        'user_role': user.role if user else None,
+        'user_active': user.active if user else None,
+        'user_id': user.id if user else None
+    }), 200
+
+@api_bp.route('/check-email', methods=['POST'])
+def check_email():
+    """Check if a User account exists for an email address"""
+    data = request.get_json()
+    email = data.get('email', '').strip().lower()
+    
+    if not email:
+        return jsonify({'error': 'Email is required'}), 400
+    
+    user = User.query.filter_by(email=email).first()
+    trainer = Trainer.query.filter_by(email=email).first()
+    client = Client.query.filter_by(email=email).first()
+    
+    return jsonify({
+        'email': email,
+        'has_user_account': user is not None,
+        'user_role': user.role if user else None,
+        'user_active': user.active if user else None,
+        'is_trainer': trainer is not None,
+        'is_client': client is not None,
+        'trainer_id': trainer.id if trainer else None,
+        'client_id': client.id if client else None,
+        'message': 'User account found' if user else 'No User account found. Set password via admin dashboard.'
+    }), 200
+
 # Client Routes
 @api_bp.route('/clients', methods=['GET'])
 def get_clients():
