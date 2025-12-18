@@ -138,6 +138,22 @@ export const integrationsAPI = {
   deleteWebhook: (id) => api.delete(`/api/integrations/webhooks/${id}`),
 };
 
+// Advanced Analytics API
+export const advancedAnalyticsAPI = {
+  getChurnPrediction: (clientId, daysLookback = 90) => 
+    api.get(`/api/analytics/advanced/churn-prediction/${clientId}`, { params: { days_lookback: daysLookback } }),
+  getBatchChurnPredictions: (clientIds) => 
+    api.post('/api/analytics/advanced/churn-prediction/batch', { client_ids: clientIds }),
+  getRevenueForecast: (months = 6) => 
+    api.get('/api/analytics/advanced/revenue-forecast', { params: { months } }),
+  getTrainerBenchmark: (trainerId) => 
+    api.get(`/api/analytics/advanced/trainer-benchmark/${trainerId}`),
+  getAllTrainerBenchmarks: () => 
+    api.get('/api/analytics/advanced/trainer-benchmark/all'),
+  getPredictiveInsights: (daysLookback = 30) => 
+    api.get('/api/analytics/advanced/predictive-insights', { params: { days_lookback: daysLookback } }),
+};
+
 // Activity API
 export const activityAPI = {
   getRecent: (limit = 50) => api.get(`/api/activity/recent?limit=${limit}`),
