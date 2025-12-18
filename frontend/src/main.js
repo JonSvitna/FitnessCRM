@@ -4,6 +4,8 @@ import { initCollapsibleSections } from './sidebar-sections.js';
 import './pwa.js';
 import './offline.js';
 import './mobile.js';
+import { initKeyboardShortcuts } from './keyboard-shortcuts.js';
+import { initDarkMode } from './dark-mode.js';
 import Chart from 'chart.js/auto';
 
 // State management
