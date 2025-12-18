@@ -119,7 +119,7 @@ function closeMobileMenu() {
 }
 
 // Utility functions
-function showToast(message, duration = 3000) {
+export function showToast(message, duration = 3000) {
   const toast = document.getElementById('toast');
   const toastMessage = document.getElementById('toast-message');
   toastMessage.textContent = message;

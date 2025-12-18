@@ -413,4 +413,5 @@ export const automationAPI = {
   getAnalytics: (params) => api.get('/api/automation/analytics', { params }),
 };
 
+export { api };
 export default api;
