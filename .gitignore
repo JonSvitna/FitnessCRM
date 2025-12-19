@@ -35,6 +35,15 @@ wheels/
 .env
 .env.local
 .env.*.local
+backend/.env
+frontend/.env
+
+# Production environment files with real secrets (templates are tracked)
+backend/.env.production
+frontend/.env.production
+
+# Docker environment
+.env.docker
 
 # Logs
 logs/
