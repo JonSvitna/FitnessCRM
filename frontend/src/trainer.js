@@ -14,6 +14,13 @@ let state = {
   sidebarExpanded: true,
 };
 
+// Helper function to get trainer's clients
+function getMyClients() {
+  const myAssignments = state.assignments.filter(a => a.trainer_id === state.trainer.id);
+  const myClientIds = myAssignments.map(a => a.client_id);
+  return state.clients.filter(c => myClientIds.includes(c.id));
+}
+
 // Sidebar functionality
 function initSidebar() {
   const sidebar = document.getElementById('sidebar');
@@ -417,9 +424,7 @@ window.assignWorkoutToClient = async function(workoutId) {
     }
 
     // Get trainer's clients
-    const myAssignments = state.assignments.filter(a => a.trainer_id === state.trainer.id);
-    const myClientIds = myAssignments.map(a => a.client_id);
-    const myClients = state.clients.filter(c => myClientIds.includes(c.id));
+    const myClients = getMyClients();
 
     if (myClients.length === 0) {
       showToast('No clients assigned to you yet');
@@ -511,9 +516,7 @@ async function loadCalendar() {
   try {
     // Load clients for session scheduling
     const clientSelect = document.querySelector('#session-form select[name="client_id"]');
-    const myAssignments = state.assignments.filter(a => a.trainer_id === state.trainer.id);
-    const myClientIds = myAssignments.map(a => a.client_id);
-    const myClients = state.clients.filter(c => myClientIds.includes(c.id));
+    const myClients = getMyClients();
 
     clientSelect.innerHTML = '<option value="">Choose a client...</option>' +
       myClients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');

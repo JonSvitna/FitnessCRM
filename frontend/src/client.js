@@ -450,8 +450,12 @@ function initFormHandlers() {
     const preferredDate = formData.get('preferred_date');
     const preferredTime = formData.get('preferred_time');
     
-    // Combine date and time
-    const sessionDate = `${preferredDate}T${preferredTime}:00`;
+    // Combine date and time, ensuring proper ISO format
+    // Handle time format that may or may not include seconds
+    const timeWithSeconds = preferredTime.includes(':') 
+      ? (preferredTime.split(':').length === 2 ? `${preferredTime}:00` : preferredTime)
+      : `${preferredTime}:00:00`;
+    const sessionDate = `${preferredDate}T${timeWithSeconds}`;
 
     const data = {
       client_id: state.client.id,
