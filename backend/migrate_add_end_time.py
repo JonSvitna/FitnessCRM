@@ -45,10 +45,11 @@ def populate_end_time_values():
     """Populate end_time values for existing sessions based on session_date + duration"""
     try:
         # Update existing sessions to calculate end_time from session_date and duration
+        # Use COALESCE to handle NULL durations with a default of 60 minutes
         db.session.execute(text("""
             UPDATE sessions 
-            SET end_time = session_date + (duration || ' minutes')::INTERVAL
-            WHERE end_time IS NULL AND session_date IS NOT NULL AND duration IS NOT NULL
+            SET end_time = session_date + (COALESCE(duration, 60) || ' minutes')::INTERVAL
+            WHERE end_time IS NULL AND session_date IS NOT NULL
         """))
         db.session.commit()
         

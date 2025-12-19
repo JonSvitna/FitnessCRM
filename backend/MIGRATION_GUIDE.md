@@ -74,13 +74,17 @@ Previously, `end_time` was calculated on-the-fly in the application code. Adding
 
 1. **Before deploying the code changes**, run the migration script on your production database:
    ```bash
-   # SSH into your Railway service or use Railway CLI
-   railway run python backend/migrate_add_end_time.py
+   # From your local machine with Railway CLI installed and authenticated
+   # Navigate to the backend directory first
+   cd backend
+   railway run python migrate_add_end_time.py
    ```
 
-2. **Or connect to the database directly**:
+2. **Or set the DATABASE_URL and run locally**:
    ```bash
-   # Get your DATABASE_URL from Railway
+   # Get your DATABASE_URL from Railway dashboard
+   export DATABASE_URL="your-railway-database-url"
+   cd backend
    python migrate_add_end_time.py
    ```
 
