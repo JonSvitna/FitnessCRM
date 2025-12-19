@@ -116,7 +116,12 @@ class HealthChecker:
             return False
             
     def check_api_endpoints(self):
-        """Check critical API endpoints."""
+        """Check critical API endpoints.
+        
+        Note: 401/403 responses are considered acceptable as they indicate
+        the endpoint exists and authentication/authorization is properly enforced.
+        If these endpoints should be publicly accessible, update this check.
+        """
         endpoints = [
             '/api/trainers',
             '/api/clients',
@@ -128,8 +133,11 @@ class HealthChecker:
         for endpoint in endpoints:
             try:
                 response = requests.get(f"{self.api_url}{endpoint}", timeout=5)
-                if response.status_code in [200, 401, 403]:  # 401/403 acceptable if auth is required
-                    self.log('PASS', 'API Endpoint', f"{endpoint} is accessible")
+                if response.status_code == 200:
+                    self.log('PASS', 'API Endpoint', f"{endpoint} is accessible (200 OK)")
+                elif response.status_code in [401, 403]:
+                    # Auth required - endpoint exists and is protected
+                    self.log('PASS', 'API Endpoint', f"{endpoint} is protected ({response.status_code})")
                 else:
                     self.log('FAIL', 'API Endpoint', f"{endpoint} returned {response.status_code}")
                     all_pass = False

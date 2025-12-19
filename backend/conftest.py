@@ -44,11 +44,22 @@ def db_session(app, _db):
         session = _db.session
         session.begin_nested()
         
-        yield session
-        
-        session.close()
-        transaction.rollback()
-        connection.close()
+        try:
+            yield session
+        finally:
+            # Ensure proper cleanup even on test failures
+            try:
+                session.close()
+            except Exception:
+                pass
+            try:
+                transaction.rollback()
+            except Exception:
+                pass
+            try:
+                connection.close()
+            except Exception:
+                pass
 
 
 @pytest.fixture

@@ -38,8 +38,8 @@ class TestTrainerRoutes:
             # Missing email
         }
         response = client.post('/api/trainers', json=incomplete_trainer)
-        # Should return 400 or 422 for validation error
-        assert response.status_code in [400, 422, 500]
+        # Should return 400 or 422 for validation error, not 500
+        assert response.status_code in [400, 422]
     
     @pytest.mark.api
     def test_get_trainer_by_id(self, client, db_session, sample_trainer):
@@ -134,7 +134,8 @@ class TestClientRoutes:
             # Missing email
         }
         response = client.post('/api/clients', json=incomplete_client)
-        assert response.status_code in [400, 422, 500]
+        # Should return 400 or 422 for validation error, not 500
+        assert response.status_code in [400, 422]
     
     @pytest.mark.api
     def test_get_client_by_id(self, client, db_session, sample_client):
