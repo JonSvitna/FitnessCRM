@@ -214,6 +214,27 @@ document.getElementById('nav-settings').addEventListener('click', () => {
   loadSettings();
 });
 
+// Communication section navigation handlers
+document.getElementById('nav-messages').addEventListener('click', () => {
+  showSection('messages-section', 'Messages');
+  // Load messages if messages.js is available
+  if (typeof loadMessages === 'function') {
+    loadMessages();
+  }
+});
+
+document.getElementById('nav-sms').addEventListener('click', () => {
+  showSection('sms-section', 'SMS Management');
+});
+
+document.getElementById('nav-campaigns').addEventListener('click', () => {
+  showSection('campaigns-section', 'Email Campaigns');
+});
+
+document.getElementById('nav-automation').addEventListener('click', () => {
+  showSection('automation-section', 'Automation Rules');
+});
+
 // Trainer form handler
 document.getElementById('trainer-form').addEventListener('submit', async (e) => {
   e.preventDefault();
