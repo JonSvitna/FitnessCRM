@@ -450,6 +450,12 @@ function initFormHandlers() {
     const preferredDate = formData.get('preferred_date');
     const preferredTime = formData.get('preferred_time');
     
+    // Validate date and time are provided
+    if (!preferredDate || !preferredTime) {
+      showToast('Please select both date and time for the session');
+      return;
+    }
+    
     // Combine date and time, ensuring proper ISO format
     // Handle time format that may or may not include seconds
     const timeWithSeconds = preferredTime.includes(':') 

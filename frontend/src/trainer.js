@@ -286,9 +286,11 @@ let workoutCreationState = {
 // Workouts functions
 async function loadWorkouts() {
   try {
-    // Load available exercises for workout creation
-    const exercisesResponse = await exerciseAPI.getAll();
-    workoutCreationState.availableExercises = exercisesResponse.data || [];
+    // Load available exercises for workout creation (only if not already loaded)
+    if (workoutCreationState.availableExercises.length === 0) {
+      const exercisesResponse = await exerciseAPI.getAll();
+      workoutCreationState.availableExercises = exercisesResponse.data || [];
+    }
 
     // Load workout templates
     const response = await workoutAPI.getAllTemplates({ created_by: state.trainer.id });
@@ -524,6 +526,11 @@ window.searchExercises = function(event) {
 window.showAllExercises = function() {
   const resultsContainer = document.getElementById('exercise-search-results');
   const exercises = workoutCreationState.availableExercises.slice(0, 20);
+  
+  if (exercises.length === 0) {
+    resultsContainer.innerHTML = '<p class="text-neutral-600 text-sm p-2">No exercises available. Please add exercises to the system first.</p>';
+    return;
+  }
   
   resultsContainer.innerHTML = `
     <div class="bg-white border rounded-lg shadow-lg divide-y max-h-80 overflow-y-auto">
@@ -891,10 +898,25 @@ function initFormHandlers() {
   document.getElementById('session-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+    
+    // Validate required fields
+    const clientId = parseInt(formData.get('client_id'));
+    const sessionDate = formData.get('session_date');
+    
+    if (!clientId || isNaN(clientId)) {
+      showToast('Please select a client');
+      return;
+    }
+    
+    if (!sessionDate) {
+      showToast('Please select a date and time');
+      return;
+    }
+    
     const data = {
-      client_id: parseInt(formData.get('client_id')),
+      client_id: clientId,
       trainer_id: state.trainer.id,
-      session_date: formData.get('session_date'),
+      session_date: sessionDate,
       duration: parseInt(formData.get('duration')) || 60,
       session_type: formData.get('session_type'),
       status: 'scheduled',
