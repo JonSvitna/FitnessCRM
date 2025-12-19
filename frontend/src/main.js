@@ -450,7 +450,7 @@ function renderTrainers() {
   }
 
   container.innerHTML = trainers.map(trainer => `
-    <div class="p-4 bg-dark-tertiary rounded-lg">
+    <div class="p-4 bg-dark-tertiary rounded-lg hover:bg-neutral-800 transition-colors cursor-pointer" onclick="openTrainerEditModal(${trainer.id})">
       <div class="flex items-start justify-between">
         <div class="flex-1">
           <h4 class="text-lg font-semibold text-white">${trainer.name}</h4>
@@ -461,12 +461,7 @@ function renderTrainers() {
           ${trainer.experience ? `<p class="text-sm text-gray-400">Experience: ${trainer.experience} years</p>` : ''}
         </div>
         <div class="flex gap-2 ml-4">
-          <button onclick="changeTrainerPassword(${trainer.id}, '${trainer.email}')" class="text-blue-400 hover:text-blue-300" title="Change Password">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
-            </svg>
-          </button>
-          <button onclick="deleteTrainer(${trainer.id})" class="text-red-400 hover:text-red-300" title="Delete">
+          <button onclick="event.stopPropagation(); deleteTrainer(${trainer.id})" class="text-red-400 hover:text-red-300" title="Delete">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
             </svg>
@@ -611,7 +606,7 @@ function renderClients() {
   }
 
   container.innerHTML = clients.map(client => `
-    <div class="p-4 bg-dark-tertiary rounded-lg">
+    <div class="p-4 bg-dark-tertiary rounded-lg hover:bg-neutral-800 transition-colors cursor-pointer" onclick="openClientEditModal(${client.id})">
       <div class="flex items-start justify-between">
         <div class="flex-1">
           <h4 class="text-lg font-semibold text-white">${client.name}</h4>
@@ -622,12 +617,7 @@ function renderClients() {
           ${client.medical_conditions ? `<p class="text-sm text-yellow-400">Medical: ${client.medical_conditions}</p>` : ''}
         </div>
         <div class="flex gap-2 ml-4">
-          <button onclick="changeClientPassword(${client.id}, '${client.email}')" class="text-blue-400 hover:text-blue-300" title="Change Password">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
-            </svg>
-          </button>
-          <button onclick="deleteClient(${client.id})" class="text-red-400 hover:text-red-300" title="Delete">
+          <button onclick="event.stopPropagation(); deleteClient(${client.id})" class="text-red-400 hover:text-red-300" title="Delete">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
             </svg>
@@ -3711,6 +3701,230 @@ window.deleteGoal = async function(id) {
     showToast('Error: ' + (error.response?.data?.error || error.message));
   }
 };
+
+// ============ Trainer Edit Modal Functions ============
+window.openTrainerEditModal = async function(trainerId) {
+  try {
+    const response = await trainerAPI.getById(trainerId);
+    const trainer = response.data;
+    
+    const modal = document.getElementById('trainer-edit-modal');
+    document.getElementById('trainer-edit-id').value = trainer.id;
+    document.getElementById('trainer-edit-name').value = trainer.name || '';
+    document.getElementById('trainer-edit-email').value = trainer.email || '';
+    document.getElementById('trainer-edit-phone').value = trainer.phone || '';
+    document.getElementById('trainer-edit-specialization').value = trainer.specialization || '';
+    document.getElementById('trainer-edit-certification').value = trainer.certification || '';
+    document.getElementById('trainer-edit-experience').value = trainer.experience || '';
+    document.getElementById('trainer-edit-bio').value = trainer.bio || '';
+    document.getElementById('trainer-edit-rate').value = trainer.hourly_rate || '';
+    
+    modal.classList.remove('hidden');
+  } catch (error) {
+    console.error('Error loading trainer:', error);
+    showToast('Error loading trainer details');
+  }
+};
+
+document.getElementById('close-trainer-edit-modal')?.addEventListener('click', () => {
+  document.getElementById('trainer-edit-modal').classList.add('hidden');
+});
+
+document.getElementById('cancel-trainer-edit-btn')?.addEventListener('click', () => {
+  document.getElementById('trainer-edit-modal').classList.add('hidden');
+});
+
+document.getElementById('trainer-reset-password-btn')?.addEventListener('click', () => {
+  const trainerId = document.getElementById('trainer-edit-id').value;
+  const trainerEmail = document.getElementById('trainer-edit-email').value;
+  changeTrainerPassword(parseInt(trainerId), trainerEmail);
+});
+
+document.getElementById('trainer-edit-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const trainerId = formData.get('id');
+  const experienceValue = formData.get('experience');
+  const rateValue = formData.get('hourly_rate');
+  
+  const data = {
+    name: formData.get('name'),
+    email: formData.get('email'),
+    phone: formData.get('phone'),
+    specialization: formData.get('specialization'),
+    certification: formData.get('certification'),
+    experience: experienceValue && !isNaN(parseInt(experienceValue)) ? parseInt(experienceValue) : null,
+    bio: formData.get('bio'),
+    hourly_rate: rateValue && !isNaN(parseFloat(rateValue)) ? parseFloat(rateValue) : null
+  };
+  
+  try {
+    await trainerAPI.update(trainerId, data);
+    showToast('Trainer updated successfully');
+    document.getElementById('trainer-edit-modal').classList.add('hidden');
+    await loadTrainers();
+  } catch (error) {
+    console.error('Error updating trainer:', error);
+    showToast('Error: ' + (error.response?.data?.error || error.message));
+  }
+});
+
+// ============ Client Edit Modal Functions ============
+window.openClientEditModal = async function(clientId) {
+  try {
+    const response = await clientAPI.getById(clientId);
+    const client = response.data;
+    
+    const modal = document.getElementById('client-edit-modal');
+    document.getElementById('client-edit-id').value = client.id;
+    document.getElementById('client-edit-name').value = client.name || '';
+    document.getElementById('client-edit-email').value = client.email || '';
+    document.getElementById('client-edit-phone').value = client.phone || '';
+    document.getElementById('client-edit-age').value = client.age || '';
+    document.getElementById('client-edit-goals').value = client.goals || '';
+    document.getElementById('client-edit-medical').value = client.medical_conditions || '';
+    document.getElementById('client-edit-emergency-contact').value = client.emergency_contact || '';
+    document.getElementById('client-edit-emergency-phone').value = client.emergency_phone || '';
+    document.getElementById('client-edit-status').value = client.status || 'active';
+    
+    modal.classList.remove('hidden');
+  } catch (error) {
+    console.error('Error loading client:', error);
+    showToast('Error loading client details');
+  }
+};
+
+document.getElementById('close-client-edit-modal')?.addEventListener('click', () => {
+  document.getElementById('client-edit-modal').classList.add('hidden');
+});
+
+document.getElementById('cancel-client-edit-btn')?.addEventListener('click', () => {
+  document.getElementById('client-edit-modal').classList.add('hidden');
+});
+
+document.getElementById('client-reset-password-btn')?.addEventListener('click', () => {
+  const clientId = document.getElementById('client-edit-id').value;
+  const clientEmail = document.getElementById('client-edit-email').value;
+  changeClientPassword(parseInt(clientId), clientEmail);
+});
+
+document.getElementById('client-edit-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const clientId = formData.get('id');
+  const ageValue = formData.get('age');
+  
+  const data = {
+    name: formData.get('name'),
+    email: formData.get('email'),
+    phone: formData.get('phone'),
+    age: ageValue && !isNaN(parseInt(ageValue)) ? parseInt(ageValue) : null,
+    goals: formData.get('goals'),
+    medical_conditions: formData.get('medical_conditions'),
+    emergency_contact: formData.get('emergency_contact'),
+    emergency_phone: formData.get('emergency_phone'),
+    status: formData.get('status')
+  };
+  
+  try {
+    await clientAPI.update(clientId, data);
+    showToast('Client updated successfully');
+    document.getElementById('client-edit-modal').classList.add('hidden');
+    await loadClients();
+  } catch (error) {
+    console.error('Error updating client:', error);
+    showToast('Error: ' + (error.response?.data?.error || error.message));
+  }
+});
+
+// ============ Enhanced Exercise View Modal ============
+window.viewExercise = async function(id) {
+  try {
+    const response = await exerciseAPI.getById(id);
+    const exercise = response.data;
+    
+    const modal = document.getElementById('exercise-view-modal');
+    document.getElementById('exercise-view-title').textContent = exercise.name;
+    
+    const content = document.getElementById('exercise-view-content');
+    content.innerHTML = `
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          ${exercise.category ? `<div><span class="badge bg-blue-100 text-blue-800">${formatCategory(exercise.category)}</span></div>` : ''}
+          ${exercise.muscle_group ? `<div><span class="badge bg-green-100 text-green-800">${formatMuscleGroup(exercise.muscle_group)}</span></div>` : ''}
+          ${exercise.difficulty ? `<div><span class="badge bg-orange-100 text-orange-800">${capitalize(exercise.difficulty)}</span></div>` : ''}
+        </div>
+        
+        ${exercise.equipment ? `
+          <div>
+            <h4 class="font-semibold text-neutral-900 mb-1">Equipment</h4>
+            <p class="text-gray-600">${exercise.equipment}</p>
+          </div>
+        ` : ''}
+        
+        ${exercise.description ? `
+          <div>
+            <h4 class="font-semibold text-neutral-900 mb-1">Description</h4>
+            <p class="text-gray-600">${exercise.description}</p>
+          </div>
+        ` : ''}
+        
+        ${exercise.instructions ? `
+          <div>
+            <h4 class="font-semibold text-neutral-900 mb-1">Instructions</h4>
+            <p class="text-gray-600 whitespace-pre-line">${exercise.instructions}</p>
+          </div>
+        ` : ''}
+        
+        ${exercise.tips ? `
+          <div>
+            <h4 class="font-semibold text-neutral-900 mb-1">Tips</h4>
+            <p class="text-gray-600 whitespace-pre-line">${exercise.tips}</p>
+          </div>
+        ` : ''}
+        
+        ${exercise.image_url ? `
+          <div>
+            <h4 class="font-semibold text-neutral-900 mb-2">Image</h4>
+            <img src="${exercise.image_url}" alt="${exercise.name}" class="rounded-lg max-w-full h-auto max-h-64 object-contain">
+          </div>
+        ` : ''}
+        
+        ${exercise.video_url ? `
+          <div>
+            <h4 class="font-semibold text-neutral-900 mb-2">Video</h4>
+            <a href="${exercise.video_url}" target="_blank" class="text-primary-500 hover:text-primary-600 underline">Watch video</a>
+          </div>
+        ` : ''}
+      </div>
+    `;
+    
+    // Show edit button only for custom exercises
+    const editBtn = document.getElementById('exercise-view-edit-btn');
+    if (exercise.is_custom) {
+      editBtn.classList.remove('hidden');
+      editBtn.onclick = () => {
+        modal.classList.add('hidden');
+        editExercise(id);
+      };
+    } else {
+      editBtn.classList.add('hidden');
+    }
+    
+    modal.classList.remove('hidden');
+  } catch (error) {
+    console.error('Error viewing exercise:', error);
+    showToast('Error loading exercise details');
+  }
+};
+
+document.getElementById('close-exercise-view-modal')?.addEventListener('click', () => {
+  document.getElementById('exercise-view-modal').classList.add('hidden');
+});
+
+document.getElementById('exercise-view-close-btn')?.addEventListener('click', () => {
+  document.getElementById('exercise-view-modal').classList.add('hidden');
+});
 
 // Initialize app with auth check
 document.addEventListener('DOMContentLoaded', async () => {

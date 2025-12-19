@@ -2155,6 +2155,197 @@
     </div>
   </div>
 
+  <!-- Trainer Edit Modal -->
+  <div id="trainer-edit-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex items-center justify-between">
+          <h3 id="trainer-edit-modal-title" class="text-2xl font-bold text-neutral-900">Edit Trainer</h3>
+          <button id="close-trainer-edit-modal" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <form id="trainer-edit-form" class="p-6 space-y-4">
+        <input type="hidden" id="trainer-edit-id" name="id">
+        
+        <div>
+          <label class="form-label">Full Name *</label>
+          <input type="text" id="trainer-edit-name" name="name" required class="input-field" placeholder="John Doe">
+        </div>
+        
+        <div>
+          <label class="form-label">Email *</label>
+          <input type="email" id="trainer-edit-email" name="email" required class="input-field" placeholder="john@example.com">
+        </div>
+        
+        <div>
+          <label class="form-label">Phone</label>
+          <input type="tel" id="trainer-edit-phone" name="phone" class="input-field" placeholder="+1 (555) 123-4567">
+        </div>
+        
+        <div>
+          <label class="form-label">Specialization</label>
+          <input type="text" id="trainer-edit-specialization" name="specialization" class="input-field" placeholder="Strength Training, Cardio, etc.">
+        </div>
+        
+        <div>
+          <label class="form-label">Certification</label>
+          <input type="text" id="trainer-edit-certification" name="certification" class="input-field" placeholder="NASM, ACE, ISSA, etc.">
+        </div>
+        
+        <div>
+          <label class="form-label">Experience (years)</label>
+          <input type="number" id="trainer-edit-experience" name="experience" min="0" class="input-field" placeholder="5">
+        </div>
+        
+        <div>
+          <label class="form-label">Bio</label>
+          <textarea id="trainer-edit-bio" name="bio" rows="3" class="input-field" placeholder="Brief bio..."></textarea>
+        </div>
+        
+        <div>
+          <label class="form-label">Hourly Rate ($)</label>
+          <input type="number" id="trainer-edit-rate" name="hourly_rate" min="0" step="0.01" class="input-field" placeholder="75.00">
+        </div>
+        
+        <div class="border-t border-neutral-200 pt-4 mt-4">
+          <h4 class="font-semibold text-neutral-900 mb-3">Password Management</h4>
+          <button type="button" id="trainer-reset-password-btn" class="btn-outline w-full">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+            </svg>
+            Reset Password
+          </button>
+        </div>
+        
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="cancel-trainer-edit-btn" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Client Edit Modal -->
+  <div id="client-edit-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex items-center justify-between">
+          <h3 id="client-edit-modal-title" class="text-2xl font-bold text-neutral-900">Edit Client</h3>
+          <button id="close-client-edit-modal" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <form id="client-edit-form" class="p-6 space-y-4">
+        <input type="hidden" id="client-edit-id" name="id">
+        
+        <div>
+          <label class="form-label">Full Name *</label>
+          <input type="text" id="client-edit-name" name="name" required class="input-field" placeholder="Jane Smith">
+        </div>
+        
+        <div>
+          <label class="form-label">Email *</label>
+          <input type="email" id="client-edit-email" name="email" required class="input-field" placeholder="jane@example.com">
+        </div>
+        
+        <div>
+          <label class="form-label">Phone</label>
+          <input type="tel" id="client-edit-phone" name="phone" class="input-field" placeholder="+1 (555) 123-4567">
+        </div>
+        
+        <div>
+          <label class="form-label">Age</label>
+          <input type="number" id="client-edit-age" name="age" min="1" max="150" class="input-field" placeholder="30">
+        </div>
+        
+        <div>
+          <label class="form-label">Fitness Goals</label>
+          <textarea id="client-edit-goals" name="goals" rows="3" class="input-field" placeholder="Weight loss, muscle gain, endurance, etc."></textarea>
+        </div>
+        
+        <div>
+          <label class="form-label">Medical Conditions</label>
+          <textarea id="client-edit-medical" name="medical_conditions" rows="2" class="input-field" placeholder="Any health concerns or limitations"></textarea>
+        </div>
+        
+        <div>
+          <label class="form-label">Emergency Contact</label>
+          <input type="text" id="client-edit-emergency-contact" name="emergency_contact" class="input-field" placeholder="Contact name">
+        </div>
+        
+        <div>
+          <label class="form-label">Emergency Phone</label>
+          <input type="tel" id="client-edit-emergency-phone" name="emergency_phone" class="input-field" placeholder="+1 (555) 123-4567">
+        </div>
+        
+        <div>
+          <label class="form-label">Status</label>
+          <select id="client-edit-status" name="status" class="input-field">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+        
+        <div class="border-t border-neutral-200 pt-4 mt-4">
+          <h4 class="font-semibold text-neutral-900 mb-3">Password Management</h4>
+          <button type="button" id="client-reset-password-btn" class="btn-outline w-full">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+            </svg>
+            Reset Password
+          </button>
+        </div>
+        
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="cancel-client-edit-btn" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Exercise View Modal (Enhanced) -->
+  <div id="exercise-view-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex items-center justify-between">
+          <h3 id="exercise-view-title" class="text-2xl font-bold text-neutral-900"></h3>
+          <button id="close-exercise-view-modal" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div class="p-6 space-y-4">
+        <div id="exercise-view-content">
+          <!-- Exercise details will be loaded here -->
+        </div>
+        
+        <div class="flex justify-end gap-3 pt-4 border-t border-neutral-200">
+          <button type="button" id="exercise-view-close-btn" class="btn-secondary">Close</button>
+          <button type="button" id="exercise-view-edit-btn" class="btn-primary hidden">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Edit Exercise
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast" class="fixed bottom-4 right-4 hidden z-50">
     <div class="card px-6 py-4 shadow-2xl">
