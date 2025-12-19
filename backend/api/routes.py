@@ -79,10 +79,13 @@ def create_trainer():
         return jsonify({'error': 'Password must be at least 6 characters'}), 400
     
     try:
+        # Normalize email for consistency
+        normalized_email = data['email'].strip().lower()
+        
         # Create trainer
         trainer = Trainer(
             name=data['name'],
-            email=data['email'],
+            email=normalized_email,  # Normalize email
             phone=data.get('phone'),
             specialization=data.get('specialization'),
             certification=data.get('certification'),
@@ -93,7 +96,7 @@ def create_trainer():
         
         # Create user account for trainer
         user = User(
-            email=data['email'],
+            email=normalized_email,  # Use normalized email
             password_hash=hash_password(data['password']),
             role='trainer',
             active=True
@@ -101,10 +104,10 @@ def create_trainer():
         db.session.add(user)
         db.session.commit()
         
-        # Verify User account was created
-        verify_user = User.query.filter_by(email=trainer.email).first()
+        # Verify User account was created (use normalized email)
+        verify_user = User.query.filter_by(email=normalized_email).first()
         if not verify_user:
-            logger.error(f"CRITICAL: User account was not created for trainer: {trainer.email}")
+            logger.error(f"CRITICAL: User account was not created for trainer: {normalized_email}")
             return jsonify({'error': 'Failed to create User account. Please try again.'}), 500
         
         logger.info(f"✓ Verified User account created: {verify_user.email} (ID: {verify_user.id}, Role: {verify_user.role})")
@@ -351,10 +354,13 @@ def create_client():
         return jsonify({'error': 'Password must be at least 6 characters'}), 400
     
     try:
+        # Normalize email for consistency
+        normalized_email = data['email'].strip().lower()
+        
         # Create client
         client = Client(
             name=data['name'],
-            email=data['email'],
+            email=normalized_email,  # Normalize email
             phone=data.get('phone'),
             age=data.get('age'),
             goals=data.get('goals'),
@@ -365,7 +371,7 @@ def create_client():
         
         # Create user account for client
         user = User(
-            email=data['email'].strip().lower(),  # Normalize email
+            email=normalized_email,  # Use normalized email
             password_hash=hash_password(data['password']),
             role='client',
             active=True
@@ -373,10 +379,10 @@ def create_client():
         db.session.add(user)
         db.session.commit()
         
-        # Verify User account was created
-        verify_user = User.query.filter_by(email=client.email).first()
+        # Verify User account was created (use normalized email)
+        verify_user = User.query.filter_by(email=normalized_email).first()
         if not verify_user:
-            logger.error(f"CRITICAL: User account was not created for client: {client.email}")
+            logger.error(f"CRITICAL: User account was not created for client: {normalized_email}")
             return jsonify({'error': 'Failed to create User account. Please try again.'}), 500
         
         logger.info(f"✓ Verified User account created: {verify_user.email} (ID: {verify_user.id}, Role: {verify_user.role})")
