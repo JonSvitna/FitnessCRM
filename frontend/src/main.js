@@ -1134,19 +1134,61 @@ function exportToCSV(data, filename) {
   document.body.removeChild(link);
 }
 
-// Delete functions (global scope for inline onclick handlers)
-window.changeTrainerPassword = async function(id, email) {
-  const newPassword = prompt(`Enter new password for ${email}:\n(Minimum 6 characters)\n\nNote: This will create a User account if one doesn't exist.`);
-  if (!newPassword) return;
+// Password modal state
+let passwordModalState = {
+  id: null,
+  email: null,
+  type: null // 'trainer' or 'client'
+};
+
+// Password modal handlers
+const passwordModal = document.getElementById('password-modal');
+const passwordModalForm = document.getElementById('password-modal-form');
+const passwordModalEmail = document.getElementById('password-modal-email');
+const passwordModalInput = document.getElementById('password-modal-input');
+const passwordModalConfirm = document.getElementById('password-modal-confirm');
+const closePasswordModal = document.getElementById('close-password-modal');
+const cancelPasswordModal = document.getElementById('cancel-password-modal');
+
+function showPasswordModal(id, email, type) {
+  passwordModalState = { id, email, type };
+  passwordModalEmail.textContent = email;
+  passwordModalInput.value = '';
+  passwordModalConfirm.value = '';
+  passwordModal.classList.remove('hidden');
+}
+
+function hidePasswordModal() {
+  passwordModal.classList.add('hidden');
+  passwordModalState = { id: null, email: null, type: null };
+}
+
+closePasswordModal.addEventListener('click', hidePasswordModal);
+cancelPasswordModal.addEventListener('click', hidePasswordModal);
+
+passwordModalForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const newPassword = passwordModalInput.value;
+  const confirmPassword = passwordModalConfirm.value;
   
   if (newPassword.length < 6) {
     showToast('Password must be at least 6 characters', 'error');
     return;
   }
   
+  if (newPassword !== confirmPassword) {
+    showToast('Passwords do not match', 'error');
+    return;
+  }
+  
   try {
     const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    const response = await fetch(`${API_BASE_URL}/api/trainers/${id}/change-password`, {
+    const endpoint = passwordModalState.type === 'trainer' 
+      ? `/api/trainers/${passwordModalState.id}/change-password`
+      : `/api/clients/${passwordModalState.id}/change-password`;
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1158,7 +1200,8 @@ window.changeTrainerPassword = async function(id, email) {
     const data = await response.json();
     
     if (response.ok) {
-      showToast('Password set successfully! Trainer can now log in.');
+      showToast(`Password set successfully! ${passwordModalState.type === 'trainer' ? 'Trainer' : 'Client'} can now log in.`);
+      hidePasswordModal();
     } else {
       showToast(data.error || 'Failed to set password', 'error');
     }
@@ -1166,39 +1209,15 @@ window.changeTrainerPassword = async function(id, email) {
     console.error('Error changing password:', error);
     showToast('Error setting password', 'error');
   }
+});
+
+// Delete functions (global scope for inline onclick handlers)
+window.changeTrainerPassword = async function(id, email) {
+  showPasswordModal(id, email, 'trainer');
 };
 
 window.changeClientPassword = async function(id, email) {
-  const newPassword = prompt(`Enter new password for ${email}:\n(Minimum 6 characters)\n\nNote: This will create a User account if one doesn't exist.`);
-  if (!newPassword) return;
-  
-  if (newPassword.length < 6) {
-    showToast('Password must be at least 6 characters', 'error');
-    return;
-  }
-  
-  try {
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    const response = await fetch(`${API_BASE_URL}/api/clients/${id}/change-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-      },
-      body: JSON.stringify({ password: newPassword })
-    });
-    
-    const data = await response.json();
-    
-    if (response.ok) {
-      showToast('Password set successfully! Client can now log in.');
-    } else {
-      showToast(data.error || 'Failed to set password', 'error');
-    }
-  } catch (error) {
-    console.error('Error changing password:', error);
-    showToast('Error setting password', 'error');
-  }
+  showPasswordModal(id, email, 'client');
 };
 
 window.deleteTrainer = async function(id) {
