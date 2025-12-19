@@ -2,7 +2,7 @@
 AI Orchestrator Flask Application
 Main entry point for the AI orchestrator service
 """
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from config.settings import config
 from models import db
@@ -31,6 +31,12 @@ def create_app(config_name=None):
     
     # Register blueprints
     app.register_blueprint(api_bp)
+    
+    # GUI route
+    @app.route('/gui')
+    def gui():
+        """Serve agent management GUI"""
+        return send_from_directory('gui', 'index.html')
     
     # Root endpoint
     @app.route('/')
@@ -159,5 +165,6 @@ app = create_app()
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
-    logger.info(f"Starting AI Orchestrator on port {port}")
-    app.run(host='0.0.0.0', port=port, debug=True)
+    debug = os.getenv('FLASK_ENV', 'production') == 'development'
+    logger.info(f"Starting AI Orchestrator on port {port} (debug={debug})")
+    app.run(host='0.0.0.0', port=port, debug=debug)

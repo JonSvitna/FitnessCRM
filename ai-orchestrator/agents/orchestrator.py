@@ -121,6 +121,7 @@ class AgentOrchestrator:
         self.logger.info("Executing workout optimizer agent")
         
         input_data = state.get("input", {})
+        task_type = input_data.get("task_type", "workout_optimization")
         
         # Use LLM to generate workout optimization
         messages = [
@@ -130,7 +131,8 @@ class AgentOrchestrator:
         
         response = self.llm.invoke(messages)
         
-        state["results"]["workout_optimization"] = response.content
+        # Use task_type as key for consistency
+        state["results"][task_type] = response.content
         state["completed_agents"].append("workout_optimizer")
         state["messages"].append(f"Workout optimization completed")
         
@@ -141,6 +143,7 @@ class AgentOrchestrator:
         self.logger.info("Executing progress monitor agent")
         
         input_data = state.get("input", {})
+        task_type = input_data.get("task_type", "progress_monitoring")
         
         messages = [
             SystemMessage(content="You are an AI that monitors and analyzes client fitness progress."),
@@ -149,7 +152,8 @@ class AgentOrchestrator:
         
         response = self.llm.invoke(messages)
         
-        state["results"]["progress_analysis"] = response.content
+        # Use task_type as key for consistency
+        state["results"][task_type] = response.content
         state["completed_agents"].append("progress_monitor")
         state["messages"].append(f"Progress monitoring completed")
         
@@ -160,6 +164,7 @@ class AgentOrchestrator:
         self.logger.info("Executing scheduler agent")
         
         input_data = state.get("input", {})
+        task_type = input_data.get("task_type", "scheduling")
         
         messages = [
             SystemMessage(content="You are an AI that optimizes trainer-client scheduling based on availability and preferences."),
@@ -168,7 +173,8 @@ class AgentOrchestrator:
         
         response = self.llm.invoke(messages)
         
-        state["results"]["scheduling"] = response.content
+        # Use task_type as key for consistency
+        state["results"][task_type] = response.content
         state["completed_agents"].append("scheduler")
         state["messages"].append(f"Scheduling optimization completed")
         
@@ -179,6 +185,7 @@ class AgentOrchestrator:
         self.logger.info("Executing health checker agent")
         
         input_data = state.get("input", {})
+        task_type = input_data.get("task_type", "health_check")
         
         messages = [
             SystemMessage(content="You are an AI that monitors system health and identifies potential issues."),
@@ -187,7 +194,8 @@ class AgentOrchestrator:
         
         response = self.llm.invoke(messages)
         
-        state["results"]["health_check"] = response.content
+        # Use task_type as key for consistency
+        state["results"][task_type] = response.content
         state["completed_agents"].append("health_checker")
         state["messages"].append(f"Health check completed")
         
@@ -198,6 +206,7 @@ class AgentOrchestrator:
         self.logger.info("Executing code analyzer agent")
         
         input_data = state.get("input", {})
+        task_type = input_data.get("task_type", "code_analysis")
         
         messages = [
             SystemMessage(content="You are an expert code reviewer AI that identifies bugs, performance issues, and suggests improvements."),
@@ -206,7 +215,8 @@ class AgentOrchestrator:
         
         response = self.llm.invoke(messages)
         
-        state["results"]["code_analysis"] = response.content
+        # Use task_type as key for consistency
+        state["results"][task_type] = response.content
         state["completed_agents"].append("code_analyzer")
         state["messages"].append(f"Code analysis completed")
         

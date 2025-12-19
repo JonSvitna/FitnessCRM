@@ -153,10 +153,13 @@ def get_workout_recommendations(client_id: int, goals: List[str] = None,
     ai_response = _call_ai_service('workout_optimization', ai_data)
     
     if ai_response:
-        # Extract recommendations from orchestrator response
-        if 'workout_optimization' in ai_response:
-            return ai_response.get('workout_optimization', [])
-        return ai_response.get('recommendations', [])
+        # Standardized response format from orchestrator
+        # The orchestrator returns results keyed by task type
+        result = ai_response.get('workout_optimization') or ai_response.get('recommendations', [])
+        if isinstance(result, str):
+            # If AI returns a text response, wrap it
+            return [{"recommendation": result, "source": "ai_orchestrator"}]
+        return result if isinstance(result, list) else []
     
     # Fallback to seed data
     logger.info(f"Using seed data for workout recommendations (client {client_id})")
@@ -196,9 +199,10 @@ def predict_client_progress(client_id: int, current_metrics: Dict[str, float],
     ai_response = _call_ai_service('progress_monitoring', ai_data)
     
     if ai_response:
-        # Extract progress analysis from orchestrator response
-        if 'progress_analysis' in ai_response:
-            return ai_response
+        # Standardized response format from orchestrator
+        result = ai_response.get('progress_analysis') or ai_response.get('progress_monitoring')
+        if result:
+            return {"prediction": result, "source": "ai_orchestrator"}
         return ai_response
     
     # Fallback to seed data
@@ -240,10 +244,12 @@ def suggest_session_times(client_id: int, trainer_id: int,
     ai_response = _call_ai_service('scheduling', ai_data)
     
     if ai_response:
-        # Extract scheduling suggestions from orchestrator response
-        if 'scheduling' in ai_response:
-            return ai_response.get('scheduling', [])
-        return ai_response.get('suggestions', [])
+        # Standardized response format from orchestrator
+        result = ai_response.get('scheduling') or ai_response.get('suggestions', [])
+        if isinstance(result, str):
+            # If AI returns a text response, wrap it
+            return [{"suggestion": result, "priority": 1, "source": "ai_orchestrator"}]
+        return result if isinstance(result, list) else []
     
     # Fallback to seed data
     logger.info(f"Using seed data for scheduling suggestions (client {client_id})")
@@ -268,14 +274,14 @@ def generate_workout_plan(client_id: int, duration_weeks: int = 4,
     Returns:
         Generated workout plan
     """
-    # Try to call external AI service
+    # Try to call AI orchestrator
     ai_data = {
         "client_id": client_id,
         "duration_weeks": duration_weeks,
         "focus_areas": focus_areas or []
     }
     
-    ai_response = _call_ai_service('workout_plan', ai_data)
+    ai_response = _call_ai_service('workout_optimization', ai_data)
     
     if ai_response:
         return ai_response
