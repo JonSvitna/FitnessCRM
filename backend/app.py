@@ -302,13 +302,32 @@ def create_app(config_name=None):
     @app.errorhandler(404)
     def not_found(error):
         logger.warning(f"404 error: {error}")
-        return jsonify({'error': 'Resource not found'}), 404
+        response = jsonify({'error': 'Resource not found'})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization,X-Requested-With")
+        response.headers.add('Access-Control-Allow-Methods', "GET,PUT,POST,DELETE,OPTIONS,PATCH")
+        return response, 404
     
     @app.errorhandler(500)
     def internal_error(error):
         logger.error(f"500 error: {error}")
         db.session.rollback()
-        return jsonify({'error': 'Internal server error'}), 500
+        response = jsonify({'error': 'Internal server error'})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization,X-Requested-With")
+        response.headers.add('Access-Control-Allow-Methods', "GET,PUT,POST,DELETE,OPTIONS,PATCH")
+        return response, 500
+    
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        """Handle all unhandled exceptions with CORS headers"""
+        logger.error(f"Unhandled exception: {e}", exc_info=True)
+        db.session.rollback()
+        response = jsonify({'error': 'An unexpected error occurred'})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization,X-Requested-With")
+        response.headers.add('Access-Control-Allow-Methods', "GET,PUT,POST,DELETE,OPTIONS,PATCH")
+        return response, 500
     
     # Create tables (non-blocking for health checks)
     # Skip during boot to allow Railway health checks to succeed
