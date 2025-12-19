@@ -566,8 +566,11 @@ def assign_client_to_trainer():
         send_assignment_notification(trainer.email, trainer.name, client.name)
         send_client_assignment_notification(client.email, client.name, trainer.name)
         
+        # Log activity for assignment (log both trainer and client info)
         log_activity('create', 'assignment', assignment.id,
-                    details={'trainer': trainer.name, 'client': client.name})
+                    name=trainer.name, email=trainer.email, contact=trainer.phone, role='Trainer')
+        log_activity('create', 'assignment', assignment.id,
+                    name=client.name, email=client.email, contact=client.phone, role='Client')
         logger.info(f"Assignment created: {trainer.name} <-> {client.name}")
         
         return jsonify(assignment.to_dict()), 201

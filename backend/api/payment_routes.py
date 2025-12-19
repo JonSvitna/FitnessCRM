@@ -179,8 +179,13 @@ def delete_payment(payment_id):
     payment = Payment.query.get_or_404(payment_id)
     
     try:
-        log_activity('delete', 'payment', payment.id, user_identifier='system',
-                    details={'amount': payment.amount, 'client_id': payment.client_id})
+        # Get client info for activity log
+        client = Client.query.get(payment.client_id) if payment.client_id else None
+        log_activity('delete', 'payment', payment.id,
+                    name=client.name if client else 'System',
+                    email=client.email if client else None,
+                    contact=client.phone if client else None,
+                    role='Client' if client else 'System')
         
         db.session.delete(payment)
         db.session.commit()
