@@ -3,16 +3,19 @@ AI Service Abstraction Layer
 Phase 7: Advanced Features - M7.1: AI-Powered Features
 
 This module provides an abstraction layer for AI features.
-Currently uses seed data, but can be easily swapped with external AI service.
+Can use either seed data or the AI Orchestrator service.
 
-To integrate external AI:
-1. Set AI_SERVICE_URL environment variable
-2. Set AI_API_KEY environment variable
-3. Update _call_ai_service() method to call external API
+To integrate with AI Orchestrator:
+1. Set AI_ORCHESTRATOR_URL environment variable
+2. Set AI_ORCHESTRATOR_KEY environment variable
+The service will automatically use the orchestrator when configured.
+
+Fallback to seed data if orchestrator is not configured or fails.
 """
 
 import os
 import random
+import requests
 from typing import List, Dict, Any, Optional
 from utils.logger import logger
 
@@ -73,35 +76,59 @@ SCHEDULING_SUGGESTIONS_SEED = [
 
 def _call_ai_service(endpoint: str, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """
-    Call external AI service (when configured)
+    Call AI Orchestrator service (when configured)
     
     Args:
-        endpoint: AI service endpoint (e.g., 'recommendations', 'predictions')
+        endpoint: Task type (e.g., 'workout_optimization', 'progress_monitoring')
         data: Input data for AI service
     
     Returns:
-        AI service response or None if not configured
+        AI service response or None if not configured/failed
     """
-    ai_service_url = os.getenv('AI_SERVICE_URL')
-    ai_api_key = os.getenv('AI_API_KEY')
+    orchestrator_url = os.getenv('AI_ORCHESTRATOR_URL')
+    orchestrator_key = os.getenv('AI_ORCHESTRATOR_KEY')
     
-    if not ai_service_url or not ai_api_key:
-        # AI service not configured, return None to use seed data
-        logger.debug(f"AI service not configured, using seed data for {endpoint}")
+    if not orchestrator_url:
+        # AI orchestrator not configured, return None to use seed data
+        logger.debug(f"AI orchestrator not configured, using seed data for {endpoint}")
         return None
     
-    # TODO: Implement actual AI service call
-    # Example:
-    # import requests
-    # response = requests.post(
-    #     f"{ai_service_url}/{endpoint}",
-    #     json=data,
-    #     headers={"Authorization": f"Bearer {ai_api_key}"}
-    # )
-    # return response.json()
-    
-    logger.warning("AI service URL configured but not implemented. Using seed data.")
-    return None
+    try:
+        # Call AI Orchestrator
+        headers = {"Content-Type": "application/json"}
+        if orchestrator_key:
+            headers["Authorization"] = f"Bearer {orchestrator_key}"
+        
+        response = requests.post(
+            f"{orchestrator_url}/api/execute",
+            json={
+                "task_type": endpoint,
+                "input_data": data
+            },
+            headers=headers,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('success'):
+                return result.get('results', result.get('output', {}))
+            else:
+                logger.warning(f"AI orchestrator returned error: {result.get('error')}")
+                return None
+        else:
+            logger.warning(f"AI orchestrator returned status {response.status_code}")
+            return None
+            
+    except requests.exceptions.Timeout:
+        logger.warning(f"AI orchestrator request timeout for {endpoint}")
+        return None
+    except requests.exceptions.RequestException as e:
+        logger.warning(f"AI orchestrator request failed: {str(e)}")
+        return None
+    except Exception as e:
+        logger.error(f"Unexpected error calling AI orchestrator: {str(e)}", exc_info=True)
+        return None
 
 def get_workout_recommendations(client_id: int, goals: List[str] = None, 
                                 fitness_level: str = "intermediate") -> List[Dict[str, Any]]:
@@ -116,16 +143,19 @@ def get_workout_recommendations(client_id: int, goals: List[str] = None,
     Returns:
         List of workout recommendations
     """
-    # Try to call external AI service
+    # Try to call AI orchestrator
     ai_data = {
         "client_id": client_id,
         "goals": goals or [],
         "fitness_level": fitness_level
     }
     
-    ai_response = _call_ai_service('recommendations', ai_data)
+    ai_response = _call_ai_service('workout_optimization', ai_data)
     
     if ai_response:
+        # Extract recommendations from orchestrator response
+        if 'workout_optimization' in ai_response:
+            return ai_response.get('workout_optimization', [])
         return ai_response.get('recommendations', [])
     
     # Fallback to seed data
@@ -156,16 +186,19 @@ def predict_client_progress(client_id: int, current_metrics: Dict[str, float],
     Returns:
         Progress prediction with timeline and confidence
     """
-    # Try to call external AI service
+    # Try to call AI orchestrator
     ai_data = {
         "client_id": client_id,
         "current_metrics": current_metrics,
         "goal_metrics": goal_metrics
     }
     
-    ai_response = _call_ai_service('predictions', ai_data)
+    ai_response = _call_ai_service('progress_monitoring', ai_data)
     
     if ai_response:
+        # Extract progress analysis from orchestrator response
+        if 'progress_analysis' in ai_response:
+            return ai_response
         return ai_response
     
     # Fallback to seed data
@@ -197,7 +230,7 @@ def suggest_session_times(client_id: int, trainer_id: int,
     Returns:
         List of scheduling suggestions
     """
-    # Try to call external AI service
+    # Try to call AI orchestrator
     ai_data = {
         "client_id": client_id,
         "trainer_id": trainer_id,
@@ -207,6 +240,9 @@ def suggest_session_times(client_id: int, trainer_id: int,
     ai_response = _call_ai_service('scheduling', ai_data)
     
     if ai_response:
+        # Extract scheduling suggestions from orchestrator response
+        if 'scheduling' in ai_response:
+            return ai_response.get('scheduling', [])
         return ai_response.get('suggestions', [])
     
     # Fallback to seed data
@@ -279,6 +315,6 @@ def generate_workout_plan(client_id: int, duration_weeks: int = 4,
     return plan
 
 def is_ai_configured() -> bool:
-    """Check if external AI service is configured"""
-    return bool(os.getenv('AI_SERVICE_URL') and os.getenv('AI_API_KEY'))
+    """Check if AI orchestrator service is configured"""
+    return bool(os.getenv('AI_ORCHESTRATOR_URL'))
 

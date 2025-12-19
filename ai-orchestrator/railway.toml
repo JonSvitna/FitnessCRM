@@ -1,0 +1,11 @@
+# Railway Configuration for AI Orchestrator Service
+# 
+# IMPORTANT: Set "Root Directory" to "ai-orchestrator" in Railway settings!
+# Railway Dashboard → Your Service → Settings → Root Directory → Type: ai-orchestrator
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[build]
+builder = "NIXPACKS"
