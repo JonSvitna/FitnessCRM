@@ -1,5 +1,5 @@
 import './styles/main.css';
-import { trainerAPI, clientAPI, crmAPI, settingsAPI, sessionAPI, workoutAPI } from './api.js';
+import { trainerAPI, clientAPI, crmAPI, settingsAPI, sessionAPI, workoutAPI, exerciseAPI } from './api.js';
 import { requireRole, auth } from './auth.js';
 
 // State management
@@ -276,12 +276,23 @@ function renderMyClients() {
   }).join('');
 }
 
+// State for workout creation
+let workoutCreationState = {
+  exercises: [],
+  availableExercises: [],
+  searchResults: []
+};
+
 // Workouts functions
 async function loadWorkouts() {
   try {
+    // Load available exercises for workout creation
+    const exercisesResponse = await exerciseAPI.getAll();
+    workoutCreationState.availableExercises = exercisesResponse.data || [];
+
     // Load workout templates
-    const response = await workoutAPI.getAllTemplates({ created_by_trainer_id: state.trainer.id });
-    state.workouts = response.data || [];
+    const response = await workoutAPI.getAllTemplates({ created_by: state.trainer.id });
+    state.workouts = response.data?.templates || response.data || [];
 
     const workoutsContainer = document.getElementById('workouts-list');
     
@@ -298,8 +309,9 @@ async function loadWorkouts() {
             <h4 class="text-lg font-semibold text-neutral-900">${workout.name}</h4>
             ${workout.description ? `<p class="text-sm text-neutral-600 mt-1">${workout.description}</p>` : ''}
             <div class="flex gap-4 mt-2">
-              <span class="text-sm text-neutral-600">Difficulty: <span class="capitalize">${workout.difficulty_level}</span></span>
+              <span class="text-sm text-neutral-600">Difficulty: <span class="capitalize">${workout.difficulty || workout.difficulty_level || 'N/A'}</span></span>
               ${workout.duration_weeks ? `<span class="text-sm text-neutral-600">Duration: ${workout.duration_weeks} weeks</span>` : ''}
+              ${workout.exercises && workout.exercises.length > 0 ? `<span class="text-sm text-orange-600">${workout.exercises.length} exercises</span>` : ''}
             </div>
           </div>
           <div class="flex gap-2">
@@ -320,97 +332,337 @@ async function loadWorkouts() {
   }
 }
 
+// Show enhanced workout creation modal
+function showEnhancedWorkoutModal(existingWorkout = null) {
+  const isEdit = !!existingWorkout;
+  workoutCreationState.exercises = existingWorkout?.exercises || [];
+  
+  const modalHtml = `
+    <div id="enhanced-workout-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold text-neutral-900">${isEdit ? 'Edit' : 'Create'} Workout Plan</h2>
+            <button onclick="closeEnhancedWorkoutModal()" class="text-neutral-600 hover:text-neutral-900">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <form id="enhanced-workout-form" class="space-y-6">
+            <!-- Basic Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Plan Name *</label>
+                <input type="text" name="name" required class="input-field" placeholder="e.g., Beginner Strength" value="${existingWorkout?.name || ''}">
+              </div>
+              <div>
+                <label class="form-label">Difficulty Level</label>
+                <select name="difficulty" class="input-field">
+                  <option value="beginner" ${existingWorkout?.difficulty === 'beginner' ? 'selected' : ''}>Beginner</option>
+                  <option value="intermediate" ${existingWorkout?.difficulty === 'intermediate' ? 'selected' : ''}>Intermediate</option>
+                  <option value="advanced" ${existingWorkout?.difficulty === 'advanced' ? 'selected' : ''}>Advanced</option>
+                </select>
+              </div>
+            </div>
+            
+            <div>
+              <label class="form-label">Description</label>
+              <textarea name="description" class="input-field" rows="2" placeholder="Plan overview...">${existingWorkout?.description || ''}</textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Duration (weeks)</label>
+                <input type="number" name="duration_weeks" class="input-field" placeholder="8" value="${existingWorkout?.duration_weeks || ''}">
+              </div>
+              <div>
+                <label class="form-label">Category</label>
+                <select name="category" class="input-field">
+                  <option value="">Select category...</option>
+                  <option value="strength" ${existingWorkout?.category === 'strength' ? 'selected' : ''}>Strength Training</option>
+                  <option value="cardio" ${existingWorkout?.category === 'cardio' ? 'selected' : ''}>Cardio</option>
+                  <option value="flexibility" ${existingWorkout?.category === 'flexibility' ? 'selected' : ''}>Flexibility</option>
+                  <option value="hiit" ${existingWorkout?.category === 'hiit' ? 'selected' : ''}>HIIT</option>
+                  <option value="mixed" ${existingWorkout?.category === 'mixed' ? 'selected' : ''}>Mixed</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Exercises Section -->
+            <div class="border-t pt-4">
+              <h3 class="text-lg font-semibold text-neutral-900 mb-3">Exercises</h3>
+              
+              <!-- Exercise Search -->
+              <div class="mb-4">
+                <label class="form-label">Search Exercises</label>
+                <div class="flex gap-2">
+                  <input type="text" id="exercise-search" class="input-field flex-1" placeholder="Search by name, muscle group, or category..." onkeyup="searchExercises(event)">
+                  <button type="button" onclick="showAllExercises()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    Browse All
+                  </button>
+                </div>
+                <div id="exercise-search-results" class="mt-2 max-h-60 overflow-y-auto"></div>
+              </div>
+
+              <!-- Selected Exercises List -->
+              <div id="selected-exercises-list" class="space-y-2">
+                ${workoutCreationState.exercises.length === 0 ? '<p class="text-neutral-600 text-sm">No exercises added yet. Search and add exercises above.</p>' : ''}
+              </div>
+            </div>
+
+            <div class="flex gap-2 justify-end border-t pt-4">
+              <button type="button" onclick="closeEnhancedWorkoutModal()" class="px-4 py-2 bg-neutral-200 text-neutral-700 rounded hover:bg-neutral-300 transition-colors">
+                Cancel
+              </button>
+              <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors">
+                ${isEdit ? 'Update' : 'Create'} Workout
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  
+  // Render existing exercises if editing
+  if (workoutCreationState.exercises.length > 0) {
+    renderSelectedExercises();
+  }
+
+  // Handle form submission
+  document.getElementById('enhanced-workout-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    const data = {
+      name: formData.get('name'),
+      description: formData.get('description') || '',
+      difficulty: formData.get('difficulty'),
+      duration_weeks: parseInt(formData.get('duration_weeks')) || null,
+      category: formData.get('category') || null,
+      created_by: state.trainer.id,
+      exercises: workoutCreationState.exercises.map((ex, idx) => ({
+        exercise_id: ex.exercise_id || ex.id,
+        order: idx,
+        sets: ex.sets,
+        reps: ex.reps,
+        duration_seconds: ex.duration_seconds,
+        rest_seconds: ex.rest_seconds,
+        weight: ex.weight,
+        notes: ex.notes
+      }))
+    };
+
+    try {
+      if (isEdit) {
+        await workoutAPI.updateTemplate(existingWorkout.id, data);
+        showToast('Workout plan updated successfully!');
+      } else {
+        await workoutAPI.createTemplate(data);
+        showToast('Workout plan created successfully!');
+      }
+      closeEnhancedWorkoutModal();
+      loadWorkouts();
+      document.getElementById('workout-form')?.reset();
+    } catch (error) {
+      console.error('Error saving workout plan:', error);
+      showToast('Error saving workout plan: ' + (error.response?.data?.error || error.message));
+    }
+  });
+}
+
+window.closeEnhancedWorkoutModal = function() {
+  const modal = document.getElementById('enhanced-workout-modal');
+  if (modal) {
+    modal.remove();
+  }
+  workoutCreationState.exercises = [];
+  workoutCreationState.searchResults = [];
+};
+
+// Search exercises
+window.searchExercises = function(event) {
+  const searchTerm = event.target.value.toLowerCase().trim();
+  const resultsContainer = document.getElementById('exercise-search-results');
+  
+  if (searchTerm.length < 2) {
+    resultsContainer.innerHTML = '';
+    return;
+  }
+
+  const results = workoutCreationState.availableExercises.filter(ex => 
+    ex.name.toLowerCase().includes(searchTerm) ||
+    (ex.muscle_group && ex.muscle_group.toLowerCase().includes(searchTerm)) ||
+    (ex.category && ex.category.toLowerCase().includes(searchTerm))
+  ).slice(0, 10);
+
+  if (results.length === 0) {
+    resultsContainer.innerHTML = '<p class="text-neutral-600 text-sm p-2">No exercises found</p>';
+    return;
+  }
+
+  resultsContainer.innerHTML = `
+    <div class="bg-white border rounded-lg shadow-lg divide-y max-h-80 overflow-y-auto">
+      ${results.map(ex => `
+        <div class="p-3 hover:bg-neutral-50 cursor-pointer" onclick="addExerciseToWorkout(${ex.id})">
+          <div class="font-medium text-neutral-900">${ex.name}</div>
+          <div class="text-xs text-neutral-600 mt-1">
+            ${ex.muscle_group ? `<span class="capitalize">${ex.muscle_group}</span>` : ''}
+            ${ex.category ? `<span class="ml-2 capitalize">${ex.category}</span>` : ''}
+            ${ex.equipment ? `<span class="ml-2">${ex.equipment}</span>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+};
+
+window.showAllExercises = function() {
+  const resultsContainer = document.getElementById('exercise-search-results');
+  const exercises = workoutCreationState.availableExercises.slice(0, 20);
+  
+  resultsContainer.innerHTML = `
+    <div class="bg-white border rounded-lg shadow-lg divide-y max-h-80 overflow-y-auto">
+      ${exercises.map(ex => `
+        <div class="p-3 hover:bg-neutral-50 cursor-pointer" onclick="addExerciseToWorkout(${ex.id})">
+          <div class="font-medium text-neutral-900">${ex.name}</div>
+          <div class="text-xs text-neutral-600 mt-1">
+            ${ex.muscle_group ? `<span class="capitalize">${ex.muscle_group}</span>` : ''}
+            ${ex.category ? `<span class="ml-2 capitalize">${ex.category}</span>` : ''}
+            ${ex.equipment ? `<span class="ml-2">${ex.equipment}</span>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+};
+
+// Add exercise to workout
+window.addExerciseToWorkout = function(exerciseId) {
+  const exercise = workoutCreationState.availableExercises.find(ex => ex.id === exerciseId);
+  if (!exercise) return;
+
+  // Check if already added
+  if (workoutCreationState.exercises.some(ex => (ex.exercise_id || ex.id) === exerciseId)) {
+    showToast('Exercise already added');
+    return;
+  }
+
+  workoutCreationState.exercises.push({
+    exercise_id: exerciseId,
+    name: exercise.name,
+    muscle_group: exercise.muscle_group,
+    sets: 3,
+    reps: 10,
+    duration_seconds: null,
+    rest_seconds: 60,
+    weight: null,
+    notes: ''
+  });
+
+  renderSelectedExercises();
+  document.getElementById('exercise-search-results').innerHTML = '';
+  document.getElementById('exercise-search').value = '';
+};
+
+// Remove exercise from workout
+window.removeExerciseFromWorkout = function(index) {
+  workoutCreationState.exercises.splice(index, 1);
+  renderSelectedExercises();
+};
+
+// Update exercise details
+window.updateExerciseDetail = function(index, field, value) {
+  if (workoutCreationState.exercises[index]) {
+    workoutCreationState.exercises[index][field] = value;
+  }
+};
+
+// Move exercise up/down
+window.moveExercise = function(index, direction) {
+  const newIndex = direction === 'up' ? index - 1 : index + 1;
+  if (newIndex < 0 || newIndex >= workoutCreationState.exercises.length) return;
+  
+  const temp = workoutCreationState.exercises[index];
+  workoutCreationState.exercises[index] = workoutCreationState.exercises[newIndex];
+  workoutCreationState.exercises[newIndex] = temp;
+  
+  renderSelectedExercises();
+};
+
+// Render selected exercises
+function renderSelectedExercises() {
+  const container = document.getElementById('selected-exercises-list');
+  
+  if (workoutCreationState.exercises.length === 0) {
+    container.innerHTML = '<p class="text-neutral-600 text-sm">No exercises added yet. Search and add exercises above.</p>';
+    return;
+  }
+
+  container.innerHTML = workoutCreationState.exercises.map((ex, index) => `
+    <div class="bg-neutral-50 border rounded-lg p-3">
+      <div class="flex items-start justify-between mb-2">
+        <div class="flex-1">
+          <div class="font-medium text-neutral-900">${ex.name}</div>
+          <div class="text-xs text-neutral-600">${ex.muscle_group ? `<span class="capitalize">${ex.muscle_group}</span>` : ''}</div>
+        </div>
+        <div class="flex gap-1">
+          ${index > 0 ? `<button type="button" onclick="moveExercise(${index}, 'up')" class="p-1 text-neutral-600 hover:text-neutral-900" title="Move up">↑</button>` : ''}
+          ${index < workoutCreationState.exercises.length - 1 ? `<button type="button" onclick="moveExercise(${index}, 'down')" class="p-1 text-neutral-600 hover:text-neutral-900" title="Move down">↓</button>` : ''}
+          <button type="button" onclick="removeExerciseFromWorkout(${index})" class="p-1 text-red-600 hover:text-red-800" title="Remove">×</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
+        <div>
+          <label class="text-xs text-neutral-600">Sets</label>
+          <input type="number" value="${ex.sets || ''}" onchange="updateExerciseDetail(${index}, 'sets', parseInt(this.value))" class="w-full px-2 py-1 border rounded" min="1">
+        </div>
+        <div>
+          <label class="text-xs text-neutral-600">Reps</label>
+          <input type="number" value="${ex.reps || ''}" onchange="updateExerciseDetail(${index}, 'reps', parseInt(this.value))" class="w-full px-2 py-1 border rounded" min="1">
+        </div>
+        <div>
+          <label class="text-xs text-neutral-600">Duration (sec)</label>
+          <input type="number" value="${ex.duration_seconds || ''}" onchange="updateExerciseDetail(${index}, 'duration_seconds', parseInt(this.value))" class="w-full px-2 py-1 border rounded" placeholder="Optional">
+        </div>
+        <div>
+          <label class="text-xs text-neutral-600">Rest (sec)</label>
+          <input type="number" value="${ex.rest_seconds || 60}" onchange="updateExerciseDetail(${index}, 'rest_seconds', parseInt(this.value))" class="w-full px-2 py-1 border rounded">
+        </div>
+        <div>
+          <label class="text-xs text-neutral-600">Weight (lbs)</label>
+          <input type="number" value="${ex.weight || ''}" onchange="updateExerciseDetail(${index}, 'weight', parseFloat(this.value))" class="w-full px-2 py-1 border rounded" placeholder="Optional" step="0.5">
+        </div>
+      </div>
+      <div class="mt-2">
+        <label class="text-xs text-neutral-600">Notes</label>
+        <input type="text" value="${ex.notes || ''}" onchange="updateExerciseDetail(${index}, 'notes', this.value)" class="w-full px-2 py-1 border rounded text-sm" placeholder="Optional notes...">
+      </div>
+    </div>
+  `).join('');
+}
+
 // View workout details in a modal
 window.viewWorkout = async function(workoutId) {
   try {
-    const workout = state.workouts.find(w => w.id === workoutId);
+    // Fetch full workout details including exercises
+    const response = await workoutAPI.getTemplate(workoutId);
+    const workout = response.data || response;
+    
     if (!workout) {
       showToast('Workout not found');
       return;
     }
 
-    // Create a modal to show workout details and allow editing
-    const modalHtml = `
-      <div id="workout-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div class="p-6">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-2xl font-bold text-neutral-900">Edit Workout Plan</h2>
-              <button onclick="closeWorkoutModal()" class="text-neutral-600 hover:text-neutral-900">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            </div>
-            <form id="edit-workout-form" class="space-y-4">
-              <div>
-                <label class="form-label">Plan Name *</label>
-                <input type="text" name="name" required class="input-field" value="${workout.name}">
-              </div>
-              <div>
-                <label class="form-label">Description</label>
-                <textarea name="description" class="input-field" rows="3">${workout.description || ''}</textarea>
-              </div>
-              <div>
-                <label class="form-label">Difficulty Level</label>
-                <select name="difficulty_level" class="input-field">
-                  <option value="beginner" ${workout.difficulty_level === 'beginner' ? 'selected' : ''}>Beginner</option>
-                  <option value="intermediate" ${workout.difficulty_level === 'intermediate' ? 'selected' : ''}>Intermediate</option>
-                  <option value="advanced" ${workout.difficulty_level === 'advanced' ? 'selected' : ''}>Advanced</option>
-                </select>
-              </div>
-              <div>
-                <label class="form-label">Duration (weeks)</label>
-                <input type="number" name="duration_weeks" class="input-field" value="${workout.duration_weeks || ''}">
-              </div>
-              <div class="flex gap-2 justify-end">
-                <button type="button" onclick="closeWorkoutModal()" class="px-4 py-2 bg-neutral-200 text-neutral-700 rounded hover:bg-neutral-300 transition-colors">
-                  Cancel
-                </button>
-                <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors">
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Add modal to page
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-    // Handle form submission
-    document.getElementById('edit-workout-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      const data = {
-        name: formData.get('name'),
-        description: formData.get('description') || '',
-        difficulty_level: formData.get('difficulty_level'),
-        duration_weeks: parseInt(formData.get('duration_weeks')) || null
-      };
-
-      try {
-        await workoutAPI.updateTemplate(workoutId, data);
-        showToast('Workout plan updated successfully!');
-        closeWorkoutModal();
-        loadWorkouts();
-      } catch (error) {
-        console.error('Error updating workout plan:', error);
-        showToast('Error updating workout plan: ' + (error.response?.data?.error || error.message));
-      }
-    });
+    // Use the enhanced modal for editing
+    showEnhancedWorkoutModal(workout);
   } catch (error) {
     console.error('Error viewing workout:', error);
-    showToast('Error loading workout details');
-  }
-};
-
-window.closeWorkoutModal = function() {
-  const modal = document.getElementById('workout-modal');
-  if (modal) {
-    modal.remove();
+    showToast('Error loading workout details: ' + (error.response?.data?.error || error.message));
   }
 };
 
@@ -631,24 +883,9 @@ function initFormHandlers() {
 
   document.getElementById('workout-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = {
-      name: formData.get('name'),
-      description: formData.get('description') || '',
-      difficulty_level: formData.get('difficulty_level'),
-      duration_weeks: parseInt(formData.get('duration_weeks')) || null,
-      created_by_trainer_id: state.trainer.id
-    };
-
-    try {
-      await workoutAPI.createTemplate(data);
-      showToast('Workout plan created successfully!');
-      e.target.reset();
-      loadWorkouts();
-    } catch (error) {
-      console.error('Error creating workout plan:', error);
-      showToast('Error creating workout plan: ' + (error.response?.data?.error || error.message));
-    }
+    
+    // Show enhanced workout creation modal
+    showEnhancedWorkoutModal();
   });
 
   document.getElementById('session-form').addEventListener('submit', async (e) => {
