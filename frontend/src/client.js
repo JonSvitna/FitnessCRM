@@ -116,55 +116,57 @@ function showSection(sectionId, title) {
   closeMobileMenu();
 }
 
-// Navigation handlers
-document.getElementById('nav-dashboard').addEventListener('click', () => {
-  showSection('dashboard-section', 'Dashboard');
-  loadDashboard();
-});
+// Navigation handlers - will be initialized in DOMContentLoaded
+function initNavigation() {
+  document.getElementById('nav-dashboard').addEventListener('click', () => {
+    showSection('dashboard-section', 'Dashboard');
+    loadDashboard();
+  });
 
-document.getElementById('nav-profile').addEventListener('click', () => {
-  showSection('profile-section', 'My Profile');
-  loadProfile();
-});
+  document.getElementById('nav-profile').addEventListener('click', () => {
+    showSection('profile-section', 'My Profile');
+    loadProfile();
+  });
 
-document.getElementById('nav-workouts').addEventListener('click', () => {
-  showSection('workouts-section', 'Workouts');
-  loadWorkouts();
-});
+  document.getElementById('nav-workouts').addEventListener('click', () => {
+    showSection('workouts-section', 'Workouts');
+    loadWorkouts();
+  });
 
-document.getElementById('nav-calendar').addEventListener('click', () => {
-  showSection('calendar-section', 'Calendar');
-  loadCalendar();
-});
+  document.getElementById('nav-calendar').addEventListener('click', () => {
+    showSection('calendar-section', 'Calendar');
+    loadCalendar();
+  });
 
-document.getElementById('nav-meals').addEventListener('click', () => {
-  showSection('meals-section', 'Nutrition');
-  loadMeals();
-});
+  document.getElementById('nav-meals').addEventListener('click', () => {
+    showSection('meals-section', 'Nutrition');
+    loadMeals();
+  });
 
-document.getElementById('nav-progress').addEventListener('click', () => {
-  showSection('progress-section', 'Progress');
-  loadProgress();
-});
+  document.getElementById('nav-progress').addEventListener('click', () => {
+    showSection('progress-section', 'Progress');
+    loadProgress();
+  });
 
-document.getElementById('nav-messages').addEventListener('click', () => {
-  showSection('messages-section', 'Messages');
-  loadMessages();
-});
+  document.getElementById('nav-messages').addEventListener('click', () => {
+    showSection('messages-section', 'Messages');
+    loadMessages();
+  });
 
-document.getElementById('nav-settings').addEventListener('click', () => {
-  showSection('settings-section', 'Settings');
-  loadSettings();
-});
+  document.getElementById('nav-settings').addEventListener('click', () => {
+    showSection('settings-section', 'Settings');
+    loadSettings();
+  });
 
-// Logout handler
-document.getElementById('logout-btn').addEventListener('click', () => {
-  if (confirm('Are you sure you want to logout?')) {
-    auth.removeToken();
-    auth.removeUser();
-    window.location.href = '/login.html';
-  }
-});
+  // Logout handler
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to logout?')) {
+      auth.removeToken();
+      auth.removeUser();
+      window.location.href = '/login.html';
+    }
+  });
+}
 
 // Dashboard functions
 async function loadDashboard() {
@@ -309,58 +311,59 @@ async function loadSettings() {
   }
 }
 
-// Form handlers
-document.getElementById('profile-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const formData = new FormData(e.target);
-  const data = Object.fromEntries(formData.entries());
+// Form handlers - will be initialized in DOMContentLoaded
+function initFormHandlers() {
+  document.getElementById('profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
 
-  try {
-    await clientAPI.update(state.client.id, data);
-    showToast('Profile updated successfully!');
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    showToast('Error updating profile. Please try again.');
-  }
-});
+    try {
+      await clientAPI.update(state.client.id, data);
+      showToast('Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      showToast('Error updating profile. Please try again.');
+    }
+  });
 
-document.getElementById('fitness-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const formData = new FormData(e.target);
-  const data = Object.fromEntries(formData.entries());
+  document.getElementById('fitness-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
 
-  try {
-    await clientAPI.update(state.client.id, data);
-    showToast('Fitness information updated successfully!');
-  } catch (error) {
-    console.error('Error updating fitness info:', error);
-    showToast('Error updating information. Please try again.');
-  }
-});
+    try {
+      await clientAPI.update(state.client.id, data);
+      showToast('Fitness information updated successfully!');
+    } catch (error) {
+      console.error('Error updating fitness info:', error);
+      showToast('Error updating information. Please try again.');
+    }
+  });
 
-document.getElementById('session-request-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  showToast('Session request sent! (Feature coming in next release)');
-  e.target.reset();
-});
+  document.getElementById('session-request-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showToast('Session request sent! (Feature coming in next release)');
+    e.target.reset();
+  });
 
-document.getElementById('progress-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  showToast('Progress logged! (Feature coming in next release)');
-  e.target.reset();
-});
+  document.getElementById('progress-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showToast('Progress logged! (Feature coming in next release)');
+    e.target.reset();
+  });
 
-document.getElementById('message-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if (!state.trainer) {
-    showToast('No trainer assigned yet');
-    return;
-  }
-  showToast('Message sent! (Feature coming in next release)');
-  e.target.reset();
-});
+  document.getElementById('message-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!state.trainer) {
+      showToast('No trainer assigned yet');
+      return;
+    }
+    showToast('Message sent! (Feature coming in next release)');
+    e.target.reset();
+  });
 
-document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+  document.getElementById('change-password-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const formData = new FormData(e.target);
   const currentPassword = formData.get('current_password');
@@ -404,7 +407,8 @@ document.getElementById('change-password-form').addEventListener('submit', async
     console.error('Error changing password:', error);
     showToast('Error changing password. Please try again.');
   }
-});
+  });
+}
 
 // Initialize with auth check
 document.addEventListener('DOMContentLoaded', async () => {
@@ -421,5 +425,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   initSidebar();
+  initNavigation();
+  initFormHandlers();
   loadDashboard();
 });

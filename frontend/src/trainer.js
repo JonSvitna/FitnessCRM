@@ -115,50 +115,52 @@ function showSection(sectionId, title) {
   closeMobileMenu();
 }
 
-// Navigation handlers
-document.getElementById('nav-dashboard').addEventListener('click', () => {
-  showSection('dashboard-section', 'Dashboard');
-  loadDashboard();
-});
+// Navigation handlers - will be initialized in DOMContentLoaded
+function initNavigation() {
+  document.getElementById('nav-dashboard').addEventListener('click', () => {
+    showSection('dashboard-section', 'Dashboard');
+    loadDashboard();
+  });
 
-document.getElementById('nav-clients').addEventListener('click', () => {
-  showSection('clients-section', 'My Clients');
-  loadClients();
-});
+  document.getElementById('nav-clients').addEventListener('click', () => {
+    showSection('clients-section', 'My Clients');
+    loadClients();
+  });
 
-document.getElementById('nav-workouts').addEventListener('click', () => {
-  showSection('workouts-section', 'Workouts');
-  loadWorkouts();
-});
+  document.getElementById('nav-workouts').addEventListener('click', () => {
+    showSection('workouts-section', 'Workouts');
+    loadWorkouts();
+  });
 
-document.getElementById('nav-calendar').addEventListener('click', () => {
-  showSection('calendar-section', 'Calendar');
-  loadCalendar();
-});
+  document.getElementById('nav-calendar').addEventListener('click', () => {
+    showSection('calendar-section', 'Calendar');
+    loadCalendar();
+  });
 
-document.getElementById('nav-messages').addEventListener('click', () => {
-  showSection('messages-section', 'Messages');
-  loadMessages();
-});
+  document.getElementById('nav-messages').addEventListener('click', () => {
+    showSection('messages-section', 'Messages');
+    loadMessages();
+  });
 
-document.getElementById('nav-challenges').addEventListener('click', () => {
-  showSection('challenges-section', 'Challenges');
-  loadChallenges();
-});
+  document.getElementById('nav-challenges').addEventListener('click', () => {
+    showSection('challenges-section', 'Challenges');
+    loadChallenges();
+  });
 
-document.getElementById('nav-settings').addEventListener('click', () => {
-  showSection('settings-section', 'Settings');
-  loadSettings();
-});
+  document.getElementById('nav-settings').addEventListener('click', () => {
+    showSection('settings-section', 'Settings');
+    loadSettings();
+  });
 
-// Logout handler
-document.getElementById('logout-btn').addEventListener('click', () => {
-  if (confirm('Are you sure you want to logout?')) {
-    auth.removeToken();
-    auth.removeUser();
-    window.location.href = '/login.html';
-  }
-});
+  // Logout handler
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to logout?')) {
+      auth.removeToken();
+      auth.removeUser();
+      window.location.href = '/login.html';
+    }
+  });
+}
 
 // Dashboard functions
 async function loadDashboard() {
@@ -329,53 +331,54 @@ async function loadSettings() {
   }
 }
 
-// Form handlers
-document.getElementById('assign-client-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const formData = new FormData(e.target);
-  const data = {
-    trainer_id: state.trainer.id,
-    client_id: parseInt(formData.get('client_id')),
-    notes: formData.get('notes'),
-  };
+// Form handlers - will be initialized in DOMContentLoaded
+function initFormHandlers() {
+  document.getElementById('assign-client-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = {
+      trainer_id: state.trainer.id,
+      client_id: parseInt(formData.get('client_id')),
+      notes: formData.get('notes'),
+    };
 
-  try {
-    await crmAPI.assignClientToTrainer(data);
-    showToast('Client assigned successfully!');
+    try {
+      await crmAPI.assignClientToTrainer(data);
+      showToast('Client assigned successfully!');
+      e.target.reset();
+      loadClients();
+      loadDashboard();
+    } catch (error) {
+      console.error('Error assigning client:', error);
+      showToast('Error assigning client. Please try again.');
+    }
+  });
+
+  document.getElementById('workout-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showToast('Workout plan created! (Feature coming in next release)');
     e.target.reset();
-    loadClients();
-    loadDashboard();
-  } catch (error) {
-    console.error('Error assigning client:', error);
-    showToast('Error assigning client. Please try again.');
-  }
-});
+  });
 
-document.getElementById('workout-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  showToast('Workout plan created! (Feature coming in next release)');
-  e.target.reset();
-});
+  document.getElementById('session-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showToast('Session scheduled! (Feature coming in next release)');
+    e.target.reset();
+  });
 
-document.getElementById('session-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  showToast('Session scheduled! (Feature coming in next release)');
-  e.target.reset();
-});
+  document.getElementById('message-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showToast('Message sent! (Feature coming in next release)');
+    e.target.reset();
+  });
 
-document.getElementById('message-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  showToast('Message sent! (Feature coming in next release)');
-  e.target.reset();
-});
+  document.getElementById('challenge-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showToast('Challenge created! (Feature coming in next release)');
+    e.target.reset();
+  });
 
-document.getElementById('challenge-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  showToast('Challenge created! (Feature coming in next release)');
-  e.target.reset();
-});
-
-document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+  document.getElementById('change-password-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const formData = new FormData(e.target);
   const currentPassword = formData.get('current_password');
@@ -419,7 +422,8 @@ document.getElementById('change-password-form').addEventListener('submit', async
     console.error('Error changing password:', error);
     showToast('Error changing password. Please try again.');
   }
-});
+  });
+}
 
 // Initialize with auth check
 document.addEventListener('DOMContentLoaded', async () => {
@@ -436,5 +440,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   initSidebar();
+  initNavigation();
+  initFormHandlers();
   loadDashboard();
 });

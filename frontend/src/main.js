@@ -163,56 +163,58 @@ function showSection(sectionId, title) {
   closeMobileMenu();
 }
 
-// Navigation handlers
-document.getElementById('nav-dashboard').addEventListener('click', () => {
-  showSection('dashboard-section', 'Dashboard');
-  loadDashboard();
-});
+// Navigation handlers - will be initialized in DOMContentLoaded
+function initNavigation() {
+  document.getElementById('nav-dashboard').addEventListener('click', () => {
+    showSection('dashboard-section', 'Dashboard');
+    loadDashboard();
+  });
 
-document.getElementById('nav-trainers').addEventListener('click', () => {
-  showSection('trainers-section', 'Trainers');
-  loadTrainers();
-});
+  document.getElementById('nav-trainers').addEventListener('click', () => {
+    showSection('trainers-section', 'Trainers');
+    loadTrainers();
+  });
 
-document.getElementById('nav-clients').addEventListener('click', () => {
-  showSection('clients-section', 'Clients');
-  loadClients();
-});
+  document.getElementById('nav-clients').addEventListener('click', () => {
+    showSection('clients-section', 'Clients');
+    loadClients();
+  });
 
-document.getElementById('nav-management').addEventListener('click', () => {
-  showSection('management-section', 'Assignments');
-  loadManagement();
-});
+  document.getElementById('nav-management').addEventListener('click', () => {
+    showSection('management-section', 'Assignments');
+    loadManagement();
+  });
 
-document.getElementById('nav-calendar').addEventListener('click', () => {
-  showSection('calendar-section', 'Calendar');
-  loadCalendar();
-});
+  document.getElementById('nav-calendar').addEventListener('click', () => {
+    showSection('calendar-section', 'Calendar');
+    loadCalendar();
+  });
 
-document.getElementById('nav-progress').addEventListener('click', () => {
-  showSection('progress-section', 'Progress Tracking');
-  loadProgressSection();
-});
+  document.getElementById('nav-progress').addEventListener('click', () => {
+    showSection('progress-section', 'Progress Tracking');
+    loadProgressSection();
+  });
 
-document.getElementById('nav-files').addEventListener('click', () => {
-  showSection('files-section', 'File Management');
-  loadFilesSection();
-});
+  document.getElementById('nav-files').addEventListener('click', () => {
+    showSection('files-section', 'File Management');
+    loadFilesSection();
+  });
 
-document.getElementById('nav-workouts').addEventListener('click', () => {
-  showSection('workouts-section', 'Workout Management');
-  loadWorkoutsSection();
-});
+  document.getElementById('nav-workouts').addEventListener('click', () => {
+    showSection('workouts-section', 'Workout Management');
+    loadWorkoutsSection();
+  });
 
-document.getElementById('nav-activity').addEventListener('click', () => {
-  showSection('activity-section', 'Activity Log');
-  loadActivityLog();
-});
+  document.getElementById('nav-activity').addEventListener('click', () => {
+    showSection('activity-section', 'Activity Log');
+    loadActivityLog();
+  });
 
-document.getElementById('nav-settings').addEventListener('click', () => {
-  showSection('settings-section', 'Settings');
-  loadSettings();
-});
+  document.getElementById('nav-settings').addEventListener('click', () => {
+    showSection('settings-section', 'Settings');
+    loadSettings();
+  });
+}
 
 // Trainer form handler
 document.getElementById('trainer-form').addEventListener('submit', async (e) => {
@@ -3765,6 +3767,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Initialize app
   initSidebar();
+  initNavigation();
   initCollapsibleSections();
   loadDashboard();
 });
