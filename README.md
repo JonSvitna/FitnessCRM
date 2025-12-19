@@ -2,6 +2,8 @@
 
 A modern, full-stack Customer Relationship Management (CRM) system for fitness trainers and gyms. Inspired by industry leaders like TrueCoach and Trainerize, featuring a professional orange-red-white color scheme, comprehensive marketing pages, and a powerful management dashboard. Frontend deployed on Vercel, Flask API backend on Railway with PostgreSQL database.
 
+> 📖 **[Read the Comprehensive Manual](MANUAL.md)** - Complete documentation covering all aspects of FitnessCRM including installation, architecture, API reference, deployment, testing, troubleshooting, and more.
+
 ## 🎯 Features
 
 ### Marketing & Public Pages
@@ -376,6 +378,27 @@ Railway automatically provisions a PostgreSQL database. The connection URL is au
 - **Scalability**: The current architecture supports horizontal scaling
 - **Built Similar to**: TrueCoach CRM platform
 
+## 📚 Documentation
+
+**Comprehensive Manual**: [MANUAL.md](MANUAL.md) - Your complete guide to FitnessCRM
+
+**Quick References**:
+- [QUICKSTART.md](QUICKSTART.md) - Get started in 5 minutes
+- [API_DOCUMENTATION.md](API_DOCUMENTATION.md) - Complete API reference
+- [DEPLOYMENT.md](DEPLOYMENT.md) - Deployment guide (Vercel + Railway)
+- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Testing and QA guide
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Common issues and solutions
+
+**Development Guides**:
+- [FEATURES.md](FEATURES.md) - Features overview
+- [ROADMAP.md](ROADMAP.md) - Development roadmap
+- [PORTALS_GUIDE.md](PORTALS_GUIDE.md) - Trainer and client portals
+- [DATABASE_SETUP.md](DATABASE_SETUP.md) - Database configuration
+
+**Phase Documentation**:
+- [PHASE9_QUICKSTART.md](PHASE9_QUICKSTART.md) - Phase 9 quick start
+- [PHASE9_PRODUCTION_OPTIMIZATION.md](PHASE9_PRODUCTION_OPTIMIZATION.md) - Production optimization guide
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -383,6 +406,8 @@ Railway automatically provisions a PostgreSQL database. The connection URL is au
 3. Commit your changes
 4. Push to the branch
 5. Open a Pull Request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines.
 
 ## 📄 License
 
