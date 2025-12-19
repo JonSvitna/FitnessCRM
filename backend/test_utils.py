@@ -229,9 +229,10 @@ class TestJWTUtils:
             secret_key = 'test-secret-key'
             
             # Create expired token
+            from datetime import timezone
             expired_payload = {
                 'user_id': 1,
-                'exp': datetime.utcnow() - timedelta(hours=1)
+                'exp': datetime.now(timezone.utc) - timedelta(hours=1)
             }
             
             token = jwt.encode(expired_payload, secret_key, algorithm='HS256')
