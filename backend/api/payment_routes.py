@@ -159,8 +159,13 @@ def update_payment(payment_id):
         
         db.session.commit()
         
-        log_activity('update', 'payment', payment.id, user_identifier='system',
-                    details={'amount': payment.amount})
+        # Get client info for activity log
+        client = Client.query.get(payment.client_id) if payment.client_id else None
+        log_activity('update', 'payment', payment.id,
+                    name=client.name if client else 'System',
+                    email=client.email if client else None,
+                    contact=client.phone if client else None,
+                    role='Client' if client else 'System')
         logger.info(f"Payment updated: ID {payment.id}")
         
         payment_dict = payment.to_dict()
