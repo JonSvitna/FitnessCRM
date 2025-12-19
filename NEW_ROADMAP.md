@@ -25,8 +25,8 @@ FitnessCRM has completed 8 phases of development with comprehensive CRM features
 
 ### Milestones
 
-#### M9.1.1: Environment Setup ✅ (Day 1-2)
-**Status**: Needs Action
+#### M9.1.1: Environment Setup (Day 1-2)
+**Status**: ⏳ Pending
 
 - [ ] Create backend/.env from .env.example
   - [ ] Set DATABASE_URL (Railway PostgreSQL)

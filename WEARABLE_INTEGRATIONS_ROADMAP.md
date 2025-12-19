@@ -116,6 +116,8 @@ CREATE TABLE fitbit_connections (
     last_sync_at TIMESTAMP,
     sync_enabled BOOLEAN DEFAULT true,
     UNIQUE(client_id)  -- One Fitbit connection per client
+    -- Note: If client reconnects with different Fitbit account, delete old connection first
+    -- or update existing connection with new tokens and fitbit_user_id
 );
 
 CREATE TABLE fitbit_activities (
@@ -274,10 +276,10 @@ FITBIT_API_BASE = "https://api.fitbit.com/1/user"
 def fitbit_webhook():
     """Handle Fitbit subscription notifications"""
     if request.method == 'GET':
-        # Verification request
+        # Verification request - Fitbit expects the verify code back
         verify_code = request.args.get('verify')
         if verify_code:
-            return jsonify({'status': 204}), 204
+            return verify_code, 204
     
     # Process notification
     notifications = request.get_json()

@@ -333,7 +333,7 @@ No backup system in place:
 ❌ LOG_LEVEL=INFO
 
 # Cache (Recommended)
-⚠️ REDIS_URL=redis://localhost:6379/0
+⚠️ REDIS_URL=redis://:<password>@<host>:6379/0  # Configure with your Redis instance
 ```
 
 #### Frontend (.env)

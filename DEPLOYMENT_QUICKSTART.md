@@ -310,7 +310,7 @@ def get_trainer_stats(trainer_id):
     # Unread messages
     unread_messages = Message.query.filter(
         Message.receiver_id == trainer_id,
-        Message.read == False
+        Message.read.is_(False)
     ).count() if hasattr(Message, 'read') else 0
     
     return jsonify({
@@ -402,12 +402,7 @@ def create_app(config_name=None):
     )
     
     # Apply stricter limits to auth endpoints
-    from api.auth_routes import auth_bp
-    
-    @limiter.limit("5 per minute")
-    @auth_bp.route('/login', methods=['POST'])
-    def login():
-        pass  # existing login logic
+    # Note: Add @limiter.limit("5 per minute") decorator to the login route in api/auth_routes.py
     
     return app
 ```
