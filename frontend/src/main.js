@@ -1696,13 +1696,32 @@ async function loadClientProgress(clientId) {
   try {
     // Get progress data
     const response = await measurementAPI.getProgress(clientId);
-    const progressData = response.data;
+    const progressData = response.data || {};
     
-    // Update charts
-    updateWeightChart(progressData.weight);
-    updateBodyCompositionChart(progressData.body_composition);
-    updateCircumferencesChart(progressData.circumferences);
-    updateVitalsChart(progressData.vitals);
+    // Update charts only if data exists
+    if (progressData.weight && progressData.weight.dates) {
+      updateWeightChart(progressData.weight);
+    } else {
+      updateWeightChart({ dates: [], values: [] });
+    }
+    
+    if (progressData.body_composition && progressData.body_composition.dates) {
+      updateBodyCompositionChart(progressData.body_composition);
+    } else {
+      updateBodyCompositionChart({ dates: [], body_fat: [], muscle_mass: [], bmi: [] });
+    }
+    
+    if (progressData.circumferences && progressData.circumferences.dates) {
+      updateCircumferencesChart(progressData.circumferences);
+    } else {
+      updateCircumferencesChart({ dates: [] });
+    }
+    
+    if (progressData.vitals && progressData.vitals.dates) {
+      updateVitalsChart(progressData.vitals);
+    } else {
+      updateVitalsChart({ dates: [] });
+    }
     
     // Update measurements table
     const measurementsResponse = await measurementAPI.getAll({ client_id: clientId, per_page: 10 });
@@ -1725,6 +1744,11 @@ async function loadClientProgress(clientId) {
   } catch (error) {
     console.error('Error loading progress:', error);
     showToast('Error loading progress data');
+    // Initialize charts with empty data on error
+    updateWeightChart({ dates: [], values: [] });
+    updateBodyCompositionChart({ dates: [], body_fat: [], muscle_mass: [], bmi: [] });
+    updateCircumferencesChart({ dates: [] });
+    updateVitalsChart({ dates: [] });
   }
 }
 
@@ -1736,13 +1760,18 @@ function updateWeightChart(weightData) {
     state.charts.weight.destroy();
   }
   
+  // Handle missing or invalid data
+  if (!weightData || !weightData.dates) {
+    weightData = { dates: [], values: [] };
+  }
+  
   state.charts.weight = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: weightData.dates,
+      labels: weightData.dates || [],
       datasets: [{
         label: 'Weight',
-        data: weightData.values,
+        data: weightData.values || [],
         borderColor: '#f97316',
         backgroundColor: 'rgba(249, 115, 22, 0.1)',
         tension: 0.4,
@@ -1755,7 +1784,7 @@ function updateWeightChart(weightData) {
       plugins: {
         legend: {
           display: true,
-          labels: { color: '#fff' }
+          labels: { color: '#374151' }  // Use dark gray instead of white for visibility
         }
       },
       scales: {
@@ -1780,14 +1809,19 @@ function updateBodyCompositionChart(bodyCompData) {
     state.charts.bodyComposition.destroy();
   }
   
+  // Handle missing or invalid data
+  if (!bodyCompData || !bodyCompData.dates) {
+    bodyCompData = { dates: [], body_fat: [], muscle_mass: [], bmi: [] };
+  }
+  
   state.charts.bodyComposition = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: bodyCompData.dates,
+      labels: bodyCompData.dates || [],
       datasets: [
         {
           label: 'Body Fat %',
-          data: bodyCompData.body_fat,
+          data: bodyCompData.body_fat || [],
           borderColor: '#ef4444',
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
           tension: 0.4,
@@ -1795,7 +1829,7 @@ function updateBodyCompositionChart(bodyCompData) {
         },
         {
           label: 'Muscle Mass',
-          data: bodyCompData.muscle_mass,
+          data: bodyCompData.muscle_mass || [],
           borderColor: '#10b981',
           backgroundColor: 'rgba(16, 185, 129, 0.1)',
           tension: 0.4,
@@ -1803,7 +1837,7 @@ function updateBodyCompositionChart(bodyCompData) {
         },
         {
           label: 'BMI',
-          data: bodyCompData.bmi,
+          data: bodyCompData.bmi || [],
           borderColor: '#3b82f6',
           backgroundColor: 'rgba(59, 130, 246, 0.1)',
           tension: 0.4,
@@ -1817,7 +1851,7 @@ function updateBodyCompositionChart(bodyCompData) {
       plugins: {
         legend: {
           display: true,
-          labels: { color: '#fff' }
+          labels: { color: '#374151' }  // Use dark gray instead of white for visibility
         }
       },
       scales: {
@@ -1858,12 +1892,17 @@ function updateCircumferencesChart(circumferencesData) {
     state.charts.circumferences.destroy();
   }
   
+  // Handle missing or invalid data
+  if (!circumferencesData || !circumferencesData.dates) {
+    circumferencesData = { dates: [] };
+  }
+  
   const datasets = [];
   const colors = ['#f97316', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'];
   let colorIndex = 0;
   
   Object.keys(circumferencesData).forEach(key => {
-    if (key !== 'dates' && circumferencesData[key].some(v => v !== null)) {
+    if (key !== 'dates' && Array.isArray(circumferencesData[key]) && circumferencesData[key].some(v => v !== null)) {
       datasets.push({
         label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         data: circumferencesData[key],
@@ -1878,7 +1917,7 @@ function updateCircumferencesChart(circumferencesData) {
   state.charts.circumferences = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: circumferencesData.dates,
+      labels: circumferencesData.dates || [],
       datasets: datasets
     },
     options: {
@@ -1887,7 +1926,7 @@ function updateCircumferencesChart(circumferencesData) {
       plugins: {
         legend: {
           display: true,
-          labels: { color: '#fff' }
+          labels: { color: '#374151' }  // Use dark gray instead of white for visibility
         }
       },
       scales: {
@@ -1912,14 +1951,19 @@ function updateVitalsChart(vitalsData) {
     state.charts.vitals.destroy();
   }
   
+  // Handle missing or invalid data
+  if (!vitalsData || !vitalsData.dates) {
+    vitalsData = { dates: [], resting_heart_rate: [], blood_pressure_systolic: [], blood_pressure_diastolic: [] };
+  }
+  
   state.charts.vitals = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: vitalsData.dates,
+      labels: vitalsData.dates || [],
       datasets: [
         {
           label: 'Resting Heart Rate',
-          data: vitalsData.resting_heart_rate,
+          data: vitalsData.resting_heart_rate || [],
           borderColor: '#f97316',
           backgroundColor: 'rgba(249, 115, 22, 0.1)',
           tension: 0.4,
@@ -1927,7 +1971,7 @@ function updateVitalsChart(vitalsData) {
         },
         {
           label: 'Systolic BP',
-          data: vitalsData.blood_pressure_systolic,
+          data: vitalsData.blood_pressure_systolic || [],
           borderColor: '#ef4444',
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
           tension: 0.4,
@@ -1935,7 +1979,7 @@ function updateVitalsChart(vitalsData) {
         },
         {
           label: 'Diastolic BP',
-          data: vitalsData.blood_pressure_diastolic,
+          data: vitalsData.blood_pressure_diastolic || [],
           borderColor: '#3b82f6',
           backgroundColor: 'rgba(59, 130, 246, 0.1)',
           tension: 0.4,
@@ -1949,7 +1993,7 @@ function updateVitalsChart(vitalsData) {
       plugins: {
         legend: {
           display: true,
-          labels: { color: '#fff' }
+          labels: { color: '#374151' }  // Use dark gray instead of white for visibility
         }
       },
       scales: {
