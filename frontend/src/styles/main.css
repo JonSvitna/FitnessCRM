@@ -156,12 +156,12 @@
   }
 
   .sidebar-item-active {
-    @apply bg-gradient-to-r from-orange-50 to-primary-50 text-orange-600 border-r-4 border-orange-600;
+    @apply text-orange-600 border-r-4 border-orange-600;
     background: linear-gradient(to right, rgb(255 247 237), rgb(254 243 235)) !important;
   }
 
   .sidebar-item-sub.sidebar-item-active {
-    @apply bg-gradient-to-r from-orange-50 to-primary-50 text-orange-600 border-r-4 border-orange-600;
+    @apply text-orange-600 border-r-4 border-orange-600;
     background: linear-gradient(to right, rgb(255 247 237), rgb(254 243 235)) !important;
   }
 
