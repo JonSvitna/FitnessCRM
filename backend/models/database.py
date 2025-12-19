@@ -366,15 +366,16 @@ class ActivityLog(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     
     def to_dict(self):
+        """Return only necessary information: Name, Email, Contact, Role"""
+        details = self.details or {}
         return {
             'id': self.id,
             'action': self.action,
             'entity_type': self.entity_type,
-            'entity_id': self.entity_id,
-            'user_identifier': self.user_identifier,
-            'details': self.details,
-            'ip_address': self.ip_address,
-            'user_agent': self.user_agent,
+            'name': details.get('name') if details else None,
+            'email': details.get('email') or self.user_identifier,
+            'contact': details.get('contact') if details else None,
+            'role': details.get('role') if details else (self.entity_type.capitalize() if self.entity_type else None),
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
 

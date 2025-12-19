@@ -112,8 +112,8 @@ def create_trainer():
         
         logger.info(f"✓ Verified User account created: {verify_user.email} (ID: {verify_user.id}, Role: {verify_user.role})")
         
-        log_activity('create', 'trainer', trainer.id, user_identifier=trainer.email,
-                    details={'name': trainer.name})
+        log_activity('create', 'trainer', trainer.id, email=trainer.email,
+                    name=trainer.name, contact=trainer.phone, role='Trainer')
         logger.info(f"Trainer created: {trainer.name} (ID: {trainer.id}) with user account (User ID: {verify_user.id})")
         
         return jsonify(trainer.to_dict()), 201
@@ -180,8 +180,8 @@ def delete_trainer(trainer_id):
         db.session.delete(trainer)
         db.session.commit()
         
-        log_activity('delete', 'trainer', trainer_id, user_identifier=trainer.email,
-                    details={'name': trainer.name})
+        log_activity('delete', 'trainer', trainer_id, email=trainer.email,
+                    name=trainer.name, contact=trainer.phone, role='Trainer')
         logger.info(f"Trainer deleted: {trainer.name} (ID: {trainer_id})")
         
         return jsonify({'message': 'Trainer deleted successfully'}), 200
@@ -390,8 +390,8 @@ def create_client():
         # Send welcome email
         send_welcome_email(client.name, client.email)
         
-        log_activity('create', 'client', client.id, user_identifier=client.email,
-                    details={'name': client.name})
+        log_activity('create', 'client', client.id, email=client.email,
+                    name=client.name, contact=client.phone, role='Client')
         logger.info(f"Client created: {client.name} (ID: {client.id}) with user account (User ID: {verify_user.id})")
         
         return jsonify(client.to_dict()), 201
@@ -492,8 +492,8 @@ def delete_client(client_id):
         db.session.delete(client)
         db.session.commit()
         
-        log_activity('delete', 'client', client_id, user_identifier=client.email,
-                    details={'name': client.name})
+        log_activity('delete', 'client', client_id, email=client.email,
+                    name=client.name, contact=client.phone, role='Client')
         logger.info(f"Client deleted: {client.name} (ID: {client_id})")
         
         return jsonify({'message': 'Client deleted successfully'}), 200

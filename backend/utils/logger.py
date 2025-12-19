@@ -24,46 +24,70 @@ logging.basicConfig(
 
 logger = logging.getLogger('FitnessCRM')
 
-def log_activity(action, entity_type, entity_id=None, user_identifier=None, details=None):
+def log_activity(action, entity_type, entity_id=None, user_identifier=None, details=None, name=None, email=None, contact=None, role=None):
     """
-    Log an activity to the database
+    Log an activity to the database with only necessary information
     
     Args:
         action: The action performed (create, update, delete, view)
         entity_type: Type of entity (trainer, client, assignment, etc.)
         entity_id: ID of the entity (optional)
-        user_identifier: Email or ID of user (optional)
-        details: Additional details as dict (optional)
+        user_identifier: Email or ID of user (optional, for backward compatibility)
+        details: Additional details as dict (optional, will be filtered to only include name, email, contact, role)
+        name: Name of the person (optional, extracted from details if not provided)
+        email: Email address (optional, extracted from details or user_identifier)
+        contact: Phone/contact information (optional, extracted from details)
+        role: Trainer or Client (optional, extracted from details or entity_type)
     """
     try:
-        # Get request context if available
-        ip_address = None
-        user_agent = None
+        # Extract necessary information from details if provided
+        if details:
+            if isinstance(details, dict):
+                name = name or details.get('name')
+                email = email or details.get('email')
+                contact = contact or details.get('phone') or details.get('contact')
+                role = role or details.get('role')
         
-        try:
-            if request:
-                ip_address = request.remote_addr
-                user_agent = request.headers.get('User-Agent', '')[:500]
-        except RuntimeError:
-            # No request context available
-            pass
+        # Determine role from entity_type if not provided
+        if not role:
+            if entity_type == 'trainer':
+                role = 'Trainer'
+            elif entity_type == 'client':
+                role = 'Client'
+            else:
+                role = entity_type.capitalize()
         
-        # Create activity log entry
+        # Use user_identifier as email if email not provided
+        if not email and user_identifier:
+            email = user_identifier
+        
+        # Create simplified details with only necessary information
+        simplified_details = {}
+        if name:
+            simplified_details['name'] = name
+        if email:
+            simplified_details['email'] = email
+        if contact:
+            simplified_details['contact'] = contact
+        if role:
+            simplified_details['role'] = role
+        
+        # Create activity log entry (store minimal information)
         activity = ActivityLog(
             action=action,
             entity_type=entity_type,
             entity_id=entity_id,
-            user_identifier=user_identifier,
-            details=details,
-            ip_address=ip_address,
-            user_agent=user_agent
+            user_identifier=email or user_identifier,  # Store email as user_identifier
+            details=simplified_details if simplified_details else None,  # Only store necessary fields
+            ip_address=None,  # Remove IP address
+            user_agent=None   # Remove user agent
         )
         
         db.session.add(activity)
         db.session.commit()
         
         # Also log to system logger
-        logger.info(f"Activity: {action} {entity_type} (ID: {entity_id}) by {user_identifier}")
+        logger.info(f"Activity: {action} {entity_type} (ID: {entity_id}) - {name or 'Unknown'} ({email or 'No email'})")
         
     except Exception as e:
         logger.error(f"Failed to log activity: {str(e)}")
