@@ -619,23 +619,23 @@ function renderSelectedExercises() {
       <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
         <div>
           <label class="text-xs text-neutral-600">Sets</label>
-          <input type="number" value="${ex.sets || ''}" onchange="updateExerciseDetail(${index}, 'sets', parseInt(this.value))" class="w-full px-2 py-1 border rounded" min="1">
+          <input type="number" value="${ex.sets || ''}" onchange="updateExerciseDetail(${index}, 'sets', parseInt(this.value) || null)" class="w-full px-2 py-1 border rounded" min="1">
         </div>
         <div>
           <label class="text-xs text-neutral-600">Reps</label>
-          <input type="number" value="${ex.reps || ''}" onchange="updateExerciseDetail(${index}, 'reps', parseInt(this.value))" class="w-full px-2 py-1 border rounded" min="1">
+          <input type="number" value="${ex.reps || ''}" onchange="updateExerciseDetail(${index}, 'reps', parseInt(this.value) || null)" class="w-full px-2 py-1 border rounded" min="1">
         </div>
         <div>
           <label class="text-xs text-neutral-600">Duration (sec)</label>
-          <input type="number" value="${ex.duration_seconds || ''}" onchange="updateExerciseDetail(${index}, 'duration_seconds', parseInt(this.value))" class="w-full px-2 py-1 border rounded" placeholder="Optional">
+          <input type="number" value="${ex.duration_seconds || ''}" onchange="updateExerciseDetail(${index}, 'duration_seconds', parseInt(this.value) || null)" class="w-full px-2 py-1 border rounded" placeholder="Optional">
         </div>
         <div>
           <label class="text-xs text-neutral-600">Rest (sec)</label>
-          <input type="number" value="${ex.rest_seconds || 60}" onchange="updateExerciseDetail(${index}, 'rest_seconds', parseInt(this.value))" class="w-full px-2 py-1 border rounded">
+          <input type="number" value="${ex.rest_seconds || 60}" onchange="updateExerciseDetail(${index}, 'rest_seconds', parseInt(this.value) || 60)" class="w-full px-2 py-1 border rounded">
         </div>
         <div>
           <label class="text-xs text-neutral-600">Weight (lbs)</label>
-          <input type="number" value="${ex.weight || ''}" onchange="updateExerciseDetail(${index}, 'weight', parseFloat(this.value))" class="w-full px-2 py-1 border rounded" placeholder="Optional" step="0.5">
+          <input type="number" value="${ex.weight || ''}" onchange="updateExerciseDetail(${index}, 'weight', parseFloat(this.value) || null)" class="w-full px-2 py-1 border rounded" placeholder="Optional" step="0.5">
         </div>
       </div>
       <div class="mt-2">
