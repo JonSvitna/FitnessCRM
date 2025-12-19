@@ -159,7 +159,7 @@ def update_payment(payment_id):
         
         db.session.commit()
         
-        # Get client info for activity log
+        # Get client info for activity log and response (reuse query)
         client = Client.query.get(payment.client_id) if payment.client_id else None
         log_activity('update', 'payment', payment.id,
                     name=client.name if client else 'System',
@@ -169,7 +169,6 @@ def update_payment(payment_id):
         logger.info(f"Payment updated: ID {payment.id}")
         
         payment_dict = payment.to_dict()
-        client = Client.query.get(payment.client_id)
         payment_dict['client_name'] = client.name if client else 'Unknown'
         
         return jsonify(payment_dict), 200

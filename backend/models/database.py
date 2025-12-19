@@ -136,12 +136,13 @@ class Session(db.Model):
         return None
     
     def to_dict(self):
+        end_time = self.get_end_time()
         return {
             'id': self.id,
             'trainer_id': self.trainer_id,
             'client_id': self.client_id,
             'session_date': self.session_date.isoformat() if self.session_date else None,
-            'end_time': self.get_end_time().isoformat() if self.get_end_time() else None,
+            'end_time': end_time.isoformat() if end_time else None,
             'duration': self.duration,
             'session_type': self.session_type,
             'location': self.location,
@@ -366,16 +367,29 @@ class ActivityLog(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     
     def to_dict(self):
-        """Return only necessary information: Name, Email, Contact, Role"""
+        """Return activity log information with backward compatibility"""
         details = self.details or {}
+        # Determine role from entity_type if not provided
+        role = details.get('role') if details else (
+            'Trainer' if self.entity_type == 'trainer' else (
+                'Client' if self.entity_type == 'client' else (
+                    self.entity_type.capitalize() if self.entity_type else None
+                )
+            )
+        )
         return {
             'id': self.id,
             'action': self.action,
             'entity_type': self.entity_type,
+            'entity_id': self.entity_id,  # Maintain backward compatibility
+            'user_identifier': self.user_identifier,  # Maintain backward compatibility
             'name': details.get('name') if details else None,
             'email': details.get('email') or self.user_identifier,
             'contact': details.get('contact') if details else None,
-            'role': details.get('role') if details else (self.entity_type.capitalize() if self.entity_type else None),
+            'role': role,
+            'details': self.details,  # Maintain backward compatibility (contains simplified data)
+            'ip_address': self.ip_address,  # Maintain backward compatibility (may be None)
+            'user_agent': self.user_agent,  # Maintain backward compatibility (may be None)
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
 
