@@ -121,8 +121,21 @@ def create_app(config_name=None):
     CORS(app,
          resources={r"/*": {"origins": "*"}},  # Allow all origins temporarily
          supports_credentials=True,
-         allow_headers=["Content-Type", "Authorization"],
-         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+         allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+         expose_headers=["Content-Type", "Authorization"],
+         max_age=3600)  # Cache preflight requests for 1 hour
+    
+    # Ensure OPTIONS requests are handled properly
+    @app.before_request
+    def handle_preflight():
+        if request.method == "OPTIONS":
+            response = jsonify({})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization,X-Requested-With")
+            response.headers.add('Access-Control-Allow-Methods', "GET,PUT,POST,DELETE,OPTIONS,PATCH")
+            response.headers.add('Access-Control-Max-Age', 3600)
+            return response
     
     # Add logging middleware
     app.wsgi_app = LoggerMiddleware(app.wsgi_app)
