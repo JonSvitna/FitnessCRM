@@ -3744,15 +3744,18 @@ document.getElementById('trainer-edit-form')?.addEventListener('submit', async (
   e.preventDefault();
   const formData = new FormData(e.target);
   const trainerId = formData.get('id');
+  const experienceValue = formData.get('experience');
+  const rateValue = formData.get('hourly_rate');
+  
   const data = {
     name: formData.get('name'),
     email: formData.get('email'),
     phone: formData.get('phone'),
     specialization: formData.get('specialization'),
     certification: formData.get('certification'),
-    experience: formData.get('experience') ? parseInt(formData.get('experience')) : null,
+    experience: experienceValue && !isNaN(parseInt(experienceValue)) ? parseInt(experienceValue) : null,
     bio: formData.get('bio'),
-    hourly_rate: formData.get('hourly_rate') ? parseFloat(formData.get('hourly_rate')) : null
+    hourly_rate: rateValue && !isNaN(parseFloat(rateValue)) ? parseFloat(rateValue) : null
   };
   
   try {
@@ -3809,11 +3812,13 @@ document.getElementById('client-edit-form')?.addEventListener('submit', async (e
   e.preventDefault();
   const formData = new FormData(e.target);
   const clientId = formData.get('id');
+  const ageValue = formData.get('age');
+  
   const data = {
     name: formData.get('name'),
     email: formData.get('email'),
     phone: formData.get('phone'),
-    age: formData.get('age') ? parseInt(formData.get('age')) : null,
+    age: ageValue && !isNaN(parseInt(ageValue)) ? parseInt(ageValue) : null,
     goals: formData.get('goals'),
     medical_conditions: formData.get('medical_conditions'),
     emergency_contact: formData.get('emergency_contact'),
