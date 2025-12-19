@@ -1,0 +1,12 @@
+# SSL Certificates (never commit private keys)
+ssl/*.pem
+ssl/*.key
+ssl/*.crt
+ssl/*.cert
+
+# Logs
+logs/*.log
+
+# Keep directory structure
+!ssl/.gitkeep
+!logs/.gitkeep
