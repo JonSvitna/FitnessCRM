@@ -235,6 +235,45 @@ document.getElementById('nav-automation').addEventListener('click', () => {
   showSection('automation-section', 'Automation Rules');
 });
 
+// Analytics navigation handler
+document.getElementById('nav-analytics').addEventListener('click', () => {
+  showSection('analytics-section', 'Analytics & Reports');
+  // Load analytics if analytics.js is available
+  if (typeof setupTabs === 'function') {
+    setupTabs();
+    loadTabData('overview');
+  }
+});
+
+// Advanced Analytics navigation handlers
+document.getElementById('nav-churn-prediction').addEventListener('click', () => {
+  showSection('analytics-section', 'Churn Prediction');
+  if (typeof loadTabData === 'function') {
+    loadTabData('clients');
+  }
+});
+
+document.getElementById('nav-revenue-forecast').addEventListener('click', () => {
+  showSection('analytics-section', 'Revenue Forecast');
+  if (typeof loadTabData === 'function') {
+    loadTabData('revenue');
+  }
+});
+
+document.getElementById('nav-trainer-benchmark').addEventListener('click', () => {
+  showSection('analytics-section', 'Trainer Benchmark');
+  if (typeof loadTabData === 'function') {
+    loadTabData('trainers');
+  }
+});
+
+document.getElementById('nav-predictive-insights').addEventListener('click', () => {
+  showSection('analytics-section', 'Predictive Insights');
+  if (typeof loadTabData === 'function') {
+    loadTabData('overview');
+  }
+});
+
 // Trainer form handler
 document.getElementById('trainer-form').addEventListener('submit', async (e) => {
   e.preventDefault();
