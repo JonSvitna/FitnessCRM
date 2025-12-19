@@ -49,6 +49,10 @@ cp .env.example .env
 python app.py
 ```
 
+## Database Migrations
+
+If you're upgrading from an older version and encounter database errors, see [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for instructions on updating your database schema.
+
 ## Environment Variables
 
 Required:

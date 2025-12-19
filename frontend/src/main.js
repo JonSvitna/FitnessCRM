@@ -1667,17 +1667,31 @@ window.editSession = async function(id) {
 };
 
 // ===== Progress Tracking Functions =====
-function loadProgressSection() {
-  // Load clients into dropdown
-  const clientSelect = document.getElementById('progress-client-select');
-  clientSelect.innerHTML = '<option value="">Choose a client...</option>';
-  
-  state.clients.forEach(client => {
-    const option = document.createElement('option');
-    option.value = client.id;
-    option.textContent = `${client.first_name} ${client.last_name}`;
-    clientSelect.appendChild(option);
-  });
+async function loadProgressSection() {
+  try {
+    // Load clients if not already loaded
+    if (!state.clients || state.clients.length === 0) {
+      const clientsResponse = await clientAPI.getAll();
+      state.clients = Array.isArray(clientsResponse.data) ? clientsResponse.data : (clientsResponse.data.items || []);
+    }
+    
+    // Load clients into dropdown
+    const clientSelect = document.getElementById('progress-client-select');
+    clientSelect.innerHTML = '<option value="">Choose a client...</option>';
+    
+    // Handle both array and paginated responses
+    const clients = Array.isArray(state.clients) ? state.clients : (state.clients.items || []);
+    
+    clients.forEach(client => {
+      const option = document.createElement('option');
+      option.value = client.id;
+      option.textContent = client.name || `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Unnamed Client';
+      clientSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Error loading clients for progress section:', error);
+    showToast('Error loading clients list');
+  }
 }
 
 // Progress client selection handler
