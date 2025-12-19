@@ -89,6 +89,56 @@ None - fix is included in this deployment.
 
 ---
 
+### 3. Modal Visibility Enhancement: Added Borders ✅
+
+**Issue:**
+- Modals (especially for clients and trainers) were difficult to see
+- They blended into the background overlay
+- Users had difficulty distinguishing modal boundaries
+
+**Root Cause:**
+- Modals only had shadow and rounded corners for visual separation
+- No distinct border to clearly define modal boundaries
+- Dark semi-transparent overlay wasn't enough contrast
+
+**Solution:**
+Added a 4px primary-colored border (`border-4 border-primary-500`) to all modal dialogs in the application.
+
+**Modals Enhanced (13 total):**
+1. ✅ Trainer Edit Modal (specifically requested)
+2. ✅ Client Edit Modal (specifically requested)
+3. ✅ Session Modal
+4. ✅ Measurement Modal
+5. ✅ File Upload Modal
+6. ✅ Exercise Modal
+7. ✅ Workout View Modal
+8. ✅ Template Modal
+9. ✅ Exercise Selector Modal
+10. ✅ Assign Workout Modal
+11. ✅ Progress Photo Modal
+12. ✅ Goal Modal
+13. ✅ Exercise View Modal
+
+**Changes Made:**
+```html
+<!-- Before -->
+<div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+
+<!-- After -->
+<div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border-4 border-primary-500">
+```
+
+**Visual Impact:**
+- Modals now have a clear, visible border in the primary theme color
+- Easier to distinguish modal boundaries from the background
+- Improved user experience and accessibility
+- Consistent styling across all modals
+
+**Action Required:**
+None - enhancement is included in this deployment.
+
+---
+
 ## Security Review
 
 ✅ **CodeQL Security Scan: 0 Vulnerabilities Found**
@@ -176,6 +226,7 @@ Note: Database migration will remain but won't cause issues.
 
 ### Frontend Files
 - ✅ `frontend/src/main.js` (MODIFIED)
+- ✅ `frontend/index.html` (MODIFIED - 13 modals enhanced)
 
 ---
 
@@ -208,8 +259,9 @@ If you encounter issues:
 ## Summary
 
 ✅ **All Issues Resolved**
-- Database schema fixed
-- Frontend client loading fixed
+- Database schema fixed (sessions.end_time column)
+- Frontend client loading fixed (progress section)
+- Modal visibility enhanced (all 13 modals)
 - No security vulnerabilities
 - Comprehensive tests added
 - Clear migration path provided
