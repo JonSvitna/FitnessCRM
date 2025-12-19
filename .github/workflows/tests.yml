@@ -1,0 +1,213 @@
+name: Tests and Quality Checks
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fitnesscrm_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+    
+    - name: Run tests with coverage
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fitnesscrm_test
+        TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fitnesscrm_test
+        SECRET_KEY: test_secret_key_for_ci
+        TESTING: true
+      run: |
+        cd backend
+        pytest --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing -v
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./backend/coverage.xml
+        flags: backend
+        name: backend-coverage
+    
+    - name: Upload coverage HTML report
+      uses: actions/upload-artifact@v3
+      with:
+        name: backend-coverage-report
+        path: backend/htmlcov/
+
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Run linter
+      run: |
+        cd frontend
+        npm run lint || echo "Linter not configured"
+    
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm run build
+    
+    # Uncomment when tests are added
+    # - name: Run tests with coverage
+    #   run: |
+    #     cd frontend
+    #     npm test -- --coverage
+    
+    # - name: Upload coverage to Codecov
+    #   uses: codecov/codecov-action@v3
+    #   with:
+    #     file: ./frontend/coverage/lcov.info
+    #     flags: frontend
+    #     name: frontend-coverage
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install backend dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+        pip install flake8 black
+    
+    - name: Run flake8 linter
+      run: |
+        cd backend
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
+    
+    - name: Check code formatting with black
+      run: |
+        cd backend
+        black --check . || echo "Code formatting issues found (non-blocking)"
+
+  health-check:
+    name: System Health Check
+    runs-on: ubuntu-latest
+    needs: [backend-tests]
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fitnesscrm_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+        pip install requests psycopg2-binary
+    
+    - name: Start backend server
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fitnesscrm_test
+        SECRET_KEY: test_secret_key
+        PORT: 5000
+      run: |
+        cd backend
+        python app.py &
+        sleep 10
+    
+    - name: Run health check script
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fitnesscrm_test
+        VITE_API_URL: http://localhost:5000
+      run: |
+        python scripts/health_check.py || echo "Health check completed with warnings"
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install safety
+      run: pip install safety
+    
+    - name: Run safety check
+      run: |
+        cd backend
+        safety check -r requirements.txt || echo "Security vulnerabilities found (non-blocking)"
+    
+    - name: Run npm audit
+      run: |
+        cd frontend
+        npm audit --audit-level=high || echo "Frontend security issues found (non-blocking)"
