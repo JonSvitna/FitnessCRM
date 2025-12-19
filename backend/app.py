@@ -10,6 +10,7 @@ from api.session_routes import session_bp
 from api.measurement_routes import measurement_bp
 from api.file_routes import file_bp
 from api.exercise_routes import exercise_bp
+from api.exercisedb_routes import exercisedb_bp
 from api.workout_routes import workout_bp
 from api.progress_photo_routes import progress_photo_bp
 from api.goal_routes import goal_bp
@@ -135,6 +136,7 @@ def create_app(config_name=None):
     app.register_blueprint(measurement_bp)
     app.register_blueprint(file_bp)
     app.register_blueprint(exercise_bp)
+    app.register_blueprint(exercisedb_bp)
     app.register_blueprint(workout_bp)
     app.register_blueprint(progress_photo_bp)
     app.register_blueprint(goal_bp)
@@ -207,6 +209,7 @@ def create_app(config_name=None):
             'measurements': '/api/measurements',
             'files': '/api/files',
             'exercises': '/api/exercises',
+            'exercisedb': '/api/exercisedb',
             'workouts': '/api/workouts',
             'payments': '/api/payments',
             'analytics': '/api/analytics',
