@@ -1,5 +1,5 @@
 import './styles/main.css';
-import { trainerAPI, clientAPI, crmAPI, settingsAPI } from './api.js';
+import { trainerAPI, clientAPI, crmAPI, settingsAPI, sessionAPI, workoutAPI } from './api.js';
 import { requireRole, auth } from './auth.js';
 
 // State management
@@ -270,26 +270,298 @@ function renderMyClients() {
 }
 
 // Workouts functions
-function loadWorkouts() {
-  // Mock workout plans
-  const workoutsContainer = document.getElementById('workouts-list');
-  workoutsContainer.innerHTML = '<p class="text-neutral-600">No workout plans created yet. Use the form to create your first plan!</p>';
+async function loadWorkouts() {
+  try {
+    // Load workout templates
+    const response = await workoutAPI.getAllTemplates({ created_by_trainer_id: state.trainer.id });
+    state.workouts = response.data || [];
+
+    const workoutsContainer = document.getElementById('workouts-list');
+    
+    if (state.workouts.length === 0) {
+      workoutsContainer.innerHTML = '<p class="text-neutral-600">No workout plans created yet. Use the form to create your first plan!</p>';
+      return;
+    }
+
+    // Display workout plans with view/edit capability
+    workoutsContainer.innerHTML = state.workouts.map(workout => `
+      <div class="p-4 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <h4 class="text-lg font-semibold text-neutral-900">${workout.name}</h4>
+            ${workout.description ? `<p class="text-sm text-neutral-600 mt-1">${workout.description}</p>` : ''}
+            <div class="flex gap-4 mt-2">
+              <span class="text-sm text-neutral-600">Difficulty: <span class="capitalize">${workout.difficulty_level}</span></span>
+              ${workout.duration_weeks ? `<span class="text-sm text-neutral-600">Duration: ${workout.duration_weeks} weeks</span>` : ''}
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="viewWorkout(${workout.id})" class="px-3 py-1 text-sm bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors">
+              View/Edit
+            </button>
+            <button onclick="assignWorkoutToClient(${workout.id})" class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+              Assign
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error('Error loading workouts:', error);
+    const workoutsContainer = document.getElementById('workouts-list');
+    workoutsContainer.innerHTML = '<p class="text-red-600">Error loading workout plans. Please try again.</p>';
+  }
 }
 
+// View workout details in a modal
+window.viewWorkout = async function(workoutId) {
+  try {
+    const workout = state.workouts.find(w => w.id === workoutId);
+    if (!workout) {
+      showToast('Workout not found');
+      return;
+    }
+
+    // Create a modal to show workout details and allow editing
+    const modalHtml = `
+      <div id="workout-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-2xl font-bold text-neutral-900">Edit Workout Plan</h2>
+              <button onclick="closeWorkoutModal()" class="text-neutral-600 hover:text-neutral-900">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <form id="edit-workout-form" class="space-y-4">
+              <div>
+                <label class="form-label">Plan Name *</label>
+                <input type="text" name="name" required class="input-field" value="${workout.name}">
+              </div>
+              <div>
+                <label class="form-label">Description</label>
+                <textarea name="description" class="input-field" rows="3">${workout.description || ''}</textarea>
+              </div>
+              <div>
+                <label class="form-label">Difficulty Level</label>
+                <select name="difficulty_level" class="input-field">
+                  <option value="beginner" ${workout.difficulty_level === 'beginner' ? 'selected' : ''}>Beginner</option>
+                  <option value="intermediate" ${workout.difficulty_level === 'intermediate' ? 'selected' : ''}>Intermediate</option>
+                  <option value="advanced" ${workout.difficulty_level === 'advanced' ? 'selected' : ''}>Advanced</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Duration (weeks)</label>
+                <input type="number" name="duration_weeks" class="input-field" value="${workout.duration_weeks || ''}">
+              </div>
+              <div class="flex gap-2 justify-end">
+                <button type="button" onclick="closeWorkoutModal()" class="px-4 py-2 bg-neutral-200 text-neutral-700 rounded hover:bg-neutral-300 transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Handle form submission
+    document.getElementById('edit-workout-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = {
+        name: formData.get('name'),
+        description: formData.get('description') || '',
+        difficulty_level: formData.get('difficulty_level'),
+        duration_weeks: parseInt(formData.get('duration_weeks')) || null
+      };
+
+      try {
+        await workoutAPI.updateTemplate(workoutId, data);
+        showToast('Workout plan updated successfully!');
+        closeWorkoutModal();
+        loadWorkouts();
+      } catch (error) {
+        console.error('Error updating workout plan:', error);
+        showToast('Error updating workout plan: ' + (error.response?.data?.error || error.message));
+      }
+    });
+  } catch (error) {
+    console.error('Error viewing workout:', error);
+    showToast('Error loading workout details');
+  }
+};
+
+window.closeWorkoutModal = function() {
+  const modal = document.getElementById('workout-modal');
+  if (modal) {
+    modal.remove();
+  }
+};
+
+// Assign workout to client
+window.assignWorkoutToClient = async function(workoutId) {
+  try {
+    const workout = state.workouts.find(w => w.id === workoutId);
+    if (!workout) {
+      showToast('Workout not found');
+      return;
+    }
+
+    // Get trainer's clients
+    const myAssignments = state.assignments.filter(a => a.trainer_id === state.trainer.id);
+    const myClientIds = myAssignments.map(a => a.client_id);
+    const myClients = state.clients.filter(c => myClientIds.includes(c.id));
+
+    if (myClients.length === 0) {
+      showToast('No clients assigned to you yet');
+      return;
+    }
+
+    // Create modal to select client
+    const modalHtml = `
+      <div id="assign-workout-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg max-w-md w-full">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-2xl font-bold text-neutral-900">Assign Workout</h2>
+              <button onclick="closeAssignWorkoutModal()" class="text-neutral-600 hover:text-neutral-900">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <form id="assign-workout-form-modal" class="space-y-4">
+              <div>
+                <label class="form-label">Select Client *</label>
+                <select name="client_id" required class="input-field">
+                  <option value="">Choose a client...</option>
+                  ${myClients.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Start Date</label>
+                <input type="date" name="start_date" class="input-field" value="${new Date().toISOString().split('T')[0]}">
+              </div>
+              <div>
+                <label class="form-label">Notes</label>
+                <textarea name="notes" class="input-field" rows="3" placeholder="Any special instructions..."></textarea>
+              </div>
+              <div class="flex gap-2 justify-end">
+                <button type="button" onclick="closeAssignWorkoutModal()" class="px-4 py-2 bg-neutral-200 text-neutral-700 rounded hover:bg-neutral-300 transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors">
+                  Assign Workout
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Handle form submission
+    document.getElementById('assign-workout-form-modal').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = {
+        template_id: workoutId,
+        client_id: parseInt(formData.get('client_id')),
+        trainer_id: state.trainer.id,
+        start_date: formData.get('start_date') || new Date().toISOString().split('T')[0],
+        notes: formData.get('notes') || ''
+      };
+
+      try {
+        await workoutAPI.assignWorkout(data);
+        showToast('Workout assigned to client successfully!');
+        closeAssignWorkoutModal();
+      } catch (error) {
+        console.error('Error assigning workout:', error);
+        showToast('Error assigning workout: ' + (error.response?.data?.error || error.message));
+      }
+    });
+  } catch (error) {
+    console.error('Error assigning workout:', error);
+    showToast('Error assigning workout');
+  }
+};
+
+window.closeAssignWorkoutModal = function() {
+  const modal = document.getElementById('assign-workout-modal');
+  if (modal) {
+    modal.remove();
+  }
+};
+
 // Calendar functions
-function loadCalendar() {
-  // Load clients for session scheduling
-  const clientSelect = document.querySelector('#session-form select[name="client_id"]');
-  const myAssignments = state.assignments.filter(a => a.trainer_id === state.trainer.id);
-  const myClientIds = myAssignments.map(a => a.client_id);
-  const myClients = state.clients.filter(c => myClientIds.includes(c.id));
+async function loadCalendar() {
+  try {
+    // Load clients for session scheduling
+    const clientSelect = document.querySelector('#session-form select[name="client_id"]');
+    const myAssignments = state.assignments.filter(a => a.trainer_id === state.trainer.id);
+    const myClientIds = myAssignments.map(a => a.client_id);
+    const myClients = state.clients.filter(c => myClientIds.includes(c.id));
 
-  clientSelect.innerHTML = '<option value="">Choose a client...</option>' +
-    myClients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    clientSelect.innerHTML = '<option value="">Choose a client...</option>' +
+      myClients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
-  // Mock sessions
-  const sessionsContainer = document.getElementById('sessions-list');
-  sessionsContainer.innerHTML = '<p class="text-neutral-600">No sessions scheduled yet. Use the form to schedule a session!</p>';
+    // Load sessions
+    const response = await sessionAPI.getAll({ trainer_id: state.trainer.id });
+    state.sessions = response.data || [];
+
+    const sessionsContainer = document.getElementById('sessions-list');
+    
+    if (state.sessions.length === 0) {
+      sessionsContainer.innerHTML = '<p class="text-neutral-600">No sessions scheduled yet. Use the form to schedule a session!</p>';
+      return;
+    }
+
+    // Display upcoming sessions
+    const now = new Date();
+    const upcomingSessions = state.sessions
+      .filter(s => new Date(s.session_date) >= now)
+      .sort((a, b) => new Date(a.session_date) - new Date(b.session_date));
+
+    if (upcomingSessions.length === 0) {
+      sessionsContainer.innerHTML = '<p class="text-neutral-600">No upcoming sessions. Use the form to schedule a session!</p>';
+      return;
+    }
+
+    sessionsContainer.innerHTML = upcomingSessions.map(session => {
+      const client = state.clients.find(c => c.id === session.client_id);
+      const sessionDate = new Date(session.session_date);
+      return `
+        <div class="p-4 bg-neutral-50 rounded-lg">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <h4 class="text-lg font-semibold text-neutral-900">${client?.name || 'Unknown Client'}</h4>
+              <p class="text-sm text-neutral-600">${sessionDate.toLocaleDateString()} at ${sessionDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              <p class="text-sm text-neutral-600">Duration: ${session.duration} minutes</p>
+              <p class="text-sm text-orange-600 capitalize">${session.session_type}</p>
+              ${session.notes ? `<p class="text-sm text-neutral-500 mt-2">${session.notes}</p>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('Error loading calendar:', error);
+    const sessionsContainer = document.getElementById('sessions-list');
+    sessionsContainer.innerHTML = '<p class="text-red-600">Error loading sessions. Please try again.</p>';
+  }
 }
 
 // Messages functions
@@ -356,14 +628,48 @@ function initFormHandlers() {
 
   document.getElementById('workout-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    showToast('Workout plan created! (Feature coming in next release)');
-    e.target.reset();
+    const formData = new FormData(e.target);
+    const data = {
+      name: formData.get('name'),
+      description: formData.get('description') || '',
+      difficulty_level: formData.get('difficulty_level'),
+      duration_weeks: parseInt(formData.get('duration_weeks')) || null,
+      created_by_trainer_id: state.trainer.id
+    };
+
+    try {
+      await workoutAPI.createTemplate(data);
+      showToast('Workout plan created successfully!');
+      e.target.reset();
+      loadWorkouts();
+    } catch (error) {
+      console.error('Error creating workout plan:', error);
+      showToast('Error creating workout plan: ' + (error.response?.data?.error || error.message));
+    }
   });
 
   document.getElementById('session-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    showToast('Session scheduled! (Feature coming in next release)');
-    e.target.reset();
+    const formData = new FormData(e.target);
+    const data = {
+      client_id: parseInt(formData.get('client_id')),
+      trainer_id: state.trainer.id,
+      session_date: formData.get('session_date'),
+      duration: parseInt(formData.get('duration')) || 60,
+      session_type: formData.get('session_type'),
+      status: 'scheduled',
+      notes: formData.get('notes') || ''
+    };
+
+    try {
+      await sessionAPI.create(data);
+      showToast('Session scheduled successfully!');
+      e.target.reset();
+      loadCalendar();
+    } catch (error) {
+      console.error('Error scheduling session:', error);
+      showToast('Error scheduling session: ' + (error.response?.data?.error || error.message));
+    }
   });
 
   document.getElementById('message-form').addEventListener('submit', async (e) => {

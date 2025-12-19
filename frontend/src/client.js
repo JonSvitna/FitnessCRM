@@ -1,5 +1,5 @@
 import './styles/main.css';
-import { trainerAPI, clientAPI, crmAPI } from './api.js';
+import { trainerAPI, clientAPI, crmAPI, measurementAPI, sessionAPI } from './api.js';
 import { requireRole, auth } from './auth.js';
 
 // State management
@@ -254,10 +254,61 @@ function loadWorkouts() {
 }
 
 // Calendar functions
-function loadCalendar() {
-  // Mock sessions
-  const sessionsContainer = document.getElementById('calendar-sessions');
-  sessionsContainer.innerHTML = '<p class="text-neutral-600">No sessions scheduled yet</p>';
+async function loadCalendar() {
+  try {
+    // Load sessions for this client
+    const response = await sessionAPI.getAll({ client_id: state.client.id });
+    state.sessions = response.data || [];
+
+    const sessionsContainer = document.getElementById('calendar-sessions');
+    
+    if (state.sessions.length === 0) {
+      sessionsContainer.innerHTML = '<p class="text-neutral-600">No sessions scheduled yet. Request a session using the form!</p>';
+      return;
+    }
+
+    // Display sessions
+    const now = new Date();
+    const upcomingSessions = state.sessions
+      .filter(s => new Date(s.session_date) >= now)
+      .sort((a, b) => new Date(a.session_date) - new Date(b.session_date));
+
+    if (upcomingSessions.length === 0) {
+      sessionsContainer.innerHTML = '<p class="text-neutral-600">No upcoming sessions. Request a session using the form!</p>';
+      return;
+    }
+
+    sessionsContainer.innerHTML = upcomingSessions.map(session => {
+      const sessionDate = new Date(session.session_date);
+      const statusColors = {
+        scheduled: 'bg-green-100 text-green-700',
+        requested: 'bg-yellow-100 text-yellow-700',
+        completed: 'bg-blue-100 text-blue-700',
+        cancelled: 'bg-red-100 text-red-700'
+      };
+
+      return `
+        <div class="p-4 bg-neutral-50 rounded-lg">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-2">
+                <h4 class="text-lg font-semibold text-neutral-900">${sessionDate.toLocaleDateString()}</h4>
+                <span class="px-2 py-1 text-xs rounded-full ${statusColors[session.status] || 'bg-gray-100 text-gray-700'}">${session.status}</span>
+              </div>
+              <p class="text-sm text-neutral-600">Time: ${sessionDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              <p class="text-sm text-neutral-600">Duration: ${session.duration || 60} minutes</p>
+              <p class="text-sm text-orange-600 capitalize">${session.session_type}</p>
+              ${session.notes ? `<p class="text-sm text-neutral-500 mt-2">${session.notes}</p>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('Error loading calendar:', error);
+    const sessionsContainer = document.getElementById('calendar-sessions');
+    sessionsContainer.innerHTML = '<p class="text-red-600">Error loading sessions. Please try again.</p>';
+  }
 }
 
 // Meals functions
@@ -268,15 +319,61 @@ function loadMeals() {
 }
 
 // Progress functions
-function loadProgress() {
-  // Mock progress data
-  document.getElementById('current-weight').textContent = '--';
-  document.getElementById('current-body-fat').textContent = '--';
-  document.getElementById('total-workouts').textContent = '0';
-  document.getElementById('streak-days').textContent = '0';
+async function loadProgress() {
+  try {
+    // Load progress measurements
+    const response = await measurementAPI.getAll({ client_id: state.client.id });
+    state.progress = response.data || [];
 
-  const historyContainer = document.getElementById('progress-history');
-  historyContainer.innerHTML = '<p class="text-neutral-600">No progress records yet. Log your first progress entry!</p>';
+    // Get latest measurement
+    const latest = state.progress.length > 0 
+      ? state.progress.reduce((max, m) => new Date(m.measurement_date) > new Date(max.measurement_date) ? m : max)
+      : null;
+
+    // Update current measurements
+    document.getElementById('current-weight').textContent = latest?.weight ? `${latest.weight} lbs` : '--';
+    document.getElementById('current-body-fat').textContent = latest?.body_fat_percentage ? `${latest.body_fat_percentage}%` : '--';
+    document.getElementById('total-workouts').textContent = '0'; // TODO: Implement workout tracking
+    document.getElementById('streak-days').textContent = '0'; // TODO: Implement streak tracking
+
+    // Display progress history
+    const historyContainer = document.getElementById('progress-history');
+    
+    if (state.progress.length === 0) {
+      historyContainer.innerHTML = '<p class="text-neutral-600">No progress records yet. Log your first progress entry!</p>';
+      return;
+    }
+
+    // Sort by date descending
+    const sortedProgress = [...state.progress].sort((a, b) => 
+      new Date(b.measurement_date) - new Date(a.measurement_date)
+    );
+
+    historyContainer.innerHTML = sortedProgress.map(measurement => {
+      const date = new Date(measurement.measurement_date);
+      return `
+        <div class="p-3 bg-neutral-50 rounded-lg">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-neutral-900">${date.toLocaleDateString()}</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-sm">
+            ${measurement.weight ? `<div><span class="text-neutral-600">Weight:</span> <span class="font-medium">${measurement.weight} lbs</span></div>` : ''}
+            ${measurement.body_fat_percentage ? `<div><span class="text-neutral-600">Body Fat:</span> <span class="font-medium">${measurement.body_fat_percentage}%</span></div>` : ''}
+          </div>
+          ${measurement.notes ? `<p class="text-sm text-neutral-600 mt-2">${measurement.notes}</p>` : ''}
+        </div>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('Error loading progress:', error);
+    document.getElementById('current-weight').textContent = '--';
+    document.getElementById('current-body-fat').textContent = '--';
+    document.getElementById('total-workouts').textContent = '0';
+    document.getElementById('streak-days').textContent = '0';
+    
+    const historyContainer = document.getElementById('progress-history');
+    historyContainer.innerHTML = '<p class="text-red-600">Error loading progress. Please try again.</p>';
+  }
 }
 
 // Messages functions
@@ -343,14 +440,59 @@ function initFormHandlers() {
 
   document.getElementById('session-request-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    showToast('Session request sent! (Feature coming in next release)');
-    e.target.reset();
+    
+    if (!state.trainer) {
+      showToast('No trainer assigned yet. Please contact admin.');
+      return;
+    }
+
+    const formData = new FormData(e.target);
+    const preferredDate = formData.get('preferred_date');
+    const preferredTime = formData.get('preferred_time');
+    
+    // Combine date and time
+    const sessionDate = `${preferredDate}T${preferredTime}:00`;
+
+    const data = {
+      client_id: state.client.id,
+      trainer_id: state.trainer.id,
+      session_date: sessionDate,
+      session_type: formData.get('session_type'),
+      status: 'requested',
+      notes: formData.get('notes') || ''
+    };
+
+    try {
+      await sessionAPI.create(data);
+      showToast('Session request sent successfully!');
+      e.target.reset();
+      loadCalendar();
+    } catch (error) {
+      console.error('Error requesting session:', error);
+      showToast('Error requesting session: ' + (error.response?.data?.error || error.message));
+    }
   });
 
   document.getElementById('progress-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    showToast('Progress logged! (Feature coming in next release)');
-    e.target.reset();
+    const formData = new FormData(e.target);
+    const data = {
+      client_id: state.client.id,
+      weight: parseFloat(formData.get('weight')) || null,
+      body_fat_percentage: parseFloat(formData.get('body_fat_percentage')) || null,
+      notes: formData.get('notes') || '',
+      measurement_date: new Date().toISOString().split('T')[0]
+    };
+
+    try {
+      await measurementAPI.create(data);
+      showToast('Progress logged successfully!');
+      e.target.reset();
+      loadProgress();
+    } catch (error) {
+      console.error('Error logging progress:', error);
+      showToast('Error logging progress: ' + (error.response?.data?.error || error.message));
+    }
   });
 
   document.getElementById('message-form').addEventListener('submit', async (e) => {
