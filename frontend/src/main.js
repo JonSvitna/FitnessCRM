@@ -1755,11 +1755,11 @@ async function loadClientProgress(clientId) {
     
     // Load comparison view
     const comparisonResponse = await progressPhotoAPI.getComparison(clientId);
-    renderComparisonView(comparisonResponse.data.data);
+    renderComparisonView(comparisonResponse?.data?.data || null);
     
     // Load goals
     const goalsResponse = await goalAPI.getSummary(clientId);
-    state.goals = goalsResponse.data.data.goals || [];
+    state.goals = goalsResponse?.data?.data?.goals || [];
     renderGoals(state.goals);
     
   } catch (error) {
