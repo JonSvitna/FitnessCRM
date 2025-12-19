@@ -113,30 +113,30 @@
         </div>
       </div>
       <div class="sidebar-section-items expanded">
-        <a href="/messages.html" class="sidebar-item-sub hover:no-underline">
+        <div id="nav-messages" class="sidebar-item-sub">
           <svg class="sidebar-icon-sub" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
           </svg>
           <span class="sidebar-label">Messages</span>
-        </a>
-        <a href="/sms.html" class="sidebar-item-sub hover:no-underline">
+        </div>
+        <div id="nav-sms" class="sidebar-item-sub">
           <svg class="sidebar-icon-sub" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
           </svg>
           <span class="sidebar-label">SMS</span>
-        </a>
-        <a href="/campaigns.html" class="sidebar-item-sub hover:no-underline">
+        </div>
+        <div id="nav-campaigns" class="sidebar-item-sub">
           <svg class="sidebar-icon-sub" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
           </svg>
           <span class="sidebar-label">Campaigns</span>
-        </a>
-        <a href="/automation.html" class="sidebar-item-sub hover:no-underline">
+        </div>
+        <div id="nav-automation" class="sidebar-item-sub">
           <svg class="sidebar-icon-sub" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
           <span class="sidebar-label">Automation</span>
-        </a>
+        </div>
       </div>
 
       <a href="/analytics.html" class="sidebar-item hover:no-underline">
@@ -1189,9 +1189,238 @@
         </div>
       </div>
     </section>
-  </main>
 
-    </main>
+    <!-- Messages Section -->
+    <section id="messages-section" class="section hidden">
+      <div class="card">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-neutral-900">Messages</h2>
+          <button id="new-thread-btn" class="btn-primary">
+            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            New Message
+          </button>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" style="height: calc(100vh - 250px);">
+          <div class="flex h-full">
+            <!-- Threads List -->
+            <div id="threads-panel" class="w-1/3 border-r border-gray-200 flex flex-col">
+              <div class="p-4 border-b border-gray-200">
+                <div class="relative">
+                  <input type="text" id="thread-search" placeholder="Search conversations..." 
+                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                  <svg class="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div id="threads-list" class="flex-1 overflow-y-auto">
+                <div class="p-8 text-center text-gray-500">
+                  <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                  </svg>
+                  <p>Loading conversations...</p>
+                </div>
+              </div>
+            </div>
+            <!-- Chat Area -->
+            <div id="chat-panel" class="flex-1 flex flex-col hidden">
+              <div id="chat-header" class="p-4 border-b border-gray-200 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    <span id="chat-initials">--</span>
+                  </div>
+                  <div>
+                    <h3 id="chat-name" class="font-semibold text-gray-900">Select a conversation</h3>
+                    <p id="chat-subtitle" class="text-sm text-gray-500">--</p>
+                  </div>
+                </div>
+                <button id="archive-thread-btn" class="text-gray-400 hover:text-gray-600">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                  </svg>
+                </button>
+              </div>
+              <div id="messages-area" class="flex-1 overflow-y-auto p-4 bg-gray-50">
+                <div class="text-center text-gray-500 py-8">
+                  <p>Select a conversation to start messaging</p>
+                </div>
+              </div>
+              <div id="message-input-area" class="p-4 border-t border-gray-200 bg-white hidden">
+                <form id="message-form" class="flex items-end space-x-2">
+                  <div class="flex-1">
+                    <textarea id="message-input" rows="1" placeholder="Type a message..." 
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"></textarea>
+                  </div>
+                  <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SMS Section -->
+    <section id="sms-section" class="section hidden">
+      <div class="card">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-neutral-900">SMS Management</h2>
+          <button id="new-sms-btn" class="btn-primary">
+            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Send SMS
+          </button>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div class="border-b border-gray-200">
+            <nav class="flex -mb-px">
+              <button id="tab-send" class="tab-button active px-6 py-4 text-sm font-medium text-orange-600 border-b-2 border-orange-600">Send SMS</button>
+              <button id="tab-templates" class="tab-button px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">Templates</button>
+              <button id="tab-schedules" class="tab-button px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">Scheduled</button>
+              <button id="tab-logs" class="tab-button px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">Message Log</button>
+              <button id="tab-analytics" class="tab-button px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">Analytics</button>
+            </nav>
+          </div>
+          <div class="p-6">
+            <div id="content-send" class="tab-content">
+              <form id="send-sms-form" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">To</label>
+                    <select id="sms-recipient-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                      <option value="">Select recipient...</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    <input type="tel" id="sms-phone" placeholder="+1234567890" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                  <textarea id="sms-message" rows="4" placeholder="Type your message..." maxlength="1600" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"></textarea>
+                  <p class="text-sm text-gray-500 mt-1"><span id="sms-char-count">0</span>/1600 characters</p>
+                </div>
+                <div class="flex justify-end">
+                  <button type="submit" class="btn-primary">Send SMS</button>
+                </div>
+              </form>
+            </div>
+            <div id="content-templates" class="tab-content hidden">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">SMS Templates</h3>
+                <button id="new-template-btn" class="btn-primary">New Template</button>
+              </div>
+              <div id="templates-list" class="space-y-3">
+                <div class="text-center text-gray-500 py-8">Loading templates...</div>
+              </div>
+            </div>
+            <div id="content-schedules" class="tab-content hidden">
+              <div id="schedules-list" class="space-y-3">
+                <div class="text-center text-gray-500 py-8">Loading schedules...</div>
+              </div>
+            </div>
+            <div id="content-logs" class="tab-content hidden">
+              <div class="mb-4">
+                <input type="text" id="logs-search" placeholder="Search logs..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+              </div>
+              <div id="logs-list" class="space-y-3">
+                <div class="text-center text-gray-500 py-8">Loading logs...</div>
+              </div>
+            </div>
+            <div id="content-analytics" class="tab-content hidden">
+              <div id="analytics-content" class="space-y-6">
+                <div class="text-center text-gray-500 py-8">Loading analytics...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Campaigns Section -->
+    <section id="campaigns-section" class="section hidden">
+      <div class="card">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-neutral-900">Email Campaigns</h2>
+          <button id="new-campaign-btn" class="btn-primary">
+            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            New Campaign
+          </button>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div class="border-b border-gray-200">
+            <nav class="flex -mb-px">
+              <button id="tab-campaigns" class="tab-button active px-6 py-4 text-sm font-medium text-orange-600 border-b-2 border-orange-600">Campaigns</button>
+              <button id="tab-templates" class="tab-button px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">Templates</button>
+            </nav>
+          </div>
+          <div id="content-campaigns" class="tab-content p-6">
+            <div id="campaigns-list" class="space-y-4">
+              <div class="text-center text-gray-500 py-8">Loading campaigns...</div>
+            </div>
+          </div>
+          <div id="content-templates" class="tab-content hidden p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold">Email Templates</h3>
+              <button id="new-email-template-btn" class="btn-primary">New Template</button>
+            </div>
+            <div id="email-templates-list" class="space-y-3">
+              <div class="text-center text-gray-500 py-8">Loading templates...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Automation Section -->
+    <section id="automation-section" class="section hidden">
+      <div class="card">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-neutral-900">Automation Rules</h2>
+          <button id="new-rule-btn" class="btn-primary">
+            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            New Rule
+          </button>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div class="border-b border-gray-200">
+            <nav class="flex -mb-px">
+              <button id="tab-rules" class="tab-button active px-6 py-4 text-sm font-medium text-orange-600 border-b-2 border-orange-600">Rules</button>
+              <button id="tab-logs" class="tab-button px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">Execution Logs</button>
+              <button id="tab-analytics" class="tab-button px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">Analytics</button>
+            </nav>
+          </div>
+          <div id="content-rules" class="tab-content p-6">
+            <div id="rules-list" class="space-y-4">
+              <div class="text-center text-gray-500 py-8">Loading rules...</div>
+            </div>
+          </div>
+          <div id="content-logs" class="tab-content hidden p-6">
+            <div id="logs-list" class="space-y-3">
+              <div class="text-center text-gray-500 py-8">Loading logs...</div>
+            </div>
+          </div>
+          <div id="content-analytics" class="tab-content hidden p-6">
+            <div id="analytics-content" class="space-y-6">
+              <div class="text-center text-gray-500 py-8">Loading analytics...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
   </div>
 
   <!-- Session Modal -->
