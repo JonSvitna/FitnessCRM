@@ -138,19 +138,31 @@
   }
 
   .sidebar-item {
-    @apply flex items-center px-6 py-3 text-neutral-700 hover:bg-orange-50 hover:text-orange-600 transition-all duration-200 cursor-pointer relative;
+    @apply flex items-center px-6 py-3 text-neutral-700 transition-all duration-200 cursor-pointer relative;
+    background: transparent;
+  }
+
+  .sidebar-item:hover:not(.sidebar-item-active) {
+    @apply bg-orange-50 text-orange-600;
   }
 
   .sidebar-item-sub {
-    @apply flex items-center pl-10 pr-6 py-2 text-sm text-neutral-600 hover:bg-orange-50 hover:text-orange-600 transition-all duration-200 cursor-pointer relative;
+    @apply flex items-center pl-10 pr-6 py-2 text-sm text-neutral-600 transition-all duration-200 cursor-pointer relative;
+    background: transparent;
+  }
+
+  .sidebar-item-sub:hover:not(.sidebar-item-active) {
+    @apply bg-orange-50 text-orange-600;
   }
 
   .sidebar-item-active {
-    @apply bg-gradient-to-r from-orange-50 to-primary-50 text-orange-600 border-r-4 border-orange-600;
+    @apply text-orange-600 border-r-4 border-orange-600;
+    background: linear-gradient(to right, rgb(255 247 237), rgb(254 243 235)) !important;
   }
 
   .sidebar-item-sub.sidebar-item-active {
-    @apply bg-gradient-to-r from-orange-50 to-primary-50 text-orange-600 border-r-4 border-orange-600;
+    @apply text-orange-600 border-r-4 border-orange-600;
+    background: linear-gradient(to right, rgb(255 247 237), rgb(254 243 235)) !important;
   }
 
   .sidebar-icon {

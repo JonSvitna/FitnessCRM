@@ -7,6 +7,7 @@ Creates all tables and optionally seeds with sample data
 from app import create_app
 from models.database import db, Trainer, Client, Assignment
 from models.user import User  # Import User model to ensure table is created
+from utils.auth import hash_password
 import sys
 
 def init_database(seed=False):
@@ -24,7 +25,19 @@ def init_database(seed=False):
             print("✓ Database seeded successfully!")
 
 def seed_database():
-    """Seed the database with sample data"""
+    """Seed the database with sample data
+    
+    WARNING: This function is for development/testing only.
+    Do not use in production environments as it creates accounts with default passwords.
+    """
+    import os
+    
+    # Security check: prevent running in production
+    flask_env = os.getenv('FLASK_ENV', 'production')
+    if flask_env == 'production':
+        print("✗ ERROR: Cannot seed database in production environment!")
+        print("  Set FLASK_ENV=development to seed for testing only.")
+        return
     
     # Check if data already exists
     if Trainer.query.first() is not None:
@@ -64,6 +77,28 @@ def seed_database():
     
     db.session.commit()
     print(f"  ✓ Added {len(trainers)} trainers")
+    
+    # Create User accounts for trainers
+    # NOTE: Using default passwords for development/testing only
+    # In production, use the password change endpoint or create users with secure passwords
+    trainer_users = []
+    for trainer in trainers:
+        # Check if user already exists
+        existing_user = User.query.filter_by(email=trainer.email).first()
+        if not existing_user:
+            user = User(
+                email=trainer.email,
+                password_hash=hash_password('trainer123'),  # Development default
+                role='trainer',
+                active=True
+            )
+            trainer_users.append(user)
+            db.session.add(user)
+    
+    db.session.commit()
+    if len(trainer_users) > 0:
+        print(f"  ✓ Created {len(trainer_users)} User accounts for trainers")
+        print(f"  ⚠ WARNING: Default passwords set. Change them immediately in production!")
     
     # Create sample clients
     clients = [
@@ -114,6 +149,28 @@ def seed_database():
     
     db.session.commit()
     print(f"  ✓ Added {len(clients)} clients")
+    
+    # Create User accounts for clients
+    # NOTE: Using default passwords for development/testing only
+    # In production, use the password change endpoint or create users with secure passwords
+    client_users = []
+    for client in clients:
+        # Check if user already exists
+        existing_user = User.query.filter_by(email=client.email).first()
+        if not existing_user:
+            user = User(
+                email=client.email,
+                password_hash=hash_password('client123'),  # Development default
+                role='client',
+                active=True
+            )
+            client_users.append(user)
+            db.session.add(user)
+    
+    db.session.commit()
+    if len(client_users) > 0:
+        print(f"  ✓ Created {len(client_users)} User accounts for clients")
+        print(f"  ⚠ WARNING: Default passwords set. Change them immediately in production!")
     
     # Create sample assignments
     assignments = [
