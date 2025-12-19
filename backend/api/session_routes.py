@@ -84,13 +84,30 @@ def create_session():
         # Calculate end time
         end_time = session_date + timedelta(minutes=duration)
         
-        # Check for conflicts
-        conflict = Session.query.filter(
+        # Check for conflicts - handle cases where end_time column might not exist
+        # Use a subquery to calculate end_time for comparison
+        from sqlalchemy import func, case
+        conflict_query = Session.query.filter(
             Session.trainer_id == data['trainer_id'],
-            Session.status != 'cancelled',
-            Session.session_date < end_time,
-            Session.end_time > session_date
-        ).first()
+            Session.status != 'cancelled'
+        )
+        
+        # Calculate end_time for each session: session_date + (duration minutes)
+        # For PostgreSQL: session_date + (duration || ' minutes')::interval
+        # For SQLite: datetime(session_date, '+' || duration || ' minutes')
+        # We'll use a Python-side check for compatibility
+        potential_conflicts = conflict_query.filter(
+            Session.session_date < end_time
+        ).all()
+        
+        conflict = None
+        for sess in potential_conflicts:
+            sess_end_time = sess.get_end_time() if hasattr(sess, 'get_end_time') else (
+                sess.end_time if sess.end_time else (sess.session_date + timedelta(minutes=sess.duration or 60))
+            )
+            if sess_end_time and sess_end_time > session_date:
+                conflict = sess
+                break
         
         if conflict:
             return jsonify({'error': 'Session conflicts with existing booking', 'conflict': conflict.to_dict()}), 409
@@ -289,12 +306,21 @@ def generate_recurring_sessions(recurring_session, start_date, end_date):
             end_time = session_datetime + timedelta(minutes=duration)
             
             # Check for conflicts before creating
-            conflict = Session.query.filter(
+            # Check for conflicts - handle cases where end_time column might not exist
+            potential_conflicts = Session.query.filter(
                 Session.trainer_id == recurring_session.trainer_id,
                 Session.status != 'cancelled',
-                Session.session_date < end_time,
-                Session.end_time > session_datetime
-            ).first()
+                Session.session_date < end_time
+            ).all()
+            
+            conflict = None
+            for sess in potential_conflicts:
+                sess_end_time = sess.get_end_time() if hasattr(sess, 'get_end_time') else (
+                    sess.end_time if sess.end_time else (sess.session_date + timedelta(minutes=sess.duration or 60))
+                )
+                if sess_end_time and sess_end_time > session_datetime:
+                    conflict = sess
+                    break
             
             if not conflict:
                 session = Session(
@@ -383,7 +409,12 @@ def export_sessions_ical():
             
             # Format dates for iCal (YYYYMMDDTHHMMSSZ)
             dtstart = session.session_date.strftime('%Y%m%dT%H%M%SZ')
-            dtend = session.end_time.strftime('%Y%m%dT%H%M%SZ')
+            session_end_time = session.get_end_time() if hasattr(session, 'get_end_time') else (
+                session.end_time if session.end_time else (session.session_date + timedelta(minutes=session.duration or 60))
+            )
+            dtend = session_end_time.strftime('%Y%m%dT%H%M%SZ') if session_end_time else (
+                (session.session_date + timedelta(minutes=session.duration or 60)).strftime('%Y%m%dT%H%M%SZ')
+            )
             dtstamp = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
             
             # Create unique ID

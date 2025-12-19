@@ -116,7 +116,7 @@ class Session(db.Model):
     trainer_id = db.Column(db.Integer, db.ForeignKey('trainers.id'), nullable=False)
     client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
     session_date = db.Column(db.DateTime, nullable=False)
-    end_time = db.Column(db.DateTime)  # Calculated from session_date + duration
+    end_time = db.Column(db.DateTime, nullable=True)  # Calculated from session_date + duration
     duration = db.Column(db.Integer, default=60)  # in minutes
     session_type = db.Column(db.String(100))  # personal, group, online, etc.
     location = db.Column(db.String(200))  # Gym, Online, Client's Home, etc.
@@ -126,13 +126,22 @@ class Session(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    def get_end_time(self):
+        """Calculate end_time from session_date + duration if not set"""
+        if self.end_time:
+            return self.end_time
+        if self.session_date and self.duration:
+            from datetime import timedelta
+            return self.session_date + timedelta(minutes=self.duration)
+        return None
+    
     def to_dict(self):
         return {
             'id': self.id,
             'trainer_id': self.trainer_id,
             'client_id': self.client_id,
             'session_date': self.session_date.isoformat() if self.session_date else None,
-            'end_time': self.end_time.isoformat() if self.end_time else None,
+            'end_time': self.get_end_time().isoformat() if self.get_end_time() else None,
             'duration': self.duration,
             'session_type': self.session_type,
             'location': self.location,

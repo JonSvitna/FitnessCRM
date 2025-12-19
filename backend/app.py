@@ -193,6 +193,38 @@ def create_app(config_name=None):
     else:
         logger.warning("Message routes not available - blueprint import failed")
     
+    # Check and add end_time column to sessions table if missing (run immediately)
+    with app.app_context():
+        try:
+            from sqlalchemy import inspect, text
+            inspector = inspect(db.engine)
+            # Check if sessions table exists
+            if 'sessions' in inspector.get_table_names():
+                columns = [col['name'] for col in inspector.get_columns('sessions')]
+                
+                if 'end_time' not in columns:
+                    logger.info("Adding 'end_time' column to sessions table...")
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE sessions ADD COLUMN end_time TIMESTAMP"))
+                        conn.commit()
+                    logger.info("✓ Added 'end_time' column to sessions table")
+                    
+                    # Populate end_time for existing sessions
+                    from models.database import Session
+                    from datetime import timedelta
+                    sessions = Session.query.all()
+                    updated_count = 0
+                    for session in sessions:
+                        if session.session_date and session.duration and not session.end_time:
+                            session.end_time = session.session_date + timedelta(minutes=session.duration)
+                            updated_count += 1
+                    if updated_count > 0:
+                        db.session.commit()
+                        logger.info(f"✓ Populated end_time for {updated_count} existing sessions")
+        except Exception as e:
+            logger.warning(f"Could not check/add end_time column: {e}")
+            # Don't fail app startup if migration fails
+    
     # Root endpoint
     @app.route('/')
     def index():
