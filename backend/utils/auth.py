@@ -141,10 +141,26 @@ def change_user_password(email: str, new_password: str, role: str, name: str = N
         db.session.commit()
         
         # Verify User account was created/updated successfully
+        # This defensive check ensures the database commit actually persisted the changes
         verify_user = User.query.filter_by(email=email).first()
         if not verify_user:
             logger.error(f"CRITICAL: User account was not saved for email: {email}")
             return False, 'Failed to save User account. Please try again.', 500
+        
+        # Additional verification: ensure the password hash was actually set/updated
+        # This catches edge cases where the user exists but password wasn't persisted
+        if not verify_user.password_hash:
+            logger.error(f"CRITICAL: Password hash was not saved for email: {email}")
+            return False, 'Failed to save password. Please try again.', 500
+        
+        # Verify password can be verified (sanity check that hash is valid)
+        try:
+            if not verify_password(new_password, verify_user.password_hash):
+                logger.error(f"CRITICAL: Password verification failed after save for email: {email}")
+                return False, 'Password was not saved correctly. Please try again.', 500
+        except Exception as verify_error:
+            logger.error(f"CRITICAL: Password verification error for email: {email}: {str(verify_error)}")
+            return False, 'Password verification failed. Please try again.', 500
         
         logger.info(f"✓ Verified User account: {verify_user.email} (ID: {verify_user.id}, Role: {verify_user.role})")
         return True, 'Password set successfully', 200
