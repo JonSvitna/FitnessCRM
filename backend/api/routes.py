@@ -194,53 +194,6 @@ def delete_trainer(trainer_id):
             return jsonify({'error': 'Cannot delete trainer: Has associated records (assignments, sessions, etc.)'}), 409
         return jsonify({'error': f'Failed to delete trainer: {error_msg}'}), 500
 
-@api_bp.route('/trainers/<int:trainer_id>/change-password', methods=['POST'])
-def change_trainer_password(trainer_id):
-    """Change password for a trainer's user account. Creates User account if it doesn't exist."""
-    trainer = Trainer.query.get_or_404(trainer_id)
-    data = request.get_json()
-    
-    if not data or not data.get('password'):
-        return jsonify({'error': 'Password is required'}), 400
-    
-    if len(data['password']) < 6:
-        return jsonify({'error': 'Password must be at least 6 characters'}), 400
-    
-    try:
-        # Find user account by email
-        user = User.query.filter_by(email=trainer.email).first()
-        
-        if not user:
-            # Create user account if it doesn't exist
-            user = User(
-                email=trainer.email,
-                password_hash=hash_password(data['password']),
-                role='trainer',
-                active=True
-            )
-            db.session.add(user)
-            logger.info(f"Created User account for trainer: {trainer.name} (ID: {trainer.id})")
-        else:
-            # Update password
-            user.password_hash = hash_password(data['password'])
-            logger.info(f"Password changed for trainer: {trainer.name} (ID: {trainer.id})")
-        
-        db.session.commit()
-        
-        # Verify User account was created/updated
-        verify_user = User.query.filter_by(email=trainer.email).first()
-        if not verify_user:
-            logger.error(f"CRITICAL: User account was not saved for trainer: {trainer.email}")
-            return jsonify({'error': 'Failed to save User account. Please try again.'}), 500
-        
-        logger.info(f"✓ Verified User account: {verify_user.email} (ID: {verify_user.id}, Role: {verify_user.role})")
-        
-        return jsonify({'message': 'Password set successfully'}), 200
-    except Exception as e:
-        db.session.rollback()
-        logger.error(f"Error changing trainer password: {str(e)}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-
 @api_bp.route('/trainers/<int:trainer_id>/check-user', methods=['GET'])
 def check_trainer_user(trainer_id):
     """Check if trainer has a User account"""
