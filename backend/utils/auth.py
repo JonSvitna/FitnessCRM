@@ -139,9 +139,17 @@ def change_user_password(email: str, new_password: str, role: str, name: str = N
             logger.info(log_msg)
         
         db.session.commit()
+        
+        # Verify User account was created/updated successfully
+        verify_user = User.query.filter_by(email=email).first()
+        if not verify_user:
+            logger.error(f"CRITICAL: User account was not saved for email: {email}")
+            return False, 'Failed to save User account. Please try again.', 500
+        
+        logger.info(f"✓ Verified User account: {verify_user.email} (ID: {verify_user.id}, Role: {verify_user.role})")
         return True, 'Password set successfully', 200
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Error changing password for {email}: {str(e)}")
+        logger.error(f"Error changing password for {email}: {str(e)}", exc_info=True)
         return False, str(e), 500
 
