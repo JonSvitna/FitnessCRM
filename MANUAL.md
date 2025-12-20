@@ -1526,11 +1526,13 @@ export default {
 **Documentation Files**:
 - `README.md` - Project overview
 - `QUICKSTART.md` - Quick start guide
-- `DEPLOYMENT.md` - Deployment guide
+- `DEPLOYMENT_GUIDE.md` - Complete deployment guide
 - `API_DOCUMENTATION.md` - Complete API reference
 - `TESTING_GUIDE.md` - Testing guide
 - `TROUBLESHOOTING.md` - Common issues
 - `ROADMAP.md` - Development roadmap
+- `PHASE_HISTORY.md` - Development history
+- `AI_GUIDE.md` - AI Orchestrator guide
 - `CHANGELOG.md` - Version history
 - `CONTRIBUTING.md` - Contribution guidelines
 
