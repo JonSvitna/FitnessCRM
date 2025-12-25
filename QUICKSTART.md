@@ -207,7 +207,7 @@ Once you have the app running locally:
 
 1. **Explore Features**: Try all CRUD operations
 2. **Read Documentation**: Check out API_DOCUMENTATION.md
-3. **Deploy**: Follow DEPLOYMENT.md to deploy to production
+3. **Deploy**: Follow DEPLOYMENT_GUIDE.md to deploy to production
 4. **Contribute**: See CONTRIBUTING.md to contribute
 
 ## Production Deployment
@@ -244,7 +244,7 @@ git push origin main
 # 3. Deploy
 ```
 
-See DEPLOYMENT.md for detailed deployment instructions.
+See DEPLOYMENT_GUIDE.md for detailed deployment instructions.
 
 ## Support
 
@@ -255,7 +255,7 @@ See DEPLOYMENT.md for detailed deployment instructions.
 ## Resources
 
 - **README.md**: Comprehensive overview
-- **DEPLOYMENT.md**: Deployment guide
+- **DEPLOYMENT_GUIDE.md**: Complete deployment guide
 - **API_DOCUMENTATION.md**: Complete API reference
 - **ROADMAP.md**: Future development plans
 - **CONTRIBUTING.md**: Contribution guidelines

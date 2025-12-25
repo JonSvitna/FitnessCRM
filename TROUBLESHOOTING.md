@@ -700,7 +700,7 @@ If you're still experiencing issues:
 1. **Check documentation**:
    - [README.md](README.md)
    - [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
-   - [DEPLOYMENT.md](DEPLOYMENT.md)
+   - [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
 
 2. **Run health check**:
    ```bash

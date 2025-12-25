@@ -301,9 +301,7 @@ python init_db.py seed
    - `FLASK_ENV`: production
 6. Deploy
 
-**Guides**:
-- 📘 [RAILWAY_SETUP.md](RAILWAY_SETUP.md) - Quick guide for Railway Root Directory configuration
-- 📗 [DEPLOYMENT.md](DEPLOYMENT.md) - Complete deployment instructions for both platforms
+**Complete Guide**: 📗 [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) - Full deployment instructions for Vercel, Railway, and Docker
 
 ### Database Setup (Railway PostgreSQL)
 
@@ -360,10 +358,9 @@ Railway automatically provisions a PostgreSQL database. The connection URL is au
    - Operations manual, user guides, knowledge base
 
 **Documentation**:
-- 📘 [PHASE9_PRODUCTION_OPTIMIZATION.md](PHASE9_PRODUCTION_OPTIMIZATION.md) - Complete Phase 9 guide
-- 📗 [PHASE9_QUICKSTART.md](PHASE9_QUICKSTART.md) - Quick start guide
-- 📊 [PHASE9_COMPLETION_SUMMARY.md](PHASE9_COMPLETION_SUMMARY.md) - Progress tracking
-- 🗺️ [ROADMAP.md](ROADMAP.md) - Updated roadmap with Phase 9
+- 📗 [PHASE_HISTORY.md](PHASE_HISTORY.md) - Complete phase history with Phase 9 details
+- 🗺️ [ROADMAP.md](ROADMAP.md) - Updated roadmap with all phases
+- 🚀 [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) - Production deployment guide
 
 ### Future Phases (v3.0+)
 - Advanced AI features
@@ -380,24 +377,26 @@ Railway automatically provisions a PostgreSQL database. The connection URL is au
 
 ## 📚 Documentation
 
-**Comprehensive Manual**: [MANUAL.md](MANUAL.md) - Your complete guide to FitnessCRM
+**📖 [MANUAL.md](MANUAL.md)** - Complete comprehensive guide to FitnessCRM (1,600+ lines)
 
-**Quick References**:
-- [QUICKSTART.md](QUICKSTART.md) - Get started in 5 minutes
-- [API_DOCUMENTATION.md](API_DOCUMENTATION.md) - Complete API reference
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Deployment guide (Vercel + Railway)
-- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Testing and QA guide
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Common issues and solutions
+### Quick Start & Deployment
+- **[QUICKSTART.md](QUICKSTART.md)** - Get started in 5 minutes
+- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Complete deployment guide (Vercel, Railway, Docker)
 
-**Development Guides**:
-- [FEATURES.md](FEATURES.md) - Features overview
-- [ROADMAP.md](ROADMAP.md) - Development roadmap
-- [PORTALS_GUIDE.md](PORTALS_GUIDE.md) - Trainer and client portals
-- [DATABASE_SETUP.md](DATABASE_SETUP.md) - Database configuration
+### Development Resources
+- **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Complete REST API reference
+- **[FEATURES.md](FEATURES.md)** - Feature overview and capabilities
+- **[ROADMAP.md](ROADMAP.md)** - Development roadmap and future plans
+- **[PHASE_HISTORY.md](PHASE_HISTORY.md)** - Complete development history (Phases 1-9)
 
-**Phase Documentation**:
-- [PHASE9_QUICKSTART.md](PHASE9_QUICKSTART.md) - Phase 9 quick start
-- [PHASE9_PRODUCTION_OPTIMIZATION.md](PHASE9_PRODUCTION_OPTIMIZATION.md) - Production optimization guide
+### Operations & Support
+- **[TESTING_GUIDE.md](TESTING_GUIDE.md)** - Testing and QA procedures
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
+- **[AI_GUIDE.md](AI_GUIDE.md)** - AI Orchestrator complete guide
+
+### Project Management
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
 
 ## 🤝 Contributing
 

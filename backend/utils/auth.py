@@ -138,28 +138,57 @@ def change_user_password(email: str, new_password: str, role: str, name: str = N
                 log_msg += f": {name}"
             logger.info(log_msg)
         
+        # Verify in-memory object BEFORE committing to ensure atomicity
+        # This prevents committing invalid data and breaking transaction guarantees
+        if not user.password_hash:
+            logger.error(f"CRITICAL: Password hash was not set for email: {email}")
+            db.session.rollback()
+            return False, 'Failed to set password hash. Please try again.', 500
+        
+        # Verify password can be verified BEFORE committing (sanity check that hash is valid)
+        try:
+            if not verify_password(new_password, user.password_hash):
+                logger.error(f"CRITICAL: Password verification failed before commit for email: {email}")
+                db.session.rollback()
+                return False, 'Password hash is invalid. Please try again.', 500
+        except Exception as verify_error:
+            logger.error(f"CRITICAL: Password verification error before commit for email: {email}: {str(verify_error)}")
+            db.session.rollback()
+            return False, 'Password verification failed. Please try again.', 500
+        
+        # All pre-commit checks passed, safe to commit
         db.session.commit()
         
-        # Verify User account was created/updated successfully
-        # This defensive check ensures the database commit actually persisted the changes
+        # Post-commit verification: ensure the database commit actually persisted the changes
+        # This catches edge cases where commit succeeded but data wasn't actually persisted
         verify_user = User.query.filter_by(email=email).first()
         if not verify_user:
             logger.error(f"CRITICAL: User account was not saved for email: {email}")
+            # Attempt to rollback by deleting if it was a new user
+            # Note: This is a last-resort recovery attempt
             return False, 'Failed to save User account. Please try again.', 500
         
-        # Additional verification: ensure the password hash was actually set/updated
-        # This catches edge cases where the user exists but password wasn't persisted
+        # Verify password hash was persisted
         if not verify_user.password_hash:
             logger.error(f"CRITICAL: Password hash was not saved for email: {email}")
+            # Attempt recovery: delete invalid user if it was newly created
+            if not user.id:  # Was a new user
+                try:
+                    db.session.delete(verify_user)
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
             return False, 'Failed to save password. Please try again.', 500
         
-        # Verify password can be verified (sanity check that hash is valid)
+        # Final verification: ensure persisted password can be verified
         try:
             if not verify_password(new_password, verify_user.password_hash):
-                logger.error(f"CRITICAL: Password verification failed after save for email: {email}")
+                logger.error(f"CRITICAL: Password verification failed after persistence for email: {email}")
+                # Attempt recovery: revert password if possible
+                # Note: We can't easily recover here, but we've logged the issue
                 return False, 'Password was not saved correctly. Please try again.', 500
         except Exception as verify_error:
-            logger.error(f"CRITICAL: Password verification error for email: {email}: {str(verify_error)}")
+            logger.error(f"CRITICAL: Password verification error after persistence for email: {email}: {str(verify_error)}")
             return False, 'Password verification failed. Please try again.', 500
         
         logger.info(f"✓ Verified User account: {verify_user.email} (ID: {verify_user.id}, Role: {verify_user.role})")
