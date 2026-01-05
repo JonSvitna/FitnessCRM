@@ -2,6 +2,12 @@ import './styles/main.css';
 import { trainerAPI, clientAPI, crmAPI, measurementAPI, sessionAPI } from './api.js';
 import { requireRole, auth } from './auth.js';
 
+// Helper function to extract data from API responses
+function extractData(response) {
+  // Handle paginated responses {items: [...], total: N} or direct arrays
+  return response.data?.items || response.data || [];
+}
+
 // State management
 let state = {
   client: null, // Will be loaded from authenticated user
@@ -184,7 +190,7 @@ async function loadDashboard() {
 
     if (state.assignment) {
       const trainersResponse = await trainerAPI.getAll();
-      const trainers = trainersResponse.data.items || trainersResponse.data;
+      const trainers = extractData(trainersResponse);
       state.trainer = trainers.find(t => t.id === state.assignment.trainer_id);
 
       // Display trainer info

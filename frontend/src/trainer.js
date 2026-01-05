@@ -2,6 +2,12 @@ import './styles/main.css';
 import { trainerAPI, clientAPI, crmAPI, settingsAPI, sessionAPI, workoutAPI, exerciseAPI } from './api.js';
 import { requireRole, auth } from './auth.js';
 
+// Helper function to extract data from API responses
+function extractData(response) {
+  // Handle paginated responses {items: [...], total: N} or direct arrays
+  return response.data?.items || response.data || [];
+}
+
 // State management
 let state = {
   trainer: null, // Will be loaded from authenticated user
@@ -184,7 +190,7 @@ async function loadDashboard() {
       sessionAPI.getAll({ trainer_id: state.trainer.id }).catch(() => ({ data: [] }))
     ]);
 
-    state.clients = clientsResponse.data.items || clientsResponse.data;
+    state.clients = extractData(clientsResponse);
     state.assignments = assignmentsResponse.data;
     state.sessions = sessionsResponse.data || [];
 
