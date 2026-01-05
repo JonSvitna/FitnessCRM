@@ -3,17 +3,36 @@
  * Phase 5: Communication - M5.1: In-App Messaging
  */
 
-import { messageAPI, trainerAPI, clientAPI } from './api.js';
+import { messageAPI, trainerAPI, clientAPI, authAPI } from './api.js';
+import { auth } from './auth.js';
 import { showToast } from './main.js';
 import { io } from 'socket.io-client';
 import { initCollapsibleSections } from './sidebar-sections.js';
 
 // Global state
-let currentUser = { type: 'trainer', id: 1 }; // TODO: Get from auth/session
+let currentUser = null; // Will be loaded from authenticated user
 let currentThreadId = null;
 let socket = null;
 let threads = [];
 let messages = {};
+
+// Initialize current user from auth
+async function initCurrentUser() {
+  try {
+    const user = auth.getUser();
+    if (user) {
+      // Determine user type from role
+      currentUser = {
+        type: user.role === 'trainer' ? 'trainer' : 'client',
+        id: user.id,
+        email: user.email,
+        role: user.role
+      };
+    }
+  } catch (error) {
+    console.error('Error initializing current user:', error);
+  }
+}
 
 // Initialize Socket.IO connection
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -54,7 +73,8 @@ const archiveThreadBtn = document.getElementById('archive-thread-btn');
 const unreadBadge = document.getElementById('unread-badge');
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await initCurrentUser(); // Load authenticated user first
   initializeSidebar();
   initCollapsibleSections();
   loadThreads();

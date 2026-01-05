@@ -2829,7 +2829,7 @@ document.getElementById('exercise-form').addEventListener('submit', async (e) =>
     image_url: formData.get('image_url') || null,
     video_url: formData.get('video_url') || null,
     is_custom: true,
-    created_by: 1 // TODO: Get from auth
+    created_by: auth.getUser()?.id || 1 // Use authenticated user ID
   };
   
   try {
@@ -2877,7 +2877,9 @@ async function loadWorkoutCategories() {
 
 async function loadWorkoutTemplates() {
   try {
-    const params = { user_id: 1 }; // TODO: Get from auth
+    const params = {};
+    const userId = auth.getUser()?.id;
+    if (userId) params.user_id = userId;
     
     const search = document.getElementById('template-search').value;
     const category = document.getElementById('template-category-filter').value;
@@ -3255,7 +3257,7 @@ document.getElementById('template-form').addEventListener('submit', async (e) =>
     difficulty: formData.get('difficulty') || null,
     duration_minutes: formData.get('duration_minutes') ? parseInt(formData.get('duration_minutes')) : null,
     is_public: formData.get('is_public') === 'on',
-    created_by: 1, // TODO: Get from auth
+    created_by: auth.getUser()?.id || 1, // Use authenticated user ID
     exercises: state.templateExercises
   };
   
@@ -3456,7 +3458,7 @@ document.getElementById('assign-workout-form').addEventListener('submit', async 
   const data = {
     client_id: parseInt(formData.get('client_id')),
     workout_template_id: parseInt(formData.get('workout_template_id')),
-    assigned_by: 1, // TODO: Get from auth
+    assigned_by: auth.getUser()?.id || 1, // Use authenticated user ID
     start_date: formData.get('start_date') || null,
     end_date: formData.get('end_date') || null,
     frequency_per_week: formData.get('frequency_per_week') ? parseInt(formData.get('frequency_per_week')) : null,
