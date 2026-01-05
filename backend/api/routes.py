@@ -3,7 +3,7 @@ from models.database import db, Trainer, Client, Assignment
 from models.user import User
 from sqlalchemy.exc import IntegrityError
 from utils.logger import log_activity, logger
-from utils.auth import hash_password, change_user_password
+from utils.auth import hash_password, change_user_password, require_auth, get_current_user
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -65,11 +65,11 @@ def get_trainer(trainer_id):
     return jsonify(trainer.to_dict()), 200
 
 @api_bp.route('/trainers/me', methods=['GET'])
+@require_auth
 def get_my_trainer_profile():
     """Get the trainer profile for the currently authenticated user"""
-    from utils.auth import get_current_user
-    
     user = get_current_user()
+    
     if not user:
         return jsonify({'error': 'Not authenticated'}), 401
     
@@ -328,11 +328,11 @@ def get_client(client_id):
     return jsonify(client.to_dict()), 200
 
 @api_bp.route('/clients/me', methods=['GET'])
+@require_auth
 def get_my_client_profile():
     """Get the client profile for the currently authenticated user"""
-    from utils.auth import get_current_user
-    
     user = get_current_user()
+    
     if not user:
         return jsonify({'error': 'Not authenticated'}), 401
     
