@@ -4,7 +4,8 @@ import { requireRole, auth } from './auth.js';
 
 // State management
 let state = {
-  trainer: { id: 1, name: 'Demo Trainer' }, // Mock trainer
+  trainer: null, // Will be loaded from authenticated user
+  trainerId: null, // Trainer ID from user profile
   clients: [],
   assignments: [],
   workouts: [],
@@ -172,13 +173,20 @@ function initNavigation() {
 // Dashboard functions
 async function loadDashboard() {
   try {
-    const [clientsResponse, assignmentsResponse] = await Promise.all([
+    if (!state.trainer || !state.trainer.id) {
+      console.error('Trainer not loaded');
+      return;
+    }
+
+    const [clientsResponse, assignmentsResponse, sessionsResponse] = await Promise.all([
       clientAPI.getAll(),
       crmAPI.getAssignments(),
+      sessionAPI.getAll({ trainer_id: state.trainer.id }).catch(() => ({ data: [] }))
     ]);
 
-    state.clients = clientsResponse.data;
+    state.clients = clientsResponse.data.items || clientsResponse.data;
     state.assignments = assignmentsResponse.data;
+    state.sessions = sessionsResponse.data || [];
 
     // Filter my clients (assignments for this trainer)
     const myAssignments = state.assignments.filter(a => a.trainer_id === state.trainer.id);
@@ -188,12 +196,51 @@ async function loadDashboard() {
 
     document.getElementById('total-clients').textContent = myClients.length;
     document.getElementById('active-clients').textContent = activeClients.length;
-    document.getElementById('sessions-this-week').textContent = '0'; // TODO: Implement sessions
+    
+    // Calculate this week's sessions
+    const now = new Date();
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay()); // Start of week
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 7);
+    
+    const thisWeekSessions = state.sessions.filter(s => {
+      const sessionDate = new Date(s.session_date);
+      return sessionDate >= weekStart && sessionDate < weekEnd;
+    });
+    
+    document.getElementById('sessions-this-week').textContent = thisWeekSessions.length;
     document.getElementById('new-messages').textContent = '0'; // TODO: Implement messages
 
-    // Today's schedule (mock data)
+    // Today's schedule
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    
+    const todaySessions = state.sessions
+      .filter(s => {
+        const sessionDate = new Date(s.session_date);
+        return sessionDate >= today && sessionDate < tomorrow;
+      })
+      .sort((a, b) => new Date(a.session_date) - new Date(b.session_date));
+    
     const scheduleContainer = document.getElementById('today-schedule');
-    scheduleContainer.innerHTML = '<p class="text-neutral-600">No sessions scheduled for today</p>';
+    if (todaySessions.length > 0) {
+      scheduleContainer.innerHTML = todaySessions.map(session => {
+        const client = state.clients.find(c => c.id === session.client_id);
+        const sessionDate = new Date(session.session_date);
+        return `
+          <div class="p-3 bg-neutral-50 rounded-lg">
+            <p class="text-neutral-900 font-medium">${client?.name || 'Unknown Client'}</p>
+            <p class="text-sm text-neutral-600">${sessionDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${session.session_type || 'Session'} (${session.duration || 60} min)</p>
+          </div>
+        `;
+      }).join('');
+    } else {
+      scheduleContainer.innerHTML = '<p class="text-neutral-600">No sessions scheduled for today</p>';
+    }
 
     // Recent activity
     const activityContainer = document.getElementById('recent-activity');
@@ -209,6 +256,8 @@ async function loadDashboard() {
           </div>
         `;
       }).join('');
+    } else {
+      activityContainer.innerHTML = '<p class="text-neutral-600">No recent activity</p>';
     }
   } catch (error) {
     console.error('Error loading dashboard:', error);
@@ -1001,10 +1050,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     return; // requireRole redirects if not authorized
   }
 
-  // Update trainer ID from auth user if available
-  const user = auth.getUser();
-  if (user && user.id) {
-    state.trainer.id = user.id;
+  // Load the authenticated trainer's profile
+  try {
+    const response = await trainerAPI.getMe();
+    state.trainer = response.data;
+    state.trainerId = state.trainer.id;
+    
+    // Update top bar with trainer name
+    const nameElement = document.querySelector('.top-bar .text-sm.font-semibold');
+    if (nameElement && state.trainer.name) {
+      nameElement.textContent = state.trainer.name;
+    }
+  } catch (error) {
+    console.error('Error loading trainer profile:', error);
+    showToast('Error loading your profile. Please try again.');
+    // Fallback: try to get from user object
+    const user = auth.getUser();
+    if (user && user.id) {
+      state.trainerId = user.id;
+    }
   }
 
   initSidebar();
