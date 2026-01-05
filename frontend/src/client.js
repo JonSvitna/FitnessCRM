@@ -459,6 +459,8 @@ function initFormHandlers() {
 
     try {
       await clientAPI.update(state.client.id, data);
+      // Update local state
+      state.client = { ...state.client, ...data };
       showToast('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -473,6 +475,8 @@ function initFormHandlers() {
 
     try {
       await clientAPI.update(state.client.id, data);
+      // Update local state
+      state.client = { ...state.client, ...data };
       showToast('Fitness information updated successfully!');
     } catch (error) {
       console.error('Error updating fitness info:', error);
