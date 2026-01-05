@@ -143,7 +143,7 @@ sleep 10
 
 # Verify restore
 log "Verifying database connection..."
-if docker-compose -f docker-compose.prod.yml exec -T backend python -c "from app import db; db.engine.execute('SELECT 1')" &>/dev/null; then
+if docker-compose -f docker-compose.prod.yml exec -T backend python -c "from app import db; from sqlalchemy import text; db.session.execute(text('SELECT 1'))" &>/dev/null; then
     log "Database connection verified!"
 else
     warning "Could not verify database connection. Please check manually."

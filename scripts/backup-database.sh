@@ -137,8 +137,8 @@ fi
 
 # Remove old backups
 log "Cleaning up old backups (older than $RETENTION_DAYS days)..."
-find "$BACKUP_DIR" -name "fitnesscrm_backup_*.sql.gz" -type f -mtime +"$RETENTION_DAYS" -delete
 DELETED_COUNT=$(find "$BACKUP_DIR" -name "fitnesscrm_backup_*.sql.gz" -type f -mtime +"$RETENTION_DAYS" 2>/dev/null | wc -l)
+find "$BACKUP_DIR" -name "fitnesscrm_backup_*.sql.gz" -type f -mtime +"$RETENTION_DAYS" -delete
 log "Removed $DELETED_COUNT old backup(s)"
 
 # List recent backups
