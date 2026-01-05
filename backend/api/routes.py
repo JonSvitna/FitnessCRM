@@ -3,7 +3,7 @@ from models.database import db, Trainer, Client, Assignment
 from models.user import User
 from sqlalchemy.exc import IntegrityError
 from utils.logger import log_activity, logger
-from utils.auth import hash_password, change_user_password
+from utils.auth import hash_password, change_user_password, require_auth, get_current_user
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -62,6 +62,22 @@ def get_trainers():
 def get_trainer(trainer_id):
     """Get a specific trainer"""
     trainer = Trainer.query.get_or_404(trainer_id)
+    return jsonify(trainer.to_dict()), 200
+
+@api_bp.route('/trainers/me', methods=['GET'])
+@require_auth
+def get_my_trainer_profile():
+    """Get the trainer profile for the currently authenticated user"""
+    user = get_current_user()
+    
+    if not user:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    # Find trainer by email
+    trainer = Trainer.query.filter_by(email=user.email).first()
+    if not trainer:
+        return jsonify({'error': 'No trainer profile found for this user'}), 404
+    
     return jsonify(trainer.to_dict()), 200
 
 @api_bp.route('/trainers', methods=['POST'])
@@ -309,6 +325,22 @@ def get_clients():
 def get_client(client_id):
     """Get a specific client"""
     client = Client.query.get_or_404(client_id)
+    return jsonify(client.to_dict()), 200
+
+@api_bp.route('/clients/me', methods=['GET'])
+@require_auth
+def get_my_client_profile():
+    """Get the client profile for the currently authenticated user"""
+    user = get_current_user()
+    
+    if not user:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    # Find client by email
+    client = Client.query.filter_by(email=user.email).first()
+    if not client:
+        return jsonify({'error': 'No client profile found for this user'}), 404
+    
     return jsonify(client.to_dict()), 200
 
 @api_bp.route('/clients', methods=['POST'])
