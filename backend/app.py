@@ -16,12 +16,14 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
 # Database connection
 def get_db_connection():
-    conn = psycopg2.connect(
-        host=os.environ.get('DB_HOST', 'localhost'),
-        database=os.environ.get('DB_NAME', 'fitnesscrm'),
-        user=os.environ.get('DB_USER', 'postgres'),
-        password=os.environ.get('DB_PASSWORD', 'postgres')
-    )
+    """Get database connection using DATABASE_URL environment variable"""
+    database_url = os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/fitnesscrm')
+    
+    # Fix for Railway/Heroku postgres URLs (postgres:// -> postgresql://)
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    
+    conn = psycopg2.connect(database_url)
     return conn
 
 # JWT token required decorator
