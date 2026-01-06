@@ -147,7 +147,7 @@ function showSection(sectionId, title) {
   }
 
   // Update sidebar navigation
-  const sidebarItems = document.querySelectorAll('.sidebar-item');
+  const sidebarItems = document.querySelectorAll('.sidebar-item, .sidebar-item-sub');
   sidebarItems.forEach(item => item.classList.remove('sidebar-item-active'));
   const activeNav = document.getElementById(`nav-${sectionId.replace('-section', '')}`);
   if (activeNav) {
