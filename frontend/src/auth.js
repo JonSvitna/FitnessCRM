@@ -19,6 +19,35 @@ export const auth = {
   isAuthenticated: () => !!localStorage.getItem('auth_token'),
 };
 
+// Validate redirect URL to prevent open redirect attacks
+function isValidRedirectUrl(url) {
+  if (!url) return false;
+  // Only allow internal paths that start with / and don't contain protocol or //
+  return url.startsWith('/') && !url.includes('//') && !url.includes(':');
+}
+
+// Get redirect URL based on user role
+export function getRedirectUrl(user, explicitRedirect = null) {
+  // Validate and use explicit redirect if provided
+  if (explicitRedirect && isValidRedirectUrl(explicitRedirect)) {
+    return explicitRedirect;
+  }
+  
+  // Default redirect based on user role
+  if (user && user.role) {
+    if (user.role === 'trainer') {
+      return '/trainer.html';
+    } else if (user.role === 'client' || user.role === 'user') {
+      return '/client.html';
+    } else if (user.role === 'admin') {
+      return '/index.html';
+    }
+  }
+  
+  // Default to admin dashboard
+  return '/index.html';
+}
+
 // Check if user is authenticated
 export async function checkAuth() {
   const token = auth.getToken();
@@ -130,24 +159,9 @@ if (document.getElementById('login-form')) {
           auth.setUser(user);
         }
 
-        // Redirect based on user role (with safe fallback)
-        let redirectTo = '/index.html'; // Default to admin dashboard
-        
-        if (user && user.role) {
-          if (user.role === 'trainer') {
-            redirectTo = '/trainer.html';
-          } else if (user.role === 'client' || user.role === 'user') {
-            redirectTo = '/client.html';
-          } else if (user.role === 'admin') {
-            redirectTo = '/index.html';
-          }
-        }
-        
-        // Override with explicit redirect parameter if provided
+        // Get redirect URL based on user role
         const explicitRedirect = new URLSearchParams(window.location.search).get('redirect');
-        if (explicitRedirect) {
-          redirectTo = explicitRedirect;
-        }
+        const redirectTo = getRedirectUrl(user, explicitRedirect);
         
         window.location.href = redirectTo;
       } else {
@@ -178,25 +192,10 @@ if (document.getElementById('login-form')) {
   if (auth.isAuthenticated()) {
     checkAuth().then((isAuth) => {
       if (isAuth) {
-        // Redirect to appropriate page based on user role
+        // Get redirect URL based on user role
         const user = auth.getUser();
-        let redirectTo = '/index.html'; // Default to admin dashboard
-        
-        if (user && user.role) {
-          if (user.role === 'trainer') {
-            redirectTo = '/trainer.html';
-          } else if (user.role === 'client' || user.role === 'user') {
-            redirectTo = '/client.html';
-          } else if (user.role === 'admin') {
-            redirectTo = '/index.html';
-          }
-        }
-        
-        // Override with explicit redirect parameter if provided
         const explicitRedirect = new URLSearchParams(window.location.search).get('redirect');
-        if (explicitRedirect) {
-          redirectTo = explicitRedirect;
-        }
+        const redirectTo = getRedirectUrl(user, explicitRedirect);
         
         window.location.href = redirectTo;
       }
