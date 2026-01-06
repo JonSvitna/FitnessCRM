@@ -178,7 +178,27 @@ if (document.getElementById('login-form')) {
   if (auth.isAuthenticated()) {
     checkAuth().then((isAuth) => {
       if (isAuth) {
-        window.location.href = '/index.html';
+        // Redirect to appropriate page based on user role
+        const user = auth.getUser();
+        let redirectTo = '/index.html'; // Default to admin dashboard
+        
+        if (user && user.role) {
+          if (user.role === 'trainer') {
+            redirectTo = '/trainer.html';
+          } else if (user.role === 'client' || user.role === 'user') {
+            redirectTo = '/client.html';
+          } else if (user.role === 'admin') {
+            redirectTo = '/index.html';
+          }
+        }
+        
+        // Override with explicit redirect parameter if provided
+        const explicitRedirect = new URLSearchParams(window.location.search).get('redirect');
+        if (explicitRedirect) {
+          redirectTo = explicitRedirect;
+        }
+        
+        window.location.href = redirectTo;
       }
     }).catch((error) => {
       console.error('Auth check error:', error);
