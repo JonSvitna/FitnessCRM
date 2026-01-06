@@ -142,6 +142,9 @@ def login():
     if not email or not password:
         return jsonify({'message': 'Missing credentials'}), 400
     
+    # Normalize email to lowercase for consistent lookup
+    email = email.strip().lower()
+    
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
