@@ -164,6 +164,8 @@ def login():
     }, app.config['SECRET_KEY'], algorithm="HS256")
     
     # Construct user object for response (matching expected frontend format)
+    # Note: role and active may not exist in legacy database schema
+    # Defaults are provided for backward compatibility
     user_data = {
         'id': user['id'],
         'email': user['email'],
