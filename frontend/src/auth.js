@@ -119,15 +119,9 @@ export async function requireRole(allowedRoles) {
   if (!user || !allowedRoles.includes(user.role)) {
     // Redirect to appropriate portal based on role
     if (user) {
-      if (user.role === 'trainer') {
-        window.location.href = '/trainer.html';
-      } else if (user.role === 'client' || user.role === 'user') {
-        window.location.href = '/client.html';
-      } else if (user.role === 'admin') {
-        window.location.href = '/index.html';
-      } else {
-        window.location.href = '/login.html';
-      }
+      // Use shared redirect logic for consistency
+      const redirectTo = getRedirectUrl(user);
+      window.location.href = redirectTo;
     } else {
       window.location.href = '/login.html';
     }
