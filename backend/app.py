@@ -189,6 +189,34 @@ def login():
     
     return jsonify({'token': token, 'user': user_data, 'message': 'Login successful'}), 200
 
+# Get current user
+@app.route('/api/auth/me', methods=['GET'])
+@token_required
+def get_current_user(current_user_id):
+    """Get current authenticated user info"""
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    cur.execute('SELECT * FROM users WHERE id = %s', (current_user_id,))
+    user = cur.fetchone()
+    
+    cur.close()
+    conn.close()
+    
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    # Construct user object for response
+    user_data = {
+        'id': user['id'],
+        'email': user['email'],
+        'role': user.get('role', 'user'),
+        'active': user.get('active', True),
+        'created_at': user['created_at'].isoformat() if user.get('created_at') else None,
+    }
+    
+    return jsonify({'user': user_data}), 200
+
 # Client Routes
 @app.route('/api/clients', methods=['GET'])
 @token_required
