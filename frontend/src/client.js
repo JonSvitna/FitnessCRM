@@ -121,6 +121,12 @@ function showSection(sectionId, title) {
   
   if (title) updatePageTitle(title);
   closeMobileMenu();
+
+  // Save current section to localStorage for reload persistence
+  localStorage.setItem('currentSection', sectionId);
+  if (title) {
+    localStorage.setItem('currentSectionTitle', title);
+  }
 }
 
 // Navigation handlers - will be initialized in DOMContentLoaded
@@ -646,5 +652,47 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSidebar();
   initNavigation();
   initFormHandlers();
-  loadDashboard();
+  
+  // Restore last visited section or default to dashboard
+  const lastSection = localStorage.getItem('currentSection');
+  const lastSectionTitle = localStorage.getItem('currentSectionTitle');
+  
+  if (lastSection && document.getElementById(lastSection)) {
+    // Restore the last section the user was on
+    showSection(lastSection, lastSectionTitle || 'Dashboard');
+    
+    // Load data for that section
+    switch(lastSection) {
+      case 'dashboard-section':
+        loadDashboard();
+        break;
+      case 'profile-section':
+        loadProfile();
+        break;
+      case 'workouts-section':
+        loadWorkouts();
+        break;
+      case 'calendar-section':
+        loadCalendar();
+        break;
+      case 'meals-section':
+        loadMeals();
+        break;
+      case 'progress-section':
+        loadProgress();
+        break;
+      case 'messages-section':
+        loadMessages();
+        break;
+      case 'settings-section':
+        loadSettings();
+        break;
+      default:
+        loadDashboard();
+    }
+  } else {
+    // Default to dashboard if no saved section
+    showSection('dashboard-section', 'Dashboard');
+    loadDashboard();
+  }
 });

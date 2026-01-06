@@ -161,6 +161,12 @@ function showSection(sectionId, title) {
 
   // Close mobile menu
   closeMobileMenu();
+
+  // Save current section to localStorage for reload persistence
+  localStorage.setItem('currentSection', sectionId);
+  if (title) {
+    localStorage.setItem('currentSectionTitle', title);
+  }
 }
 
 // Navigation handlers - will be initialized in DOMContentLoaded
@@ -4085,6 +4091,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       } finally {
         auth.removeToken();
         auth.removeUser();
+        // Clear saved section on logout
+        localStorage.removeItem('currentSection');
+        localStorage.removeItem('currentSectionTitle');
         window.location.href = '/login.html';
       }
     });
@@ -4103,5 +4112,64 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSidebar();
   initNavigation();
   initCollapsibleSections();
-  loadDashboard();
+  
+  // Restore last visited section or default to dashboard
+  const lastSection = localStorage.getItem('currentSection');
+  const lastSectionTitle = localStorage.getItem('currentSectionTitle');
+  
+  if (lastSection && document.getElementById(lastSection)) {
+    // Restore the last section the user was on
+    showSection(lastSection, lastSectionTitle || 'Dashboard');
+    
+    // Load data for that section
+    switch(lastSection) {
+      case 'dashboard-section':
+        loadDashboard();
+        break;
+      case 'trainers-section':
+        loadTrainers();
+        break;
+      case 'clients-section':
+        loadClients();
+        break;
+      case 'management-section':
+        loadManagement();
+        break;
+      case 'calendar-section':
+        loadCalendar();
+        break;
+      case 'progress-section':
+        loadProgressSection();
+        break;
+      case 'files-section':
+        loadFilesSection();
+        break;
+      case 'workouts-section':
+        loadWorkoutsSection();
+        break;
+      case 'activity-section':
+        loadActivityLog();
+        break;
+      case 'settings-section':
+        loadSettings();
+        break;
+      case 'messages-section':
+        if (typeof loadMessages === 'function') {
+          loadMessages();
+        }
+        break;
+      case 'analytics-section':
+        if (typeof setupTabs === 'function') {
+          setupTabs();
+          loadTabData('overview');
+        }
+        break;
+      default:
+        loadDashboard();
+    }
+  } else {
+    // Default to dashboard if no saved section
+    showSection('dashboard-section', 'Dashboard');
+    loadDashboard();
+  }
 });

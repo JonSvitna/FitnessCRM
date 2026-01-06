@@ -190,6 +190,9 @@ if (document.getElementById('login-form')) {
 export function logout() {
   auth.removeToken();
   auth.removeUser();
+  // Clear saved section on logout
+  localStorage.removeItem('currentSection');
+  localStorage.removeItem('currentSectionTitle');
   window.location.href = '/login.html';
 }
 
