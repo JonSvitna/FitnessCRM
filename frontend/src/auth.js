@@ -22,11 +22,37 @@ export const auth = {
 // Validate redirect URL to prevent open redirect attacks
 function isValidRedirectUrl(url) {
   if (!url) return false;
-  // Only allow internal paths that start with / and don't contain protocol or //
-  return url.startsWith('/') && !url.includes('//') && !url.includes(':');
+  
+  // Only allow internal paths that start with /
+  if (!url.startsWith('/')) return false;
+  
+  // Block URLs that try to redirect to external sites (e.g., //example.com)
+  if (url.startsWith('//')) return false;
+  
+  // Block URLs with explicit protocols (http:, https:, javascript:, data:, etc.)
+  // Check for protocol at the start (allowing colons elsewhere in the URL)
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(url)) return false;
+  
+  return true;
 }
 
-// Get redirect URL based on user role
+/**
+ * Get the appropriate redirect URL based on user role and optional explicit redirect
+ * 
+ * @param {Object|null} user - The user object with a 'role' property
+ * @param {string|null} explicitRedirect - Optional explicit redirect URL from query parameters
+ * @returns {string} The validated redirect URL
+ * 
+ * Security: The explicitRedirect parameter is validated to prevent open redirect attacks.
+ * Only internal paths (starting with '/') are allowed. External URLs and protocol-based
+ * redirects are blocked.
+ * 
+ * Role-based defaults:
+ * - 'trainer' -> /trainer.html
+ * - 'client' or 'user' -> /client.html
+ * - 'admin' -> /index.html
+ * - default/unknown -> /index.html
+ */
 export function getRedirectUrl(user, explicitRedirect = null) {
   // Validate and use explicit redirect if provided
   if (explicitRedirect && isValidRedirectUrl(explicitRedirect)) {
