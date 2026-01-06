@@ -184,7 +184,13 @@ if (document.getElementById('login-form')) {
         const explicitRedirect = new URLSearchParams(window.location.search).get('redirect');
         const redirectTo = getRedirectUrl(user, explicitRedirect);
         
-        window.location.href = redirectTo;
+        // Log for debugging
+        console.log('[Auth] Login successful, redirecting to:', redirectTo, 'User role:', user?.role);
+        
+        // Small delay to ensure localStorage is synced
+        setTimeout(() => {
+          window.location.href = redirectTo;
+        }, 100);
       } else {
         throw new Error('Invalid response from server');
       }
