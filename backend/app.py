@@ -136,16 +136,16 @@ def register():
 def login():
     data = request.get_json()
     
-    username = data.get('username')
+    email = data.get('email')
     password = data.get('password')
     
-    if not username or not password:
+    if not email or not password:
         return jsonify({'message': 'Missing credentials'}), 400
     
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
-    cur.execute('SELECT * FROM users WHERE username = %s', (username,))
+    cur.execute('SELECT * FROM users WHERE email = %s', (email,))
     user = cur.fetchone()
     
     cur.close()
@@ -160,7 +160,16 @@ def login():
         'exp': datetime.utcnow() + timedelta(days=7)
     }, app.config['SECRET_KEY'], algorithm="HS256")
     
-    return jsonify({'token': token, 'user_id': user['id']}), 200
+    # Construct user object for response (matching expected frontend format)
+    user_data = {
+        'id': user['id'],
+        'email': user['email'],
+        'role': user.get('role', 'user'),  # default to 'user' if not present
+        'active': user.get('active', True),
+        'created_at': user['created_at'].isoformat() if user.get('created_at') else None,
+    }
+    
+    return jsonify({'token': token, 'user': user_data, 'message': 'Login successful'}), 200
 
 # Client Routes
 @app.route('/api/clients', methods=['GET'])
