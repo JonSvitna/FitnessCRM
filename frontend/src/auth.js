@@ -30,8 +30,9 @@ function isValidRedirectUrl(url) {
   if (url.startsWith('//')) return false;
   
   // Block URLs with explicit protocols (http:, https:, javascript:, data:, etc.)
-  // Check for protocol at the start (allowing colons elsewhere in the URL)
-  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(url)) return false;
+  // Check for protocol at the start (must be at least 2 chars + colon to be valid scheme)
+  // This allows colons elsewhere in the URL (for anchors, query params)
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]+:/.test(url)) return false;
   
   return true;
 }
