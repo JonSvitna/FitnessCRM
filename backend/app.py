@@ -9,7 +9,18 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-CORS(app)
+
+# Configure CORS with proper settings for production
+# Allow all origins for development/testing - in production, set specific origins via environment variable
+cors_origins = os.environ.get('CORS_ORIGINS', '*')
+CORS(app, 
+     resources={r"/*": {"origins": cors_origins}},
+     allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+     supports_credentials=False,  # Set to False when using wildcard origins
+     expose_headers=["Content-Type", "Authorization"],
+     max_age=3600  # Cache preflight responses for 1 hour
+)
 
 # JWT Configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
@@ -177,6 +188,34 @@ def login():
     }
     
     return jsonify({'token': token, 'user': user_data, 'message': 'Login successful'}), 200
+
+# Get current user
+@app.route('/api/auth/me', methods=['GET'])
+@token_required
+def get_current_user(current_user_id):
+    """Get current authenticated user info"""
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    cur.execute('SELECT * FROM users WHERE id = %s', (current_user_id,))
+    user = cur.fetchone()
+    
+    cur.close()
+    conn.close()
+    
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    # Construct user object for response
+    user_data = {
+        'id': user['id'],
+        'email': user['email'],
+        'role': user.get('role', 'user'),
+        'active': user.get('active', True),
+        'created_at': user['created_at'].isoformat() if user.get('created_at') else None,
+    }
+    
+    return jsonify({'user': user_data}), 200
 
 # Client Routes
 @app.route('/api/clients', methods=['GET'])
@@ -393,6 +432,13 @@ def delete_session(current_user_id, session_id):
     conn.close()
     
     return jsonify({'message': 'Session deleted'}), 200
+
+# Global OPTIONS handler for CORS preflight requests
+@app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
+@app.route('/<path:path>', methods=['OPTIONS'])
+def handle_options(path):
+    """Handle all OPTIONS requests for CORS preflight"""
+    return '', 200
 
 if __name__ == '__main__':
     init_db()
