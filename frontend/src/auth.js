@@ -78,18 +78,23 @@ export function getRedirectUrl(user, explicitRedirect = null) {
 // Check if user is authenticated
 export async function checkAuth() {
   const token = auth.getToken();
+  console.log('[Auth] checkAuth called, token exists:', !!token);
   if (!token) {
     return false;
   }
 
   try {
+    console.log('[Auth] Calling /api/auth/me...');
     const response = await authAPI.getCurrentUser();
+    console.log('[Auth] /api/auth/me response:', response.data);
     if (response.data && response.data.user) {
       auth.setUser(response.data.user);
+      console.log('[Auth] checkAuth successful');
       return true;
     }
+    console.log('[Auth] checkAuth failed: no user in response');
   } catch (error) {
-    console.error('Auth check failed:', error);
+    console.error('[Auth] checkAuth failed:', error.response?.status, error.response?.data || error.message);
     auth.removeToken();
     auth.removeUser();
     return false;
@@ -185,10 +190,14 @@ if (document.getElementById('login-form')) {
         const redirectTo = getRedirectUrl(user, explicitRedirect);
         
         // Log for debugging
-        console.log('[Auth] Login successful, redirecting to:', redirectTo, 'User role:', user?.role);
+        console.log('[Auth] Login successful');
+        console.log('[Auth] Token stored:', response.data.token.substring(0, 20) + '...');
+        console.log('[Auth] User:', user);
+        console.log('[Auth] Redirect to:', redirectTo);
         
         // Small delay to ensure localStorage is synced
         setTimeout(() => {
+          console.log('[Auth] Performing redirect now...');
           window.location.href = redirectTo;
         }, 100);
       } else {
