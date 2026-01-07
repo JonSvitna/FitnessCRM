@@ -217,8 +217,13 @@ class EntityManager:
             # Handle different relationship types
             if hasattr(relationship_attr, 'append'):
                 # One-to-many or many-to-many - check for duplicates
-                if related_entity not in relationship_attr:
+                # Use list comprehension to check if entity already exists
+                existing_ids = [item.id for item in relationship_attr if hasattr(item, 'id')]
+                if related_entity.id not in existing_ids:
                     relationship_attr.append(related_entity)
+                else:
+                    # Already related, still return success
+                    return True
             else:
                 # One-to-one or many-to-one
                 setattr(entity, relationship_name, related_entity)
