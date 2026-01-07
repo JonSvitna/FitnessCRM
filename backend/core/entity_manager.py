@@ -216,8 +216,9 @@ class EntityManager:
             
             # Handle different relationship types
             if hasattr(relationship_attr, 'append'):
-                # One-to-many or many-to-many
-                relationship_attr.append(related_entity)
+                # One-to-many or many-to-many - check for duplicates
+                if related_entity not in relationship_attr:
+                    relationship_attr.append(related_entity)
             else:
                 # One-to-one or many-to-one
                 setattr(entity, relationship_name, related_entity)

@@ -73,9 +73,14 @@ def test_core_structure():
         print(f"✓ Module load order: {' -> '.join(load_order)}")
         
         # Verify dependency resolution
-        if load_order.index('Clients') > load_order.index('Sessions') or \
-           load_order.index('Trainers') > load_order.index('Sessions'):
+        # Sessions depends on Clients and Trainers, so it should load AFTER them
+        sessions_idx = load_order.index('Sessions')
+        clients_idx = load_order.index('Clients')
+        trainers_idx = load_order.index('Trainers')
+        
+        if sessions_idx < clients_idx or sessions_idx < trainers_idx:
             print("✗ Module dependencies not resolved correctly")
+            print(f"  Sessions at index {sessions_idx}, but depends on Clients ({clients_idx}) and Trainers ({trainers_idx})")
             return False
         print("✓ Module dependencies resolved correctly")
     except Exception as e:
