@@ -121,6 +121,7 @@ export const trainerAPI = {
   create: (data) => api.post('/api/trainers', data),
   getAll: (params = {}) => api.get('/api/trainers', { params }),
   getById: (id) => api.get(`/api/trainers/${id}`),
+  getMe: () => api.get('/api/trainers/me'),
   update: (id, data) => api.put(`/api/trainers/${id}`, data),
   delete: (id) => api.delete(`/api/trainers/${id}`),
 };
@@ -130,6 +131,7 @@ export const clientAPI = {
   create: (data) => api.post('/api/clients', data),
   getAll: (params = {}) => api.get('/api/clients', { params }),
   getById: (id) => api.get(`/api/clients/${id}`),
+  getMe: () => api.get('/api/clients/me'),
   update: (id, data) => api.put(`/api/clients/${id}`, data),
   delete: (id) => api.delete(`/api/clients/${id}`),
 };

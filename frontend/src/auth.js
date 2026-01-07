@@ -19,21 +19,82 @@ export const auth = {
   isAuthenticated: () => !!localStorage.getItem('auth_token'),
 };
 
+// Validate redirect URL to prevent open redirect attacks
+function isValidRedirectUrl(url) {
+  if (!url) return false;
+  
+  // Only allow internal paths that start with /
+  if (!url.startsWith('/')) return false;
+  
+  // Block URLs that try to redirect to external sites (e.g., //example.com)
+  if (url.startsWith('//')) return false;
+  
+  // Block URLs with explicit protocols (http:, https:, javascript:, data:, etc.)
+  // Check for protocol at the start (must be at least 2 chars + colon to be valid scheme)
+  // This allows colons elsewhere in the URL (for anchors, query params)
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]+:/.test(url)) return false;
+  
+  return true;
+}
+
+/**
+ * Get the appropriate redirect URL based on user role and optional explicit redirect
+ * 
+ * @param {Object|null} user - The user object with a 'role' property
+ * @param {string|null} explicitRedirect - Optional explicit redirect URL from query parameters
+ * @returns {string} The validated redirect URL
+ * 
+ * Security: The explicitRedirect parameter is validated to prevent open redirect attacks.
+ * Only internal paths (starting with '/') are allowed. External URLs and protocol-based
+ * redirects are blocked.
+ * 
+ * Role-based defaults:
+ * - 'trainer' -> /trainer.html
+ * - 'client' or 'user' -> /client.html
+ * - 'admin' -> /index.html
+ * - default/unknown -> /index.html
+ */
+export function getRedirectUrl(user, explicitRedirect = null) {
+  // Validate and use explicit redirect if provided
+  if (explicitRedirect && isValidRedirectUrl(explicitRedirect)) {
+    return explicitRedirect;
+  }
+  
+  // Default redirect based on user role
+  if (user && user.role) {
+    if (user.role === 'trainer') {
+      return '/trainer.html';
+    } else if (user.role === 'client' || user.role === 'user') {
+      return '/client.html';
+    } else if (user.role === 'admin') {
+      return '/index.html';
+    }
+  }
+  
+  // Default to admin dashboard
+  return '/index.html';
+}
+
 // Check if user is authenticated
 export async function checkAuth() {
   const token = auth.getToken();
+  console.log('[Auth] checkAuth called, token exists:', !!token);
   if (!token) {
     return false;
   }
 
   try {
+    console.log('[Auth] Calling /api/auth/me...');
     const response = await authAPI.getCurrentUser();
+    console.log('[Auth] /api/auth/me response:', response.data);
     if (response.data && response.data.user) {
       auth.setUser(response.data.user);
+      console.log('[Auth] checkAuth successful');
       return true;
     }
+    console.log('[Auth] checkAuth failed: no user in response');
   } catch (error) {
-    console.error('Auth check failed:', error);
+    console.error('[Auth] checkAuth failed:', error.response?.status, error.response?.data || error.message);
     auth.removeToken();
     auth.removeUser();
     return false;
@@ -64,15 +125,9 @@ export async function requireRole(allowedRoles) {
   if (!user || !allowedRoles.includes(user.role)) {
     // Redirect to appropriate portal based on role
     if (user) {
-      if (user.role === 'trainer') {
-        window.location.href = '/trainer.html';
-      } else if (user.role === 'client' || user.role === 'user') {
-        window.location.href = '/client.html';
-      } else if (user.role === 'admin') {
-        window.location.href = '/index.html';
-      } else {
-        window.location.href = '/login.html';
-      }
+      // Use shared redirect logic for consistency
+      const redirectTo = getRedirectUrl(user);
+      window.location.href = redirectTo;
     } else {
       window.location.href = '/login.html';
     }
@@ -130,26 +185,21 @@ if (document.getElementById('login-form')) {
           auth.setUser(user);
         }
 
-        // Redirect based on user role (with safe fallback)
-        let redirectTo = '/index.html'; // Default to admin dashboard
-        
-        if (user && user.role) {
-          if (user.role === 'trainer') {
-            redirectTo = '/trainer.html';
-          } else if (user.role === 'client' || user.role === 'user') {
-            redirectTo = '/client.html';
-          } else if (user.role === 'admin') {
-            redirectTo = '/index.html';
-          }
-        }
-        
-        // Override with explicit redirect parameter if provided
+        // Get redirect URL based on user role
         const explicitRedirect = new URLSearchParams(window.location.search).get('redirect');
-        if (explicitRedirect) {
-          redirectTo = explicitRedirect;
-        }
+        const redirectTo = getRedirectUrl(user, explicitRedirect);
         
-        window.location.href = redirectTo;
+        // Log for debugging
+        console.log('[Auth] Login successful');
+        console.log('[Auth] Token stored:', response.data.token.substring(0, 20) + '...');
+        console.log('[Auth] User:', user);
+        console.log('[Auth] Redirect to:', redirectTo);
+        
+        // Small delay to ensure localStorage is synced
+        setTimeout(() => {
+          console.log('[Auth] Performing redirect now...');
+          window.location.href = redirectTo;
+        }, 100);
       } else {
         throw new Error('Invalid response from server');
       }
@@ -178,7 +228,12 @@ if (document.getElementById('login-form')) {
   if (auth.isAuthenticated()) {
     checkAuth().then((isAuth) => {
       if (isAuth) {
-        window.location.href = '/index.html';
+        // Get redirect URL based on user role
+        const user = auth.getUser();
+        const explicitRedirect = new URLSearchParams(window.location.search).get('redirect');
+        const redirectTo = getRedirectUrl(user, explicitRedirect);
+        
+        window.location.href = redirectTo;
       }
     }).catch((error) => {
       console.error('Auth check error:', error);
@@ -190,6 +245,9 @@ if (document.getElementById('login-form')) {
 export function logout() {
   auth.removeToken();
   auth.removeUser();
+  // Clear saved section on logout
+  localStorage.removeItem('currentSection');
+  localStorage.removeItem('currentSectionTitle');
   window.location.href = '/login.html';
 }
 

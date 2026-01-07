@@ -147,7 +147,7 @@ function showSection(sectionId, title) {
   }
 
   // Update sidebar navigation
-  const sidebarItems = document.querySelectorAll('.sidebar-item');
+  const sidebarItems = document.querySelectorAll('.sidebar-item, .sidebar-item-sub');
   sidebarItems.forEach(item => item.classList.remove('sidebar-item-active'));
   const activeNav = document.getElementById(`nav-${sectionId.replace('-section', '')}`);
   if (activeNav) {
@@ -161,6 +161,12 @@ function showSection(sectionId, title) {
 
   // Close mobile menu
   closeMobileMenu();
+
+  // Save current section to localStorage for reload persistence
+  localStorage.setItem('currentSection', sectionId);
+  if (title) {
+    localStorage.setItem('currentSectionTitle', title);
+  }
 }
 
 // Navigation handlers - will be initialized in DOMContentLoaded
@@ -2829,7 +2835,7 @@ document.getElementById('exercise-form').addEventListener('submit', async (e) =>
     image_url: formData.get('image_url') || null,
     video_url: formData.get('video_url') || null,
     is_custom: true,
-    created_by: 1 // TODO: Get from auth
+    created_by: auth.getUser()?.id || 1 // Use authenticated user ID
   };
   
   try {
@@ -2877,7 +2883,9 @@ async function loadWorkoutCategories() {
 
 async function loadWorkoutTemplates() {
   try {
-    const params = { user_id: 1 }; // TODO: Get from auth
+    const params = {};
+    const userId = auth.getUser()?.id;
+    if (userId) params.user_id = userId;
     
     const search = document.getElementById('template-search').value;
     const category = document.getElementById('template-category-filter').value;
@@ -3255,7 +3263,7 @@ document.getElementById('template-form').addEventListener('submit', async (e) =>
     difficulty: formData.get('difficulty') || null,
     duration_minutes: formData.get('duration_minutes') ? parseInt(formData.get('duration_minutes')) : null,
     is_public: formData.get('is_public') === 'on',
-    created_by: 1, // TODO: Get from auth
+    created_by: auth.getUser()?.id || 1, // Use authenticated user ID
     exercises: state.templateExercises
   };
   
@@ -3456,7 +3464,7 @@ document.getElementById('assign-workout-form').addEventListener('submit', async 
   const data = {
     client_id: parseInt(formData.get('client_id')),
     workout_template_id: parseInt(formData.get('workout_template_id')),
-    assigned_by: 1, // TODO: Get from auth
+    assigned_by: auth.getUser()?.id || 1, // Use authenticated user ID
     start_date: formData.get('start_date') || null,
     end_date: formData.get('end_date') || null,
     frequency_per_week: formData.get('frequency_per_week') ? parseInt(formData.get('frequency_per_week')) : null,
@@ -4083,6 +4091,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       } finally {
         auth.removeToken();
         auth.removeUser();
+        // Clear saved section on logout
+        localStorage.removeItem('currentSection');
+        localStorage.removeItem('currentSectionTitle');
         window.location.href = '/login.html';
       }
     });
@@ -4101,5 +4112,64 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSidebar();
   initNavigation();
   initCollapsibleSections();
-  loadDashboard();
+  
+  // Restore last visited section or default to dashboard
+  const lastSection = localStorage.getItem('currentSection');
+  const lastSectionTitle = localStorage.getItem('currentSectionTitle');
+  
+  if (lastSection && document.getElementById(lastSection)) {
+    // Restore the last section the user was on
+    showSection(lastSection, lastSectionTitle || 'Dashboard');
+    
+    // Load data for that section
+    switch(lastSection) {
+      case 'dashboard-section':
+        loadDashboard();
+        break;
+      case 'trainers-section':
+        loadTrainers();
+        break;
+      case 'clients-section':
+        loadClients();
+        break;
+      case 'management-section':
+        loadManagement();
+        break;
+      case 'calendar-section':
+        loadCalendar();
+        break;
+      case 'progress-section':
+        loadProgressSection();
+        break;
+      case 'files-section':
+        loadFilesSection();
+        break;
+      case 'workouts-section':
+        loadWorkoutsSection();
+        break;
+      case 'activity-section':
+        loadActivityLog();
+        break;
+      case 'settings-section':
+        loadSettings();
+        break;
+      case 'messages-section':
+        if (typeof loadMessages === 'function') {
+          loadMessages();
+        }
+        break;
+      case 'analytics-section':
+        if (typeof setupTabs === 'function') {
+          setupTabs();
+          loadTabData('overview');
+        }
+        break;
+      default:
+        loadDashboard();
+    }
+  } else {
+    // Default to dashboard if no saved section
+    showSection('dashboard-section', 'Dashboard');
+    loadDashboard();
+  }
 });

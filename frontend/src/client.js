@@ -2,9 +2,16 @@ import './styles/main.css';
 import { trainerAPI, clientAPI, crmAPI, measurementAPI, sessionAPI } from './api.js';
 import { requireRole, auth } from './auth.js';
 
+// Helper function to extract data from API responses
+function extractData(response) {
+  // Handle paginated responses {items: [...], total: N} or direct arrays
+  return response.data?.items || response.data || [];
+}
+
 // State management
 let state = {
-  client: { id: 1, name: 'Demo Client' }, // Mock client
+  client: null, // Will be loaded from authenticated user
+  clientId: null, // Client ID from user profile
   trainer: null,
   assignment: null,
   workouts: [],
@@ -107,13 +114,19 @@ function showSection(sectionId, title) {
     targetSection.classList.add('active');
   }
 
-  const sidebarItems = document.querySelectorAll('.sidebar-item');
+  const sidebarItems = document.querySelectorAll('.sidebar-item, .sidebar-item-sub');
   sidebarItems.forEach(item => item.classList.remove('sidebar-item-active'));
   const activeNav = document.getElementById(`nav-${sectionId.replace('-section', '')}`);
   if (activeNav) activeNav.classList.add('sidebar-item-active');
   
   if (title) updatePageTitle(title);
   closeMobileMenu();
+
+  // Save current section to localStorage for reload persistence
+  localStorage.setItem('currentSection', sectionId);
+  if (title) {
+    localStorage.setItem('currentSectionTitle', title);
+  }
 }
 
 // Navigation handlers - will be initialized in DOMContentLoaded
@@ -171,6 +184,11 @@ function initNavigation() {
 // Dashboard functions
 async function loadDashboard() {
   try {
+    if (!state.client || !state.client.id) {
+      console.error('Client not loaded');
+      return;
+    }
+
     // Load assignment and trainer info
     const assignmentsResponse = await crmAPI.getAssignments();
     const assignments = assignmentsResponse.data;
@@ -178,7 +196,8 @@ async function loadDashboard() {
 
     if (state.assignment) {
       const trainersResponse = await trainerAPI.getAll();
-      state.trainer = trainersResponse.data.find(t => t.id === state.assignment.trainer_id);
+      const trainers = extractData(trainersResponse);
+      state.trainer = trainers.find(t => t.id === state.assignment.trainer_id);
 
       // Display trainer info
       const trainerContainer = document.getElementById('trainer-info');
@@ -202,14 +221,44 @@ async function loadDashboard() {
       document.getElementById('trainer-info').innerHTML = '<p class="text-neutral-600">No trainer assigned yet</p>';
     }
 
-    // Mock stats
-    document.getElementById('workouts-completed').textContent = '0';
-    document.getElementById('sessions-attended').textContent = '0';
-    document.getElementById('days-active').textContent = '0';
-    document.getElementById('new-messages').textContent = '0';
-
-    // Mock upcoming sessions
-    document.getElementById('upcoming-sessions').innerHTML = '<p class="text-neutral-600">No upcoming sessions</p>';
+    // Load real stats from sessions
+    try {
+      const sessionsResponse = await sessionAPI.getAll({ client_id: state.client.id });
+      const clientSessions = sessionsResponse.data || [];
+      
+      // Count completed sessions
+      const completedSessions = clientSessions.filter(s => s.status === 'completed').length;
+      document.getElementById('sessions-attended').textContent = completedSessions;
+      
+      // TODO: Implement workout tracking
+      document.getElementById('workouts-completed').textContent = '0';
+      document.getElementById('days-active').textContent = '0';
+      document.getElementById('new-messages').textContent = '0';
+      
+      // Display upcoming sessions
+      const now = new Date();
+      const upcomingSessions = clientSessions
+        .filter(s => new Date(s.session_date) >= now && s.status !== 'cancelled')
+        .sort((a, b) => new Date(a.session_date) - new Date(b.session_date))
+        .slice(0, 3);
+      
+      const upcomingContainer = document.getElementById('upcoming-sessions');
+      if (upcomingSessions.length > 0) {
+        upcomingContainer.innerHTML = upcomingSessions.map(session => {
+          const sessionDate = new Date(session.session_date);
+          return `
+            <div class="p-3 bg-neutral-50 rounded-lg">
+              <p class="text-neutral-900 font-medium">${sessionDate.toLocaleDateString()} at ${sessionDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              <p class="text-sm text-neutral-600 capitalize">${session.session_type || 'Session'} - ${session.duration || 60} minutes</p>
+            </div>
+          `;
+        }).join('');
+      } else {
+        upcomingContainer.innerHTML = '<p class="text-neutral-600">No upcoming sessions</p>';
+      }
+    } catch (error) {
+      console.error('Error loading session stats:', error);
+    }
     
     // Mock today's workout
     document.getElementById('today-workout').innerHTML = '<p class="text-neutral-600">No workout assigned for today</p>';
@@ -221,8 +270,13 @@ async function loadDashboard() {
 // Profile functions
 async function loadProfile() {
   try {
-    const response = await clientAPI.get(state.client.id);
-    const clientData = response.data;
+    if (!state.client || !state.client.id) {
+      console.error('Client not loaded');
+      return;
+    }
+
+    // Client data is already loaded in state
+    const clientData = state.client;
     
     // Populate profile form
     const profileForm = document.getElementById('profile-form');
@@ -417,6 +471,8 @@ function initFormHandlers() {
 
     try {
       await clientAPI.update(state.client.id, data);
+      // Update local state
+      state.client = { ...state.client, ...data };
       showToast('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -431,6 +487,8 @@ function initFormHandlers() {
 
     try {
       await clientAPI.update(state.client.id, data);
+      // Update local state
+      state.client = { ...state.client, ...data };
       showToast('Fitness information updated successfully!');
     } catch (error) {
       console.error('Error updating fitness info:', error);
@@ -570,14 +628,71 @@ document.addEventListener('DOMContentLoaded', async () => {
     return; // requireRole redirects if not authorized
   }
 
-  // Update client ID from auth user if available
-  const user = auth.getUser();
-  if (user && user.id) {
-    state.client.id = user.id;
+  // Load the authenticated client's profile
+  try {
+    const response = await clientAPI.getMe();
+    state.client = response.data;
+    state.clientId = state.client.id;
+    
+    // Update top bar with client name
+    const nameElement = document.querySelector('.top-bar .text-sm.font-semibold');
+    if (nameElement && state.client.name) {
+      nameElement.textContent = state.client.name;
+    }
+  } catch (error) {
+    console.error('Error loading client profile:', error);
+    showToast('Error loading your profile. Please try again.');
+    // Fallback: try to get from user object
+    const user = auth.getUser();
+    if (user && user.id) {
+      state.clientId = user.id;
+    }
   }
 
   initSidebar();
   initNavigation();
   initFormHandlers();
-  loadDashboard();
+  
+  // Restore last visited section or default to dashboard
+  const lastSection = localStorage.getItem('currentSection');
+  const lastSectionTitle = localStorage.getItem('currentSectionTitle');
+  
+  if (lastSection && document.getElementById(lastSection)) {
+    // Restore the last section the user was on
+    showSection(lastSection, lastSectionTitle || 'Dashboard');
+    
+    // Load data for that section
+    switch(lastSection) {
+      case 'dashboard-section':
+        loadDashboard();
+        break;
+      case 'profile-section':
+        loadProfile();
+        break;
+      case 'workouts-section':
+        loadWorkouts();
+        break;
+      case 'calendar-section':
+        loadCalendar();
+        break;
+      case 'meals-section':
+        loadMeals();
+        break;
+      case 'progress-section':
+        loadProgress();
+        break;
+      case 'messages-section':
+        loadMessages();
+        break;
+      case 'settings-section':
+        loadSettings();
+        break;
+      default:
+        loadDashboard();
+    }
+  } else {
+    // Default to dashboard if no saved section
+    showSection('dashboard-section', 'Dashboard');
+    loadDashboard();
+  }
 });
