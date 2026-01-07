@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from models.database import db, Measurement, Client
 from datetime import datetime
 
-measurement_bp = Blueprint('measurements', __name__)
+measurement_bp = Blueprint('measurements', __name__, url_prefix='/api')
 
 @measurement_bp.route('/measurements', methods=['GET'])
 def get_measurements():

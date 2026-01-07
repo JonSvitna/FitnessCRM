@@ -5,7 +5,7 @@ from datetime import datetime
 import os
 import uuid
 
-progress_photo_bp = Blueprint('progress_photos', __name__)
+progress_photo_bp = Blueprint('progress_photos', __name__, url_prefix='/api')
 
 # Configure upload settings
 UPLOAD_FOLDER = 'uploads/progress_photos'

@@ -202,15 +202,15 @@ export const activityAPI = {
 
 // Session API
 export const sessionAPI = {
-  create: (data) => api.post('/sessions', data),
-  getAll: (params = {}) => api.get('/sessions', { params }),
-  getById: (id) => api.get(`/sessions/${id}`),
-  update: (id, data) => api.put(`/sessions/${id}`, data),
-  delete: (id) => api.delete(`/sessions/${id}`),
+  create: (data) => api.post('/api/sessions', data),
+  getAll: (params = {}) => api.get('/api/sessions', { params }),
+  getById: (id) => api.get(`/api/sessions/${id}`),
+  update: (id, data) => api.put(`/api/sessions/${id}`, data),
+  delete: (id) => api.delete(`/api/sessions/${id}`),
   exportIcal: (params = {}) => {
     // Build query string
     const queryParams = new URLSearchParams(params).toString();
-    const url = `${API_BASE_URL}/sessions/export/ical${queryParams ? '?' + queryParams : ''}`;
+    const url = `${API_BASE_URL}/api/sessions/export/ical${queryParams ? '?' + queryParams : ''}`;
     
     // Trigger download
     const link = document.createElement('a');
@@ -224,37 +224,37 @@ export const sessionAPI = {
 
 // Recurring Session API
 export const recurringSessionAPI = {
-  create: (data) => api.post('/recurring-sessions', data),
-  getAll: (params = {}) => api.get('/recurring-sessions', { params }),
-  delete: (id, deleteFuture = false) => api.delete(`/recurring-sessions/${id}?delete_future=${deleteFuture}`),
+  create: (data) => api.post('/api/recurring-sessions', data),
+  getAll: (params = {}) => api.get('/api/recurring-sessions', { params }),
+  delete: (id, deleteFuture = false) => api.delete(`/api/recurring-sessions/${id}?delete_future=${deleteFuture}`),
 };
 
 // Measurement API
 export const measurementAPI = {
-  create: (data) => api.post('/measurements', data),
-  getAll: (params = {}) => api.get('/measurements', { params }),
-  getById: (id) => api.get(`/measurements/${id}`),
-  update: (id, data) => api.put(`/measurements/${id}`, data),
-  delete: (id) => api.delete(`/measurements/${id}`),
-  getLatest: (clientId) => api.get(`/measurements/client/${clientId}/latest`),
-  getProgress: (clientId) => api.get(`/measurements/client/${clientId}/progress`),
+  create: (data) => api.post('/api/measurements', data),
+  getAll: (params = {}) => api.get('/api/measurements', { params }),
+  getById: (id) => api.get(`/api/measurements/${id}`),
+  update: (id, data) => api.put(`/api/measurements/${id}`, data),
+  delete: (id) => api.delete(`/api/measurements/${id}`),
+  getLatest: (clientId) => api.get(`/api/measurements/client/${clientId}/latest`),
+  getProgress: (clientId) => api.get(`/api/measurements/client/${clientId}/progress`),
 };
 
 // File API
 export const fileAPI = {
   upload: (formData) => {
-    return api.post('/files', formData, {
+    return api.post('/api/files', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
   },
-  getAll: (params = {}) => api.get('/files', { params }),
-  getById: (id) => api.get(`/files/${id}`),
-  update: (id, data) => api.put(`/files/${id}`, data),
-  delete: (id) => api.delete(`/files/${id}`),
+  getAll: (params = {}) => api.get('/api/files', { params }),
+  getById: (id) => api.get(`/api/files/${id}`),
+  update: (id, data) => api.put(`/api/files/${id}`, data),
+  delete: (id) => api.delete(`/api/files/${id}`),
   download: (id, filename) => {
-    const url = `${API_BASE_URL}/files/${id}/download`;
+    const url = `${API_BASE_URL}/api/files/${id}/download`;
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
@@ -262,8 +262,8 @@ export const fileAPI = {
     link.click();
     document.body.removeChild(link);
   },
-  getCategories: () => api.get('/files/categories'),
-  getStats: (params = {}) => api.get('/files/stats', { params }),
+  getCategories: () => api.get('/api/files/categories'),
+  getStats: (params = {}) => api.get('/api/files/stats', { params }),
 };
 
 // Exercise API
@@ -304,33 +304,33 @@ export const workoutAPI = {
 // Progress Photo API
 export const progressPhotoAPI = {
   upload: (formData) => {
-    return api.post('/progress-photos', formData, {
+    return api.post('/api/progress-photos', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
   },
-  getAll: (params = {}) => api.get('/progress-photos', { params }),
-  getById: (id) => api.get(`/progress-photos/${id}`),
-  update: (id, data) => api.put(`/progress-photos/${id}`, data),
-  delete: (id) => api.delete(`/progress-photos/${id}`),
-  getFile: (id) => `${API_BASE_URL}/progress-photos/${id}/file`,
-  getComparison: (clientId) => api.get(`/progress-photos/client/${clientId}/comparison`),
+  getAll: (params = {}) => api.get('/api/progress-photos', { params }),
+  getById: (id) => api.get(`/api/progress-photos/${id}`),
+  update: (id, data) => api.put(`/api/progress-photos/${id}`, data),
+  delete: (id) => api.delete(`/api/progress-photos/${id}`),
+  getFile: (id) => `${API_BASE_URL}/api/progress-photos/${id}/file`,
+  getComparison: (clientId) => api.get(`/api/progress-photos/client/${clientId}/comparison`),
 };
 
 // Goal API
 export const goalAPI = {
-  create: (data) => api.post('/goals', data),
-  getAll: (params = {}) => api.get('/goals', { params }),
-  getById: (id) => api.get(`/goals/${id}`),
-  update: (id, data) => api.put(`/goals/${id}`, data),
-  delete: (id) => api.delete(`/goals/${id}`),
-  getSummary: (clientId) => api.get(`/goals/client/${clientId}/summary`),
+  create: (data) => api.post('/api/goals', data),
+  getAll: (params = {}) => api.get('/api/goals', { params }),
+  getById: (id) => api.get(`/api/goals/${id}`),
+  update: (id, data) => api.put(`/api/goals/${id}`, data),
+  delete: (id) => api.delete(`/api/goals/${id}`),
+  getSummary: (clientId) => api.get(`/api/goals/client/${clientId}/summary`),
   
   // Milestones
-  createMilestone: (goalId, data) => api.post(`/goals/${goalId}/milestones`, data),
-  updateMilestone: (goalId, milestoneId, data) => api.put(`/goals/${goalId}/milestones/${milestoneId}`, data),
-  deleteMilestone: (goalId, milestoneId) => api.delete(`/goals/${goalId}/milestones/${milestoneId}`),
+  createMilestone: (goalId, data) => api.post(`/api/goals/${goalId}/milestones`, data),
+  updateMilestone: (goalId, milestoneId, data) => api.put(`/api/goals/${goalId}/milestones/${milestoneId}`, data),
+  deleteMilestone: (goalId, milestoneId) => api.delete(`/api/goals/${goalId}/milestones/${milestoneId}`),
 };
 
 // Message API

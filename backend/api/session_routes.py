@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, time
 from utils.email import send_session_confirmation
 from utils.automation import trigger_automation_rules
 
-session_bp = Blueprint('sessions', __name__)
+session_bp = Blueprint('sessions', __name__, url_prefix='/api')
 
 @session_bp.route('/sessions', methods=['GET'])
 def get_sessions():

@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from models.database import db, Goal, GoalMilestone, Client
 from datetime import datetime
 
-goal_bp = Blueprint('goals', __name__)
+goal_bp = Blueprint('goals', __name__, url_prefix='/api')
 
 @goal_bp.route('/goals', methods=['GET'])
 def get_goals():

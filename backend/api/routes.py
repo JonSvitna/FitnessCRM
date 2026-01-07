@@ -259,51 +259,55 @@ def check_email():
 @api_bp.route('/clients', methods=['GET'])
 def get_clients():
     """Get all clients with optional search and filter"""
-    query = Client.query
-    
-    # Search by name, email, or phone
-    search = request.args.get('search', '').strip()
-    if search:
-        search_pattern = f'%{search}%'
-        query = query.filter(
-            db.or_(
-                Client.name.ilike(search_pattern),
-                Client.email.ilike(search_pattern),
-                Client.phone.ilike(search_pattern)
+    try:
+        query = Client.query
+        
+        # Search by name, email, or phone
+        search = request.args.get('search', '').strip()
+        if search:
+            search_pattern = f'%{search}%'
+            query = query.filter(
+                db.or_(
+                    Client.name.ilike(search_pattern),
+                    Client.email.ilike(search_pattern),
+                    Client.phone.ilike(search_pattern)
+                )
             )
-        )
-    
-    # Filter by status
-    status = request.args.get('status', '').strip()
-    if status:
-        query = query.filter(Client.status == status)
-    
-    # Filter by goals
-    goals = request.args.get('goals', '').strip()
-    if goals:
-        query = query.filter(Client.goals.ilike(f'%{goals}%'))
-    
-    # Pagination
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 25, type=int)
-    per_page = min(per_page, 100)  # Max 100 items per page
-    
-    # Get total count before pagination
-    total = query.count()
-    
-    # Apply pagination
-    query = query.order_by(Client.name)
-    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
-    
-    return jsonify({
-        'items': [client.to_dict() for client in pagination.items],
-        'total': total,
-        'page': page,
-        'per_page': per_page,
-        'pages': pagination.pages,
-        'has_next': pagination.has_next,
-        'has_prev': pagination.has_prev
-    }), 200
+        
+        # Filter by status
+        status = request.args.get('status', '').strip()
+        if status:
+            query = query.filter(Client.status == status)
+        
+        # Filter by goals
+        goals = request.args.get('goals', '').strip()
+        if goals:
+            query = query.filter(Client.goals.ilike(f'%{goals}%'))
+        
+        # Pagination
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 25, type=int)
+        per_page = min(per_page, 100)  # Max 100 items per page
+        
+        # Get total count before pagination
+        total = query.count()
+        
+        # Apply pagination
+        query = query.order_by(Client.name)
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        
+        return jsonify({
+            'items': [client.to_dict() for client in pagination.items],
+            'total': total,
+            'page': page,
+            'per_page': per_page,
+            'pages': pagination.pages,
+            'has_next': pagination.has_next,
+            'has_prev': pagination.has_prev
+        }), 200
+    except Exception as e:
+        logger.error(f"Error getting clients: {str(e)}", exc_info=True)
+        return jsonify({'error': f'Failed to retrieve clients: {str(e)}'}), 500
 
 @api_bp.route('/clients/<int:client_id>', methods=['GET'])
 def get_client(client_id):

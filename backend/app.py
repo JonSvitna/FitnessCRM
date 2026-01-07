@@ -311,6 +311,15 @@ def create_app(config_name=None):
         response.headers.add('Access-Control-Allow-Methods', "GET,PUT,POST,DELETE,OPTIONS,PATCH")
         return response, 404
     
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+        logger.warning(f"405 error: {error} - Method {request.method} not allowed for {request.path}")
+        response = jsonify({'error': f'Method {request.method} not allowed for this endpoint'})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization,X-Requested-With")
+        response.headers.add('Access-Control-Allow-Methods', "GET,PUT,POST,DELETE,OPTIONS,PATCH")
+        return response, 405
+    
     @app.errorhandler(500)
     def internal_error(error):
         logger.error(f"500 error: {error}")
