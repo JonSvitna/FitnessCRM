@@ -1,13 +1,15 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from core.entity import BaseEntity
+from core.relationship import RelationType
 
 db = SQLAlchemy()
 
 # Import User model (defined separately for auth)
 from models.user import User
 
-class Trainer(db.Model):
-    """Trainer model"""
+class Trainer(db.Model, BaseEntity):
+    """Trainer model with EspoCRM-inspired structure"""
     __tablename__ = 'trainers'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -22,10 +24,27 @@ class Trainer(db.Model):
     active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    deleted_at = db.Column(db.DateTime, nullable=True)  # Soft delete support
     
     # Relationships
     assignments = db.relationship('Assignment', backref='trainer', lazy=True, cascade='all, delete-orphan')
     sessions = db.relationship('Session', backref='trainer', lazy=True, cascade='all, delete-orphan')
+    
+    @classmethod
+    def get_relationship_defs(cls):
+        """Define relationships for this entity"""
+        return {
+            'assignments': {
+                'type': RelationType.ONE_TO_MANY.value,
+                'entity': 'Assignment',
+                'foreign_key': 'trainer_id'
+            },
+            'sessions': {
+                'type': RelationType.ONE_TO_MANY.value,
+                'entity': 'Session',
+                'foreign_key': 'trainer_id'
+            }
+        }
     
     def to_dict(self):
         return {
@@ -41,10 +60,11 @@ class Trainer(db.Model):
             'active': self.active,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
         }
 
-class Client(db.Model):
-    """Client model"""
+class Client(db.Model, BaseEntity):
+    """Client model with EspoCRM-inspired structure"""
     __tablename__ = 'clients'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -61,11 +81,33 @@ class Client(db.Model):
     start_date = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    deleted_at = db.Column(db.DateTime, nullable=True)  # Soft delete support
     
     # Relationships
     assignments = db.relationship('Assignment', backref='client', lazy=True, cascade='all, delete-orphan')
     sessions = db.relationship('Session', backref='client', lazy=True, cascade='all, delete-orphan')
     progress_records = db.relationship('ProgressRecord', backref='client', lazy=True, cascade='all, delete-orphan')
+    
+    @classmethod
+    def get_relationship_defs(cls):
+        """Define relationships for this entity"""
+        return {
+            'assignments': {
+                'type': RelationType.ONE_TO_MANY.value,
+                'entity': 'Assignment',
+                'foreign_key': 'client_id'
+            },
+            'sessions': {
+                'type': RelationType.ONE_TO_MANY.value,
+                'entity': 'Session',
+                'foreign_key': 'client_id'
+            },
+            'progress_records': {
+                'type': RelationType.ONE_TO_MANY.value,
+                'entity': 'ProgressRecord',
+                'foreign_key': 'client_id'
+            }
+        }
     
     def to_dict(self):
         return {
@@ -83,10 +125,11 @@ class Client(db.Model):
             'start_date': self.start_date.isoformat() if self.start_date else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
         }
 
-class Assignment(db.Model):
-    """Assignment model - links trainers and clients"""
+class Assignment(db.Model, BaseEntity):
+    """Assignment model - links trainers and clients with EspoCRM-inspired structure"""
     __tablename__ = 'assignments'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -96,6 +139,23 @@ class Assignment(db.Model):
     status = db.Column(db.String(50), default='active')  # active, completed, cancelled
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    deleted_at = db.Column(db.DateTime, nullable=True)  # Soft delete support
+    
+    @classmethod
+    def get_relationship_defs(cls):
+        """Define relationships for this entity"""
+        return {
+            'trainer': {
+                'type': RelationType.MANY_TO_ONE.value,
+                'entity': 'Trainer',
+                'foreign_key': 'trainer_id'
+            },
+            'client': {
+                'type': RelationType.MANY_TO_ONE.value,
+                'entity': 'Client',
+                'foreign_key': 'client_id'
+            }
+        }
     
     def to_dict(self):
         return {
@@ -106,6 +166,7 @@ class Assignment(db.Model):
             'status': self.status,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
         }
 
 class Session(db.Model):
