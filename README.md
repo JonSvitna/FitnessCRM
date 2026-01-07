@@ -2,7 +2,13 @@
 
 A modern, full-stack Customer Relationship Management (CRM) system for fitness trainers and gyms. Inspired by industry leaders like TrueCoach and Trainerize, featuring a professional orange-red-white color scheme, comprehensive marketing pages, and a powerful management dashboard. Frontend deployed on Vercel, Flask API backend on Railway with PostgreSQL database.
 
+> 🆕 **NEW: EspoCRM-Inspired Architecture** - FitnessCRM now features a modular, entity-based architecture inspired by EspoCRM for better organization and maintainability!
+> 
 > 📖 **[Read the Comprehensive Manual](MANUAL.md)** - Complete documentation covering all aspects of FitnessCRM including installation, architecture, API reference, deployment, testing, troubleshooting, and more.
+>
+> 🏗️ **[EspoCRM Architecture Guide](ESPOCRM_ARCHITECTURE.md)** - Learn about the new modular architecture
+>
+> 🔄 **[Migration Guide](MIGRATION_TO_ESPOCRM.md)** - Migrate to the new architecture
 
 ## 🎯 Features
 
@@ -67,9 +73,12 @@ A modern, full-stack Customer Relationship Management (CRM) system for fitness t
 
 ### Backend
 - **Framework**: Flask
+- **Architecture**: EspoCRM-inspired modular system with EntityManager
 - **Database**: PostgreSQL
 - **ORM**: SQLAlchemy
 - **API**: RESTful with CORS support
+- **Modules**: Clients, Trainers, Sessions (organized by feature)
+- **Entity System**: Metadata-driven with relationship management
 - **Deployment**: Railway
 
 ## 📁 Project Structure
@@ -374,6 +383,38 @@ Railway automatically provisions a PostgreSQL database. The connection URL is au
 - **Security**: Add authentication before deploying to production
 - **Scalability**: The current architecture supports horizontal scaling
 - **Built Similar to**: TrueCoach CRM platform
+- **NEW Architecture**: EspoCRM-inspired modular system for better organization
+
+## 🏗️ New EspoCRM-Inspired Architecture
+
+FitnessCRM now features a robust, modular architecture inspired by EspoCRM:
+
+### Key Features
+- **Entity System**: All models inherit from `BaseEntity` with common fields and lifecycle hooks
+- **EntityManager**: Centralized CRUD operations for all entities
+- **Module System**: Features organized into independent modules (Clients, Trainers, Sessions)
+- **Relationship Management**: Metadata-driven relationships with automatic resolution
+- **Generic API**: Consistent REST API endpoints for all entities
+- **Backward Compatible**: All existing API routes continue to work
+
+### Quick Example
+
+```python
+from core.entity_manager import entity_manager
+
+# Create a client
+client = entity_manager.create('clients', {
+    'name': 'John Doe',
+    'email': 'john@example.com'
+})
+
+# Get related entities
+assignments = entity_manager.get_related('trainers', 1, 'assignments')
+```
+
+### Documentation
+- 📘 **[ESPOCRM_ARCHITECTURE.md](ESPOCRM_ARCHITECTURE.md)** - Complete architecture guide
+- 🔄 **[MIGRATION_TO_ESPOCRM.md](MIGRATION_TO_ESPOCRM.md)** - Migration guide for developers
 
 ## 📚 Documentation
 
@@ -385,6 +426,8 @@ Railway automatically provisions a PostgreSQL database. The connection URL is au
 
 ### Development Resources
 - **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Complete REST API reference
+- **[ESPOCRM_ARCHITECTURE.md](ESPOCRM_ARCHITECTURE.md)** - EspoCRM-inspired architecture guide 🆕
+- **[MIGRATION_TO_ESPOCRM.md](MIGRATION_TO_ESPOCRM.md)** - Migration guide 🆕
 - **[FEATURES.md](FEATURES.md)** - Feature overview and capabilities
 - **[ROADMAP.md](ROADMAP.md)** - Development roadmap and future plans
 - **[PHASE_HISTORY.md](PHASE_HISTORY.md)** - Complete development history (Phases 1-9)
