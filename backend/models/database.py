@@ -169,8 +169,8 @@ class Assignment(db.Model, BaseEntity):
             'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
         }
 
-class Session(db.Model):
-    """Training session model"""
+class Session(db.Model, BaseEntity):
+    """Training session model with EspoCRM-inspired structure"""
     __tablename__ = 'sessions'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -186,6 +186,23 @@ class Session(db.Model):
     recurring_session_id = db.Column(db.Integer, db.ForeignKey('recurring_sessions.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    deleted_at = db.Column(db.DateTime, nullable=True)  # Soft delete support
+    
+    @classmethod
+    def get_relationship_defs(cls):
+        """Define relationships for this entity"""
+        return {
+            'trainer': {
+                'type': RelationType.MANY_TO_ONE.value,
+                'entity': 'Trainer',
+                'foreign_key': 'trainer_id'
+            },
+            'client': {
+                'type': RelationType.MANY_TO_ONE.value,
+                'entity': 'Client',
+                'foreign_key': 'client_id'
+            }
+        }
     
     def get_end_time(self):
         """Calculate end_time from session_date + duration if not set"""
@@ -212,6 +229,7 @@ class Session(db.Model):
             'recurring_session_id': self.recurring_session_id,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
         }
 
 class RecurringSession(db.Model):
